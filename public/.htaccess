@@ -1,0 +1,36 @@
+# Interdit l'affichage du contenu d'un répertoire
+Options -Indexes
+
+# Désactive les négociations de contenu (MultiViews)
+Options -MultiViews
+
+# Définition de la page par défaut
+DirectoryIndex index.php index.html
+
+# Active la réécriture d'URL
+RewriteEngine On
+
+# Spécifie le chemin relatif du projet (à adapter selon ton arborescence)
+RewriteBase /ecoride/public/
+
+# Si le fichier ou dossier existe → ne rien faire
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Sinon, redirige tout vers index.php (Front Controller)
+RewriteRule ^ index.php [QSA,L]
+
+# Sécurité : empêche l'accès à certains fichiers sensibles
+<FilesMatch "\.(env|ini|log|sql|sqlite|bak|swp|md)$">
+    Require all denied
+</FilesMatch>
+
+<Files ".env">
+    Require all denied
+</Files>
+
+# Headers HTTP de protection minimale
+Header set X-Content-Type-Options "nosniff"
+Header set X-Frame-Options "SAMEORIGIN"
+Header set X-XSS-Protection "1; mode=block"
