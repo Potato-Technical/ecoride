@@ -2,8 +2,7 @@
 
 ## À propos
 
-EcoRide est une plateforme de covoiturage éco-responsable, pensée **mobile-first**, développée dans le cadre de l’**Évaluation de Compétences Finale (ECF)** du titre professionnel *Développeur Web & Web Mobile (RNCP 37674)*.
-
+EcoRide est une plateforme de covoiturage éco-responsable, pensée **mobile-first**, développée dans le cadre de l’**ECF**.
 ## Objectifs
 
 - Favoriser la mobilité partagée et écologique.
