@@ -1,0 +1,29 @@
+# --- Fichiers parasites systèmes / IDE ---
+.DS_Store        # macOS : métadonnées Finder
+Thumbs.db        # Windows : cache de vignettes
+.vscode/         # Configurations VS Code
+.idea/           # Configurations JetBrains (PHPStorm, WebStorm…)
+
+# --- Secrets et configurations locales ---
+.env             # Variables d'environnement sensibles
+config/*.local.php  # Configs locales non destinées au repo
+
+# --- Dépendances externes et artefacts de build ---
+vendor/          # Dépendances PHP (Composer)
+node_modules/    # Dépendances JS (npm / yarn)
+.cache/          # Caches de build ou outils
+dist/            # Dossier de distribution front (compilé)
+
+# --- Uploads et médias générés par l'utilisateur ---
+public/uploads/*         # Fichiers uploadés (non versionnés)
+!public/uploads/.gitkeep # Conserver le dossier vide dans Git
+pictures/                # Images/médias lourds non critiques au code
+docs/                    # Documents, maquettes, etc. non versionnés
+
+# --- Logs et caches applicatifs ---
+storage/*        # Données internes app
+!storage/.gitkeep
+cache/*          # Caches applicatifs
+!cache/.gitkeep
+logs/*           # Fichiers de log
+!logs/.gitkeep
