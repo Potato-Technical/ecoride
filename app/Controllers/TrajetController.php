@@ -1,10 +1,21 @@
 <?php
 namespace App\Controllers;
 
-class TrajetController
+use App\Core\Controller;
+use App\Models\TrajetModel;
+
+class TrajetController extends Controller
 {
+    private TrajetModel $model;
+
+    public function __construct()
+    {
+        $this->model = new TrajetModel();
+    }
+
     public function index()
     {
-        echo "Page des trajets (à venir)";
+        $trajets = $this->model->findAll();
+        return $this->render('trajets/index', ['trajets' => $trajets]);
     }
 }
