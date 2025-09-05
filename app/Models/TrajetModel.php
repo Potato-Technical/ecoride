@@ -7,7 +7,7 @@ use App\Core\Model;
 class TrajetModel extends Model
 {
     // Nom de la table liée à ce modèle (adapter si besoin)
-    protected string $table = 'trajets';
+    protected string $table = 'trajet';
 
     // Retourne tous les trajets, triés par date décroissante
     public function findAll(): array {

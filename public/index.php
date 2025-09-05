@@ -21,7 +21,6 @@ use App\Core\Router;
 
 // Récupère l'URL courante (ou `/` par défaut)
 $url = $_GET['url'] ?? '/';
-echo "URL capturée : " . $url . "<br>";
 
 // Initialise le routeur avec l’URL demandée
 $router = new Router($url);
