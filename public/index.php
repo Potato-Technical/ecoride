@@ -5,9 +5,11 @@ error_reporting(E_ALL);
 define('ROOT', dirname(__DIR__) . DIRECTORY_SEPARATOR);
 
 // Charger manuellement le Router AVANT le use (MVC sans autoload pour l’instant)
+require_once ROOT . 'app/Core/Controller.php';
 require_once ROOT . 'app/Core/Router.php';
 require_once ROOT . 'app/Controllers/HomeController.php';
 require_once ROOT . 'app/Controllers/TrajetController.php';
+
 
 
 // Maintenant seulement → tu peux déclarer le use
