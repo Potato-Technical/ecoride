@@ -1,27 +1,30 @@
 <?php
+// Affichage des erreurs (à désactiver en production)
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
+// Définition de la racine du projet
 define('ROOT', dirname(__DIR__) . DIRECTORY_SEPARATOR);
 
-// Charger manuellement le Router AVANT le use (MVC sans autoload pour l’instant)
-require_once ROOT . 'app/Core/Router.php';
+// Chargement manuel des composants MVC (pas encore d'autoloader)
+require_once ROOT . 'config/database.php';
+require_once ROOT . 'app/Core/Controller.php';
+require_once ROOT . 'app/Core/Model.php';
 require_once ROOT . 'app/Controllers/HomeController.php';
-require_once ROOT . 'app/Controllers/TrajetController.php';
+require_once ROOT . 'app/Models/TrajetModel.php';
+// require_once ROOT . 'app/Core/Router.php'; // Activer à partir de la tâche 3.7
 
+// Chargement des classes avec namespace
+use App\Controllers\HomeController;
+// use App\Core\Router; // Activer plus tard si Router utilisé
 
-// Maintenant seulement → tu peux déclarer le use
-use App\Core\Router;
+// Test simple de fonctionnement sans routing dynamique
+$controller = new HomeController();
+$controller->index();
 
-// Récupération de l’URL
-$url = $_GET['url'] ?? '/';
-
-// Instanciation du routeur
-$router = new Router($url);
-
-// Routes
-$router->get('', 'HomeController@index');
-$router->get('trajets', 'TrajetController@index');
-
-// Dispatch
-$router->dispatch();
+// Routing MVC maison (à activer plus tard)
+// $url = $_GET['url'] ?? '/';
+// $router = new Router($url);
+// $router->get('', 'HomeController@index');
+// $router->get('trajets', 'TrajetController@index');
+// $router->dispatch();
