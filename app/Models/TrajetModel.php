@@ -1,13 +1,13 @@
 <?php
 namespace App\Models;
 
-use App\Config\Database;
-use App\Core\Model;
+use App\Config\Database; // Connexion PDO centralisée
 use PDO;
 
 /**
- * TrajetModel - CRUD pour table 'trajet' (singulier)
- * j'utilise Database::pdo() pour la connexion
+ * TrajetModel - Gestion des trajets
+ * Table SQL : trajet
+ * Colonnes : id_trajet, ville_depart, ville_arrivee, date_depart, heure_depart, nb_places, prix
  */
 class TrajetModel
 {
@@ -15,85 +15,94 @@ class TrajetModel
 
     public function __construct()
     {
-        // je récupère la connexion PDO centralisée
+        // On récupère l’instance PDO depuis Database (singleton)
         $this->pdo = Database::pdo();
     }
 
-    // retourne tous les trajets
+    /**
+     * Retourne tous les trajets (Index)
+     */
     public function all(): array
     {
-        $stmt = $this->pdo->query("SELECT * FROM trajet ORDER BY id_trajet DESC");
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $sql = "SELECT id_trajet, ville_depart, ville_arrivee, date_depart, heure_depart, nb_places, prix
+                FROM trajet
+                ORDER BY date_depart DESC, heure_depart DESC";
+        $stmt = $this->pdo->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
-    // retourne un trajet par id
-    public function find(int $id): ?array
-    {
-        $stmt = $this->pdo->prepare("SELECT * FROM trajet WHERE id_trajet = ?");
-        $stmt->execute([$id]);
-        $res = $stmt->fetch();
-        return $res === false ? null : $res;
-    }
-
-    // création
     /**
-     * Insère un trajet et retourne l'ID (int) du nouvel enregistrement.
-     * @param array $data attend: depart, arrivee, date_depart, heure_depart, places, prix
-     * @return int id_trajet inséré (>0 si OK, 0 si échec)
+     * Crée un trajet et retourne l'ID inséré (Create/Store)
+     * $data attendu :
+     * - ville_depart, ville_arrivee, date_depart (Y-m-d),
+     * - heure_depart (H:i ou H:i:s), nb_places, prix
      */
     public function create(array $data): int
     {
-    // 1) Normaliser l'heure: "HH:MM" -> "HH:MM:SS" (MySQL TIME)
-    $heure = $data['heure_depart'] ?? '';
-    if (preg_match('/^\d{2}:\d{2}$/', $heure)) {
-        $heure .= ':00';
-    }
-  
-    // 2) Conducteur: si pas d'auth encore, fallback id_conducteur = 2 (ou mets celui de ta session)
-    $idConducteur = isset($data['id_conducteur']) ? (int)$data['id_conducteur'] : 2;
+        // Normalisation de l’heure au format H:i:s
+        $heure = isset($data['heure_depart']) 
+            ? substr($data['heure_depart'] . ':00:00', 0, 8) 
+            : '00:00:00';
 
-    // 3) INSERT aligné sur structure.sql (ville_depart, ville_arrivee, nb_places, etc.)
-    $sql = "INSERT INTO trajet
-            (id_conducteur, ville_depart, ville_arrivee, date_depart, heure_depart, nb_places, prix)
-            VALUES (?, ?, ?, ?, ?, ?, ?)";
-        
-        // Exécute avec les valeurs déjà validées/typées par le contrôleur
-    $stmt = $this->pdo->prepare($sql);
-    $stmt->execute([
-        $idConducteur,                  // id_conducteur (NOT NULL)
-        $data['depart']       ?? null,  // -> ville_depart
-        $data['arrivee']      ?? null,  // -> ville_arrivee
-        $data['date_depart']  ?? null,  // -> date_depart
-        $heure                ?: null,  // -> heure_depart (HH:MM:SS)
-        (int)($data['places'] ?? 0),    // -> nb_places
-        (float)($data['prix'] ?? 0)     // -> prix (DECIMAL)
-    ]);
+        $sql = "INSERT INTO trajet (ville_depart, ville_arrivee, date_depart, heure_depart, nb_places, prix)
+                VALUES (?, ?, ?, ?, ?, ?)";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            $data['ville_depart'] ?? '',
+            $data['ville_arrivee'] ?? '',
+            $data['date_depart'] ?? null,
+            $heure,
+            (int)($data['nb_places'] ?? 0),
+            (float)($data['prix'] ?? 0),
+        ]);
 
-        // ID auto-incrémenté généré par MySQL
-        return (int) $this->pdo->lastInsertId();
+        return (int)$this->pdo->lastInsertId();
     }
 
-    // mise à jour
+    /**
+     * Récupère un trajet par son ID (Show)
+     */
+    public function find(int $id): ?array
+    {
+        $sql = "SELECT id_trajet, ville_depart, ville_arrivee, date_depart, heure_depart, nb_places, prix
+                FROM trajet
+                WHERE id_trajet = ?";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$id]);
+        $trajet = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $trajet ?: null;
+    }
+
+    /**
+     * Met à jour un trajet (Edit/Update)
+     */
     public function update(int $id, array $data): bool
     {
-        $sql = "UPDATE trajet SET depart = ?, arrivee = ?, date_depart = ?, heure_depart = ?, places = ?, prix = ? WHERE id_trajet = ?";
+        $heure = isset($data['heure_depart']) 
+            ? substr($data['heure_depart'] . ':00:00', 0, 8) 
+            : '00:00:00';
+
+        $sql = "UPDATE trajet
+                SET ville_depart = ?, ville_arrivee = ?, date_depart = ?, heure_depart = ?, nb_places = ?, prix = ?
+                WHERE id_trajet = ?";
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([
-            $data['depart'] ?? null,
-            $data['arrivee'] ?? null,
+            $data['ville_depart'] ?? '',
+            $data['ville_arrivee'] ?? '',
             $data['date_depart'] ?? null,
-            $data['heure_depart'] ?? null,
-            $data['places'] ?? 0,
-            $data['prix'] ?? 0,
+            $heure,
+            (int)($data['nb_places'] ?? 0),
+            (float)($data['prix'] ?? 0),
             $id
         ]);
     }
 
-    // suppression
+    /**
+     * Supprime un trajet (Delete)
+     */
     public function delete(int $id): bool
     {
         $stmt = $this->pdo->prepare("DELETE FROM trajet WHERE id_trajet = ?");
         return $stmt->execute([$id]);
     }
 }
-

@@ -17,24 +17,25 @@ $url = $_GET['url'] ?? '/';
 $url = trim($url, '/'); // ex: "trajets" ou "trajets/create"
 
 
-// j'instancie le router avec l'URL demandée
+// Instancie le router avec l'URL demandée
 $router = new Router($url);
 
-// définition des routes (GET / POST)
+// Page d’accueil
 $router->get('', 'HomeController@index');
-$router->get('/', 'HomeController@index');
-$router->get('trajets', 'TrajetController@index');
-$router->get('trajets/create', 'TrajetController@create');
-$router->post('trajets/store', 'TrajetController@store');
-$router->get('trajets/([0-9]+)', 'TrajetController@show');     // /trajets/12
+
+// ---- Trajets : Index + Create/Store + Show ----
+$router->get('trajets', 'TrajetController@index');           // Liste des trajets
+$router->get('trajets/create', 'TrajetController@create');   // Formulaire de création
+$router->post('trajets/store', 'TrajetController@store');    // Traitement du POST
+
+// Lecture d’un trajet (Show) : /trajets/12
+// IMPORTANT : on conserve la syntaxe REGEX déjà supportée par ton Router
+$router->get('trajets/([0-9]+)', 'TrajetController@show');
+
+// (à venir) Edit / Update / Delete
 $router->get('trajets/([0-9]+)/edit', 'TrajetController@edit');
 $router->post('trajets/([0-9]+)/update', 'TrajetController@update');
 $router->post('trajets/([0-9]+)/delete', 'TrajetController@delete');
-// ---- CRUD Trajet (Create) ----
-$router->get('trajets/create', 'TrajetController@create');  // Formulaire de création
-$router->post('trajets/store', 'TrajetController@store');   // Traitement du POST
-// Lire un trajet
-$router->get('trajets/show/{id}', 'TrajetController@show');
 
-// je lance le dispatch (exécution)
+// Exécute le dispatch (fait correspondre la route à l’action)
 $router->dispatch();
