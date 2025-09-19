@@ -33,6 +33,8 @@ $router->post('trajets/([0-9]+)/delete', 'TrajetController@delete');
 // ---- CRUD Trajet (Create) ----
 $router->get('trajets/create', 'TrajetController@create');  // Formulaire de création
 $router->post('trajets/store', 'TrajetController@store');   // Traitement du POST
+// Lire un trajet
+$router->get('trajets/show/{id}', 'TrajetController@show');
 
 // je lance le dispatch (exécution)
 $router->dispatch();

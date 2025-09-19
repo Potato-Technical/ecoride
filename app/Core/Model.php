@@ -2,7 +2,7 @@
 namespace App\Core;
 
 // Inclusion de la fonction PDO
-require_once ROOT . 'config/database.php';
+require_once ROOT . 'Config/Database.php';
 
 abstract class Model {
     protected \PDO $pdo;
