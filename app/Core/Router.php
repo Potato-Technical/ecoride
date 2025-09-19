@@ -1,61 +1,89 @@
 <?php
 namespace App\Core;
 
-class Router {
-    private $getRoutes = [];
-    private $postRoutes = [];
-    private $url;
+/**
+ * Router simple pour MVC natif.
+ * - je mappe des patterns (regex) vers "Controller@action"
+ * - j'accepte get/post via get()/post()
+ */
+class Router
+{
+    private string $url;
+    private array $routes = [];
 
-    public function __construct($url) {
+    public function __construct(string $url = '/')
+    {
+        // normalise : enlève slash final
         $this->url = trim($url, '/');
     }
 
-    // Enregistre une route GET
-    public function get($path, $handler) {
-        $this->getRoutes[$path] = $handler;
+    // enregistrer une route GET
+    public function get(string $pattern, string $target): void
+    {
+        $this->addRoute('GET', $pattern, $target);
     }
 
-    // Enregistre une route POST
-    public function post($path, $handler) {
-        $this->postRoutes[$path] = $handler;
+    // enregistrer une route POST
+    public function post(string $pattern, string $target): void
+    {
+        $this->addRoute('POST', $pattern, $target);
     }
 
-    // Dispatch : exécute le contrôleur/méthode associé à l'URL
-    public function dispatch() {
-        $method = $_SERVER['REQUEST_METHOD'];
-        $routes = $method === 'POST' ? $this->postRoutes : $this->getRoutes;
+    private function addRoute(string $method, string $pattern, string $target): void
+    {
+        // je transforme le pattern simple en regex : ^pattern$
+        // Note: si pattern contient parentheses (ex: ([0-9]+)) on les conserve
+        $regex = '#^' . trim($pattern, '/') . '$#';
+        $this->routes[] = [
+            'method' => $method,
+            'pattern' => $regex,
+            'target' => $target
+        ];
+    }
 
-        foreach ($routes as $route => $handler) {
-            // Transforme /trajets/{id} en regex
-            $pattern = '@^' . preg_replace('@\{(\w+)\}@', '(?P<$1>[^/]+)', $route) . '$@';
+    // dispatch : cherche une route correspondante et exécute
+    public function dispatch(): void
+    {
+        $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        $path = $this->url === '' ? '' : $this->url;
 
-            // Teste si l’URL correspond à cette route
-            if (preg_match($pattern, $this->url, $matches)) {
-                [$controller, $method] = explode('@', $handler);
-                $controllerClass = 'App\\Controllers\\' . $controller;
+        foreach ($this->routes as $route) {
+            if ($route['method'] !== $method) {
+                continue;
+            }
+
+            if (preg_match($route['pattern'], $path, $matches)) {
+                // $matches[0] = full match, les groupes commencent à index 1
+                array_shift($matches);
+
+                // target = Controller@action
+                [$controllerName, $action] = explode('@', $route['target']);
+
+                // namespace complet
+                $controllerClass = 'App\\Controllers\\' . $controllerName;
 
                 if (!class_exists($controllerClass)) {
                     http_response_code(500);
-                    echo "Contrôleur $controllerClass introuvable.";
+                    echo "Controller introuvable: $controllerClass";
                     return;
                 }
 
-                $instance = new $controllerClass();
+                $controller = new $controllerClass();
 
-                if (!method_exists($instance, $method)) {
+                if (!method_exists($controller, $action)) {
                     http_response_code(500);
-                    echo "Méthode $method introuvable dans $controllerClass.";
+                    echo "Action introuvable: $action dans $controllerClass";
                     return;
                 }
 
-                // Ne garde que les paramètres nommés (ceux de {id}, etc.)
-                $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
-                return call_user_func_array([$instance, $method], $params);
+                // j'appelle l'action, en passant les paramètres (si existants)
+                call_user_func_array([$controller, $action], $matches);
+                return;
             }
         }
 
-        // Si aucune route ne correspond
+        // Si aucune route -> 404
         http_response_code(404);
-        echo "404 – Page non trouvée.";
+        echo "Page non trouvée : " . ($path === '' ? '/' : $path);
     }
 }

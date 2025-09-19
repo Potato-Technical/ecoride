@@ -2,32 +2,26 @@
 namespace App\Core;
 
 /**
- * Classe abstraite Controller
- * Toutes les classes de contrôleurs EcoRide hériteront de celle-ci.
- * Elle fournit la méthode `render()` pour afficher une vue.
+ * Base Controller
+ * - j'offre la méthode render(view, params)
  */
-abstract class Controller
+class Controller
 {
-    /**
-     * Affiche une vue dans le layout principal
-     * @param string $view Nom de la vue (ex: 'home/index')
-     * @param array $data Données à transmettre à la vue
-     */
-    protected function render(string $view, array $data = []): void
+    protected function render(string $view, array $params = []): void
     {
-        // Convertit les clés du tableau $data en variables utilisables dans la vue
-        extract($data);
+        // je construis le chemin vers le fichier vue : app/Views/{view}.php
+        $viewPath = ROOT . 'app' . DIRECTORY_SEPARATOR . 'Views' . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $view) . '.php';
 
-        // Démarre le tampon de sortie
-        ob_start();
+        if (!file_exists($viewPath)) {
+            http_response_code(500);
+            echo "Vue introuvable : $viewPath";
+            return;
+        }
 
-        // Inclut la vue demandée (ex: app/Views/home/index.php)
-        require_once ROOT . 'app/Views/' . $view . '.php';
+        // j'extrais les variables pour la vue
+        extract($params, EXTR_SKIP);
 
-        // Stocke le contenu généré dans $content
-        $content = ob_get_clean();
-
-        // Inclut le layout principal (ex: base.php)
-        require_once ROOT . 'app/Views/layouts/base.php';
+        // j'include la vue (elle peut utiliser $trajets, $titre, etc.)
+        require $viewPath;
     }
 }

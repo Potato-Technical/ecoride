@@ -1,43 +1,35 @@
 <?php
-// Active l'affichage des erreurs (utile en dev, à désactiver en prod)
+// j'active l'affichage des erreurs en dev
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-// Définit le chemin racine du projet pour faciliter les inclusions
+// chemin racine du projet
 define('ROOT', dirname(__DIR__) . DIRECTORY_SEPARATOR);
 
-// Inclusion manuelle des classes de base (pas encore d'autoloading)
-require_once ROOT . 'app/Core/Router.php';
-require_once ROOT . 'app/Core/Controller.php';
-require_once ROOT . 'app/Core/Model.php';
-require_once ROOT . 'app/Controllers/HomeController.php';
-require_once ROOT . 'app/Controllers/TrajetController.php';
-require_once ROOT . 'app/Models/TrajetModel.php';
+// autoload composer (PSR-4)
+require_once ROOT . 'vendor/autoload.php';
 
-
-
-// Déclare le namespace à utiliser pour instancier le Router
+// router
 use App\Core\Router;
 
-// Récupère l'URL courante (ou `/` par défaut)
+// je récupère l'URL (nettoyée) ou '/' par défaut
 $url = $_GET['url'] ?? '/';
+$url = trim($url, '/'); // ex: "trajets" ou "trajets/create"
 
-// Initialise le routeur avec l’URL demandée
+
+// j'instancie le router avec l'URL demandée
 $router = new Router($url);
 
-// ========== ROUTES DEFINIES MANUELLEMENT ==========
-
-// Route vers la page d'accueil (test initial)
+// définition des routes (GET / POST)
 $router->get('', 'HomeController@index');
+$router->get('/', 'HomeController@index');
+$router->get('trajets', 'TrajetController@index');
+$router->get('trajets/create', 'TrajetController@create');
+$router->post('trajets/store', 'TrajetController@store');
+$router->get('trajets/([0-9]+)', 'TrajetController@show');     // /trajets/12
+$router->get('trajets/([0-9]+)/edit', 'TrajetController@edit');
+$router->post('trajets/([0-9]+)/update', 'TrajetController@update');
+$router->post('trajets/([0-9]+)/delete', 'TrajetController@delete');
 
-// CRUD complet pour l'entité Trajet
-$router->get('trajets', 'TrajetController@index');                // Liste des trajets
-$router->get('trajets/create', 'TrajetController@create');       // Formulaire de création
-$router->post('trajets', 'TrajetController@store');              // Insertion en BDD
-$router->get('trajets/{id}', 'TrajetController@show');           // Détail d'un trajet
-$router->get('trajets/{id}/edit', 'TrajetController@edit');      // Formulaire d’édition
-$router->post('trajets/{id}/update', 'TrajetController@update'); // Mise à jour BDD
-$router->post('trajets/{id}/delete', 'TrajetController@delete'); // Suppression BDD
-
-// Démarre le dispatch pour exécuter le contrôleur/méthode correspondant à l’URL
+// je lance le dispatch (exécution)
 $router->dispatch();
