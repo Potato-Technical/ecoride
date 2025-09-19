@@ -27,3 +27,9 @@ cache/*          # Caches applicatifs
 logs/*           # Fichiers de log
 !logs/.gitkeep
 
+
+/vendor/
+
+# Debug
+public/health.php
+tree.txt
