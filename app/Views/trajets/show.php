@@ -83,7 +83,8 @@
 
     <div class="card-footer d-flex gap-2">
       <a href="/trajets/<?= (int)$trajet['id_trajet'] ?>/edit" class="btn btn-primary">Modifier</a>
-      <form action="/trajets/<?= (int)$trajet['id_trajet'] ?>/delete" method="post" onsubmit="return confirm('Supprimer ce trajet ?');">
+      <form action="/trajets/<?= (int)$trajet['id_trajet'] ?>/delete" method="post" onsubmit="return confirm('Voulez-vous vraiment supprimer ce trajet ?');"
+        class="d-inline">
         <button type="submit" class="btn btn-danger">Supprimer</button>
       </form>
     </div>

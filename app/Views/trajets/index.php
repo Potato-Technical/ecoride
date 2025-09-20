@@ -46,6 +46,11 @@
               <td>
                 <!-- Ajout du lien Voir détail -->
                 <a href="/trajets/<?= (int)$t['id_trajet'] ?>" class="btn btn-sm btn-outline-primary">Voir détail</a>
+                <form method="post" action="/trajets/<?= (int)$t['id_trajet'] ?>/delete"
+                        onsubmit="return confirm('Voulez-vous vraiment supprimer ce trajet ?');"
+                        class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                </form>
               </td>
             </tr>
           <?php endforeach; ?>

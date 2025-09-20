@@ -29,13 +29,11 @@ $router->get('trajets/create', 'TrajetController@create');   // Formulaire de cr
 $router->post('trajets/store', 'TrajetController@store');    // Traitement du POST
 
 // Lecture d’un trajet (Show) : /trajets/12
-// IMPORTANT : on conserve la syntaxe REGEX déjà supportée par ton Router
+// IMPORTANT : on conserve la syntaxe REGEX déjà supportée par le Router
 $router->get('trajets/([0-9]+)', 'TrajetController@show');
-
-// (à venir) Delete
 $router->get('trajets/([0-9]+)/edit', 'TrajetController@edit');         // Éditer un trajet (formulaire pré-rempli)
 $router->post('trajets/([0-9]+)/update', 'TrajetController@update');    // Mettre à jour un trajet (POST)
-$router->post('trajets/([0-9]+)/delete', 'TrajetController@delete');
+$router->post('trajets/([0-9]+)/delete', 'TrajetController@delete');    // Supprimer un trajet
 
 // Exécute le dispatch (fait correspondre la route à l’action)
 $router->dispatch();

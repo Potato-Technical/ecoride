@@ -193,4 +193,25 @@ public function update(int $id): void
     exit;
 }
 
+    /**
+     * POST /trajets/{id}/delete
+     * Supprime un trajet puis redirige vers la liste
+     */
+    public function delete(int $id): void
+    {
+        $trajet = $this->trajetModel->find($id);
+        if (!$trajet) {
+            http_response_code(404);
+            echo "Trajet introuvable.";
+            return;
+        }
+
+        // Suppression
+        $this->trajetModel->delete($id);
+
+        // Redirection vers la liste
+        header("Location: /trajets");
+        exit;
+    }
+
 }

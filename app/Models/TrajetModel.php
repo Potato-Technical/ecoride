@@ -109,4 +109,5 @@ class TrajetModel
         $stmt = $this->pdo->prepare("DELETE FROM trajet WHERE id_trajet = ?");
         return $stmt->execute([$id]);
     }
+
 }
