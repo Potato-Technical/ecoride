@@ -39,32 +39,35 @@ class TrajetModel
      */
     public function create(array $data): int
     {
-        // Normalisation de l’heure au format H:i:s
-        $heure = isset($data['heure_depart']) 
-            ? substr($data['heure_depart'] . ':00:00', 0, 8) 
+        $heure = isset($data['heure_depart'])
+            ? substr($data['heure_depart'] . ':00:00', 0, 8)
             : '00:00:00';
 
-        $sql = "INSERT INTO trajet (ville_depart, ville_arrivee, date_depart, heure_depart, nb_places, prix)
-                VALUES (?, ?, ?, ?, ?, ?)";
+        // On insère toutes les colonnes SAUF id_trajet (auto_increment)
+        $sql = "INSERT INTO trajet (id_conducteur, ville_depart, ville_arrivee, date_depart, heure_depart, nb_places, description, prix)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
+            1, // temporaire : id_conducteur fixé à 1
             $data['ville_depart'] ?? '',
             $data['ville_arrivee'] ?? '',
             $data['date_depart'] ?? null,
             $heure,
             (int)($data['nb_places'] ?? 0),
+            $data['description'] ?? '',
             (float)($data['prix'] ?? 0),
         ]);
 
         return (int)$this->pdo->lastInsertId();
     }
 
+
     /**
      * Récupère un trajet par son ID (Show)
      */
     public function find(int $id): ?array
     {
-        $sql = "SELECT id_trajet, ville_depart, ville_arrivee, date_depart, heure_depart, nb_places, prix
+        $sql = "SELECT id_trajet, ville_depart, ville_arrivee, date_depart, heure_depart, nb_places, prix, description
                 FROM trajet
                 WHERE id_trajet = ?";
         $stmt = $this->pdo->prepare($sql);
@@ -83,7 +86,7 @@ class TrajetModel
             : '00:00:00';
 
         $sql = "UPDATE trajet
-                SET ville_depart = ?, ville_arrivee = ?, date_depart = ?, heure_depart = ?, nb_places = ?, prix = ?
+                SET ville_depart = ?, ville_arrivee = ?, date_depart = ?, heure_depart = ?, nb_places = ?, prix = ?, description = ?
                 WHERE id_trajet = ?";
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([
@@ -93,6 +96,7 @@ class TrajetModel
             $heure,
             (int)($data['nb_places'] ?? 0),
             (float)($data['prix'] ?? 0),
+            $data['description'] ?? '',
             $id
         ]);
     }

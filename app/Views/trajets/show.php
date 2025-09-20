@@ -41,7 +41,7 @@
         <div class="col-6 col-md-3">
           <div class="border rounded p-3">
             <div class="fw-semibold text-muted">Date</div>
-            <div><?= htmlspecialchars((string)$trajet['date_depart']) ?></div>
+            <div class="fs-6"><?= (new DateTime($trajet['date_depart']))->format('d/m/Y') ?></div>
           </div>
         </div>
 
@@ -49,7 +49,7 @@
         <div class="col-6 col-md-3">
           <div class="border rounded p-3">
             <div class="fw-semibold text-muted">Heure</div>
-            <div><?= htmlspecialchars((string)$trajet['heure_depart']) ?></div>
+            <div><?= (new DateTime($trajet['heure_depart']))->format('H:i') ?></div>
           </div>
         </div>
 
@@ -74,7 +74,7 @@
         <div class="col-12">
           <div class="border rounded p-3">
             <div class="fw-semibold text-muted">Description</div>
-            <div><?= nl2br(htmlspecialchars((string)$trajet['description'])) ?></div>
+            <div><?= nl2br(htmlspecialchars_decode((string)$trajet['description'])) ?></div>
           </div>
         </div>
         <?php endif; ?>

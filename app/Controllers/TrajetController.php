@@ -48,27 +48,26 @@ class TrajetController extends Controller
      */
     public function store(): void
     {
-        // Récupération et trim/sanitation de base
         $data = [
-            'ville_depart'      => trim((string) filter_input(INPUT_POST, 'ville_depart', FILTER_SANITIZE_FULL_SPECIAL_CHARS)),
-            'ville_arrivee'     => trim((string) filter_input(INPUT_POST, 'ville_arrivee', FILTER_SANITIZE_FULL_SPECIAL_CHARS)),
-            'date_depart'       => trim((string) filter_input(INPUT_POST, 'date_depart', FILTER_SANITIZE_FULL_SPECIAL_CHARS)),
-            'heure_depart'      => trim((string) filter_input(INPUT_POST, 'heure_depart', FILTER_SANITIZE_FULL_SPECIAL_CHARS)),
-            'nb_places'         => (int) filter_input(INPUT_POST, 'nb_places', FILTER_SANITIZE_NUMBER_INT),
-            'prix'              => (float) filter_input(INPUT_POST, 'prix', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION),
+            'ville_depart'  => trim((string) filter_input(INPUT_POST, 'ville_depart', FILTER_SANITIZE_FULL_SPECIAL_CHARS)),
+            'ville_arrivee' => trim((string) filter_input(INPUT_POST, 'ville_arrivee', FILTER_SANITIZE_FULL_SPECIAL_CHARS)),
+            'date_depart'   => trim((string) filter_input(INPUT_POST, 'date_depart', FILTER_SANITIZE_FULL_SPECIAL_CHARS)),
+            'heure_depart'  => trim((string) filter_input(INPUT_POST, 'heure_depart', FILTER_SANITIZE_FULL_SPECIAL_CHARS)),
+            'nb_places'     => (int) filter_input(INPUT_POST, 'nb_places', FILTER_SANITIZE_NUMBER_INT),
+            'prix'          => (float) filter_input(INPUT_POST, 'prix', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION),
+            'description'   => trim((string) filter_input(INPUT_POST, 'description', FILTER_SANITIZE_FULL_SPECIAL_CHARS)),
         ];
 
-        // Validations minimales
+        // Validations
         $errors = [];
         if ($data['ville_depart'] === '')  { $errors['ville_depart'] = "Ville de départ obligatoire."; }
         if ($data['ville_arrivee'] === '') { $errors['ville_arrivee'] = "Ville d’arrivée obligatoire."; }
-        if ($data['date_depart'] === '')   { $errors['date_depart'] = "Date de départ obligatoire."; }
-        if ($data['heure_depart'] === '')  { $errors['heure_depart'] = "Heure de départ obligatoire."; }
-        if ($data['nb_places'] <= 0)       { $errors['nb_places'] = "Le nombre de places doit être > 0."; }
-        if ($data['prix'] < 0)             { $errors['prix'] = "Le prix ne peut pas être négatif."; }
+        if ($data['date_depart'] === '')   { $errors['date_depart'] = "Date obligatoire."; }
+        if ($data['heure_depart'] === '')  { $errors['heure_depart'] = "Heure obligatoire."; }
+        if ($data['nb_places'] <= 0)       { $errors['nb_places'] = "Nombre de places doit être > 0."; }
+        if ($data['prix'] < 0)             { $errors['prix'] = "Prix invalide."; }
 
         if (!empty($errors)) {
-            // Réaffiche le formulaire avec erreurs
             $this->render('trajets/create', [
                 'title'  => 'Proposer un trajet',
                 'errors' => $errors,
@@ -80,10 +79,11 @@ class TrajetController extends Controller
         // Insertion
         $id = $this->trajetModel->create($data);
 
-        // Redirection vers la liste (ou la fiche)
+        // Redirection vers la liste
         header('Location: /trajets');
         exit;
     }
+
 
     /**
      * GET /trajets/{id}
@@ -117,4 +117,80 @@ class TrajetController extends Controller
             'trajet' => $trajet
         ]);
     }
+
+/**
+ * GET /trajets/{id}/edit
+ * Formulaire pré-rempli pour éditer un trajet
+ */
+public function edit(int $id): void
+{
+    $trajet = $this->trajetModel->find($id);
+
+    if (!$trajet) {
+        http_response_code(404);
+        $this->render('errors/404', [
+            'title' => 'Trajet introuvable',
+            'message' => "Impossible d’éditer : trajet #{$id} introuvable."
+        ]);
+        return;
+    }
+
+    $this->render('trajets/edit', [
+        'title'  => "Modifier le trajet #{$trajet['id_trajet']}",
+        'trajet' => $trajet,
+        'errors' => []
+    ]);
+}
+
+/**
+ * POST /trajets/{id}/update
+ * Traitement du formulaire d’édition
+ */
+public function update(int $id): void
+{
+    $trajet = $this->trajetModel->find($id);
+    if (!$trajet) {
+        http_response_code(404);
+        echo "Trajet introuvable.";
+        return;
+    }
+
+    // Récupération et nettoyage
+    $data = [
+        'ville_depart'  => trim((string) filter_input(INPUT_POST, 'ville_depart', FILTER_SANITIZE_FULL_SPECIAL_CHARS)),
+        'ville_arrivee' => trim((string) filter_input(INPUT_POST, 'ville_arrivee', FILTER_SANITIZE_FULL_SPECIAL_CHARS)),
+        'date_depart'   => trim((string) filter_input(INPUT_POST, 'date_depart', FILTER_SANITIZE_FULL_SPECIAL_CHARS)),
+        'heure_depart'  => trim((string) filter_input(INPUT_POST, 'heure_depart', FILTER_SANITIZE_FULL_SPECIAL_CHARS)),
+        'nb_places'     => (int) filter_input(INPUT_POST, 'nb_places', FILTER_SANITIZE_NUMBER_INT),
+        'prix'          => (float) filter_input(INPUT_POST, 'prix', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION),
+        'description'   => trim((string) filter_input(INPUT_POST, 'description', FILTER_SANITIZE_FULL_SPECIAL_CHARS)),
+    ];
+
+    // Validations rapides
+    $errors = [];
+    if ($data['ville_depart'] === '')  { $errors['ville_depart'] = "Ville de départ obligatoire."; }
+    if ($data['ville_arrivee'] === '') { $errors['ville_arrivee'] = "Ville d’arrivée obligatoire."; }
+    if ($data['date_depart'] === '')   { $errors['date_depart'] = "Date obligatoire."; }
+    if ($data['heure_depart'] === '')  { $errors['heure_depart'] = "Heure obligatoire."; }
+    if ($data['nb_places'] <= 0)       { $errors['nb_places'] = "Nombre de places doit être > 0."; }
+    if ($data['prix'] < 0)             { $errors['prix'] = "Prix invalide."; }
+
+    if (!empty($errors)) {
+        // Réaffiche le formulaire avec erreurs
+        $this->render('trajets/edit', [
+            'title'  => "Modifier le trajet #{$trajet['id_trajet']}",
+            'trajet' => $data + ['id_trajet' => $id], // conserve les valeurs saisies
+            'errors' => $errors
+        ]);
+        return;
+    }
+
+    // Update en BDD
+    $this->trajetModel->update($id, $data);
+
+    // Redirection vers la fiche Show
+    header("Location: /trajets/{$id}");
+    exit;
+}
+
 }

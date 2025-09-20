@@ -32,9 +32,9 @@ $router->post('trajets/store', 'TrajetController@store');    // Traitement du PO
 // IMPORTANT : on conserve la syntaxe REGEX déjà supportée par ton Router
 $router->get('trajets/([0-9]+)', 'TrajetController@show');
 
-// (à venir) Edit / Update / Delete
-$router->get('trajets/([0-9]+)/edit', 'TrajetController@edit');
-$router->post('trajets/([0-9]+)/update', 'TrajetController@update');
+// (à venir) Delete
+$router->get('trajets/([0-9]+)/edit', 'TrajetController@edit');         // Éditer un trajet (formulaire pré-rempli)
+$router->post('trajets/([0-9]+)/update', 'TrajetController@update');    // Mettre à jour un trajet (POST)
 $router->post('trajets/([0-9]+)/delete', 'TrajetController@delete');
 
 // Exécute le dispatch (fait correspondre la route à l’action)

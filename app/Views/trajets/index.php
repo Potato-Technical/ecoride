@@ -29,12 +29,22 @@
               <td><?= (int)$t['id_trajet'] ?></td>
               <td><?= htmlspecialchars((string)$t['ville_depart']) ?></td>
               <td><?= htmlspecialchars((string)$t['ville_arrivee']) ?></td>
-              <td><?= htmlspecialchars((string)$t['date_depart']) ?></td>
-              <td><?= htmlspecialchars((string)$t['heure_depart']) ?></td>
+              <td>
+                <?php
+                    $date = new DateTime($t['date_depart']);
+                    echo $date->format('d/m/Y');
+                ?>
+              </td>
+              <td>
+                <?php
+                    $heure = new DateTime($t['heure_depart']);
+                    echo $heure->format('H:i');
+                ?>
+              </td>
               <td><?= (int)$t['nb_places'] ?></td>
               <td><?= number_format((float)$t['prix'], 2, ',', ' ') ?> €</td>
               <td>
-                <!-- 👇 Ajout du lien Voir détail -->
+                <!-- Ajout du lien Voir détail -->
                 <a href="/trajets/<?= (int)$t['id_trajet'] ?>" class="btn btn-sm btn-outline-primary">Voir détail</a>
               </td>
             </tr>
