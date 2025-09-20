@@ -1,7 +1,22 @@
 <?php
 // j'active l'affichage des erreurs en dev
-ini_set('display_errors', 1);
+ini_set('display_errors', 1); // OK en dev ; couper en prod
 error_reporting(E_ALL);
+
+// Sessions (CSRF, flash)
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start([
+        'cookie_httponly' => true,
+        'cookie_secure'   => isset($_SERVER['HTTPS']),
+        'cookie_samesite' => 'Lax',
+    ]);
+}
+
+// En-têtes sécurité minimales (Apache peut compléter côté serveur)
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: SAMEORIGIN');
+header('X-XSS-Protection: 0'); // Désactivé (obsolète), on échappe côté vue
+header('Referrer-Policy: no-referrer-when-downgrade');
 
 // chemin racine du projet
 define('ROOT', dirname(__DIR__) . DIRECTORY_SEPARATOR);

@@ -5,6 +5,7 @@
  * - $errors (array)
  * - $old (array) : valeurs précédentes si erreur
  */
+use App\Core\Security;
 ?>
 <div class="container my-4">
   <a href="/trajets" class="btn btn-outline-secondary btn-sm mb-3">&larr; Retour à la liste</a>
@@ -12,15 +13,16 @@
   <h1>Proposer un trajet</h1>
 
   <form method="post" action="/trajets/store" class="row g-3">
-
+    <?= Security::csrfField() ?>
+    
     <!-- Ville de départ -->
     <div class="col-md-6">
       <label for="ville_depart" class="form-label">Ville de départ</label>
       <input type="text" name="ville_depart" id="ville_depart"
              class="form-control <?= isset($errors['ville_depart']) ? 'is-invalid' : '' ?>"
-             value="<?= htmlspecialchars($old['ville_depart'] ?? '') ?>">
+             value="<?= Security::h($old['ville_depart'] ?? '') ?>">
       <?php if (isset($errors['ville_depart'])): ?>
-        <div class="invalid-feedback"><?= $errors['ville_depart'] ?></div>
+        <div class="invalid-feedback"><?= Security::h($errors['ville_depart']) ?></div>
       <?php endif; ?>
     </div>
 
@@ -29,9 +31,9 @@
       <label for="ville_arrivee" class="form-label">Ville d’arrivée</label>
       <input type="text" name="ville_arrivee" id="ville_arrivee"
              class="form-control <?= isset($errors['ville_arrivee']) ? 'is-invalid' : '' ?>"
-             value="<?= htmlspecialchars($old['ville_arrivee'] ?? '') ?>">
+             value="<?= Security::h($old['ville_arrivee'] ?? '') ?>">
       <?php if (isset($errors['ville_arrivee'])): ?>
-        <div class="invalid-feedback"><?= $errors['ville_arrivee'] ?></div>
+        <div class="invalid-feedback"><?= Security::h($errors['ville_arrivee']) ?></div>
       <?php endif; ?>
     </div>
 
@@ -40,9 +42,9 @@
       <label for="date_depart" class="form-label">Date</label>
       <input type="date" name="date_depart" id="date_depart"
              class="form-control <?= isset($errors['date_depart']) ? 'is-invalid' : '' ?>"
-             value="<?= htmlspecialchars($old['date_depart'] ?? '') ?>">
+             value="<?= Security::h($old['date_depart'] ?? '') ?>">
       <?php if (isset($errors['date_depart'])): ?>
-        <div class="invalid-feedback"><?= $errors['date_depart'] ?></div>
+        <div class="invalid-feedback"><?= Security::h($errors['date_depart']) ?></div>
       <?php endif; ?>
     </div>
 
@@ -51,9 +53,9 @@
       <label for="heure_depart" class="form-label">Heure</label>
       <input type="time" name="heure_depart" id="heure_depart"
              class="form-control <?= isset($errors['heure_depart']) ? 'is-invalid' : '' ?>"
-             value="<?= htmlspecialchars(substr($old['heure_depart'] ?? '', 0, 5)) ?>">
+             value="<?= Security::h(substr($old['heure_depart'] ?? '', 0, 5)) ?>">
       <?php if (isset($errors['heure_depart'])): ?>
-        <div class="invalid-feedback"><?= $errors['heure_depart'] ?></div>
+        <div class="invalid-feedback"><?= Security::h($errors['heure_depart']) ?></div>
       <?php endif; ?>
     </div>
 
@@ -62,9 +64,9 @@
       <label for="nb_places" class="form-label">Places</label>
       <input type="number" name="nb_places" id="nb_places"
              class="form-control <?= isset($errors['nb_places']) ? 'is-invalid' : '' ?>"
-             value="<?= htmlspecialchars($old['nb_places'] ?? '') ?>">
+             value="<?= Security::h($old['nb_places'] ?? '') ?>">
       <?php if (isset($errors['nb_places'])): ?>
-        <div class="invalid-feedback"><?= $errors['nb_places'] ?></div>
+        <div class="invalid-feedback"><?= Security::h($errors['nb_places']) ?></div>
       <?php endif; ?>
     </div>
 
@@ -73,9 +75,9 @@
       <label for="prix" class="form-label">Prix (€)</label>
       <input type="number" step="0.01" name="prix" id="prix"
              class="form-control <?= isset($errors['prix']) ? 'is-invalid' : '' ?>"
-             value="<?= htmlspecialchars($old['prix'] ?? '') ?>">
+             value="<?= Security::h($old['prix'] ?? '') ?>">
       <?php if (isset($errors['prix'])): ?>
-        <div class="invalid-feedback"><?= $errors['prix'] ?></div>
+        <div class="invalid-feedback"><?= Security::h($errors['prix']) ?></div>
       <?php endif; ?>
     </div>
 
@@ -83,7 +85,7 @@
     <div class="col-md-12">
       <label for="description" class="form-label">Description</label>
       <textarea name="description" id="description" rows="3"
-                class="form-control"><?= htmlspecialchars($old['description'] ?? '') ?></textarea>
+                class="form-control"><?= Security::h($old['description'] ?? '') ?></textarea>
     </div>
 
     <div class="col-12">

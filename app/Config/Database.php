@@ -23,7 +23,7 @@ class Database
         // Si la connexion n’existe pas encore, je la crée
         if (self::$pdo === null) {
             try {
-                // Paramètres de connexion (⚠️ à sécuriser en prod)
+                // Paramètres de connexion ( à sécuriser en prod)
                 $host = 'localhost';
                 $dbname = 'ecoride';
                 $username = 'ekko';
@@ -43,8 +43,9 @@ class Database
                 self::$pdo = new PDO($dsn, $username, $password, $options);
 
             } catch (PDOException $e) {
+                error_log("[".date('Y-m-d H:i:s')."] Connexion DB : " . $e->getMessage() . "\n", 3, __DIR__."/../logs/error.log");
                 // Erreur de connexion → stop exécution
-                die("Erreur de connexion à la base de données : " . $e->getMessage());
+                die('Erreur de connexion à la base de données.');
             }
         }
 

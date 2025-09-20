@@ -8,6 +8,7 @@
  *     'nb_places', 'prix', 'description'
  *   ]
  */
+use App\Core\Security;
 ?>
 <div class="container my-4">
   <a href="/trajets" class="btn btn-outline-secondary btn-sm mb-3">&larr; Retour à la liste</a>
@@ -15,7 +16,7 @@
   <div class="card shadow-sm">
     <div class="card-header">
       <h2 class="h5 mb-0">
-        Trajet #<?= htmlspecialchars((string)$trajet['id_trajet']) ?>
+        Trajet #<?= (int)$trajet['id_trajet'] ?>
       </h2>
     </div>
 
@@ -25,7 +26,7 @@
         <div class="col-12 col-md-6">
           <div class="border rounded p-3">
             <div class="fw-semibold text-muted">Départ</div>
-            <div class="fs-5"><?= htmlspecialchars((string)$trajet['ville_depart']) ?></div>
+            <div class="fs-5"><?= Security::h($trajet['ville_depart']) ?></div>
           </div>
         </div>
 
@@ -33,7 +34,7 @@
         <div class="col-12 col-md-6">
           <div class="border rounded p-3">
             <div class="fw-semibold text-muted">Arrivée</div>
-            <div class="fs-5"><?= htmlspecialchars((string)$trajet['ville_arrivee']) ?></div>
+            <div class="fs-5"><?= Security::h($trajet['ville_arrivee']) ?></div>
           </div>
         </div>
 
@@ -74,7 +75,7 @@
         <div class="col-12">
           <div class="border rounded p-3">
             <div class="fw-semibold text-muted">Description</div>
-            <div><?= nl2br(htmlspecialchars_decode((string)$trajet['description'])) ?></div>
+            <div><?= nl2br(Security::h($trajet['description'])) ?></div>
           </div>
         </div>
         <?php endif; ?>
@@ -85,6 +86,7 @@
       <a href="/trajets/<?= (int)$trajet['id_trajet'] ?>/edit" class="btn btn-primary">Modifier</a>
       <form action="/trajets/<?= (int)$trajet['id_trajet'] ?>/delete" method="post" onsubmit="return confirm('Voulez-vous vraiment supprimer ce trajet ?');"
         class="d-inline">
+        <?= Security::csrfField() ?>
         <button type="submit" class="btn btn-danger">Supprimer</button>
       </form>
     </div>

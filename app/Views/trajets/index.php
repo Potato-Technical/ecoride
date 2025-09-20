@@ -1,5 +1,6 @@
 <?php
 /** View: trajets/index.php */
+use App\Core\Security;
 ?>
 <div class="container my-4">
   <h1 class="mb-4">Liste des trajets</h1>
@@ -27,8 +28,8 @@
           <?php foreach ($trajets as $t): ?>
             <tr>
               <td><?= (int)$t['id_trajet'] ?></td>
-              <td><?= htmlspecialchars((string)$t['ville_depart']) ?></td>
-              <td><?= htmlspecialchars((string)$t['ville_arrivee']) ?></td>
+              <td><?= Security::h($t['ville_depart']) ?></td>
+              <td><?= Security::h($t['ville_arrivee']) ?></td>
               <td>
                 <?php
                     $date = new DateTime($t['date_depart']);
@@ -44,11 +45,14 @@
               <td><?= (int)$t['nb_places'] ?></td>
               <td><?= number_format((float)$t['prix'], 2, ',', ' ') ?> €</td>
               <td>
-                <!-- Ajout du lien Voir détail -->
+                <!-- Lien Voir détail -->
                 <a href="/trajets/<?= (int)$t['id_trajet'] ?>" class="btn btn-sm btn-outline-primary">Voir détail</a>
+                
+                <!-- Formulaire suppression avec CSRF -->
                 <form method="post" action="/trajets/<?= (int)$t['id_trajet'] ?>/delete"
-                        onsubmit="return confirm('Voulez-vous vraiment supprimer ce trajet ?');"
-                        class="d-inline">
+                      onsubmit="return confirm('Voulez-vous vraiment supprimer ce trajet ?');"
+                      class="d-inline">
+                    <?= Security::csrfField() ?>
                     <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
                 </form>
               </td>
