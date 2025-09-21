@@ -36,5 +36,8 @@ sql/*_private.sql     # Dumps non destinés au repo
 /vendor/
 
 # --- Debug / fichiers temporaires ---
-public/health.php
+config/config.php
+sql/injection.sql
+tools/
+logs/
 tree.txt
