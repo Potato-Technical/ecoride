@@ -58,5 +58,7 @@ $router->get('logout', 'AuthController@logout');     // Déconnexion utilisateur
 // Réservations
 $router->post('reservation/store', 'ReservationController@store'); // Créer une réservation (débit crédits + insertion réservation)
 
+$router->get('admin/stats', 'AdminController@stats'); // Ajout d'une route pour les statistiques admin
+
 // Exécute le dispatch (fait correspondre la route à l’action)
 $router->dispatch();
