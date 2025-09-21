@@ -23,7 +23,7 @@ class TrajetController extends Controller
      */
     public function index(): void
     {
-        $trajets = $this->trajetModel->all();
+        $trajets = $this->trajetModel->getAll();
 
         $this->render('trajets/index', [
             'title'   => 'Liste des trajets',
@@ -105,7 +105,8 @@ class TrajetController extends Controller
             return;
         }
 
-        $trajet = $this->trajetModel->find($id);
+        $trajet = $this->trajetModel->getById($id);
+
 
         if (!$trajet) {
             http_response_code(404);
@@ -128,7 +129,7 @@ class TrajetController extends Controller
      */
     public function edit(int $id): void
     {
-        $trajet = $this->trajetModel->find($id);
+        $trajet = $this->trajetModel->getById($id);
 
         if (!$trajet) {
             http_response_code(404);
@@ -152,7 +153,7 @@ class TrajetController extends Controller
      */
     public function update(int $id): void
     {
-        $trajet = $this->trajetModel->find($id);
+        $trajet = $this->trajetModel->getById($id);
         if (!$trajet) {
             http_response_code(404);
             echo "Trajet introuvable.";
@@ -206,7 +207,7 @@ class TrajetController extends Controller
      */
     public function delete(int $id): void
     {
-        $trajet = $this->trajetModel->find($id);
+        $trajet = $this->trajetModel->getById($id);
         if (!$trajet) {
             http_response_code(404);
             echo "Trajet introuvable.";

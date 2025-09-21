@@ -50,5 +50,13 @@ $router->get('trajets/([0-9]+)/edit', 'TrajetController@edit');         // Édit
 $router->post('trajets/([0-9]+)/update', 'TrajetController@update');    // Mettre à jour un trajet (POST)
 $router->post('trajets/([0-9]+)/delete', 'TrajetController@delete');    // Supprimer un trajet
 
+// Authentification
+$router->get('login', 'AuthController@loginForm');   // Affiche formulaire de connexion
+$router->post('login', 'AuthController@login');      // Traite login (POST email+password)
+$router->get('logout', 'AuthController@logout');     // Déconnexion utilisateur
+
+// Réservations
+$router->post('reservation/store', 'ReservationController@store'); // Créer une réservation (débit crédits + insertion réservation)
+
 // Exécute le dispatch (fait correspondre la route à l’action)
 $router->dispatch();

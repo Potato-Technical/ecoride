@@ -14,7 +14,11 @@ CREATE TABLE utilisateur (
     email VARCHAR(100) NOT NULL UNIQUE,
     mot_de_passe VARCHAR(255) NOT NULL,
     telephone VARCHAR(20),
-    role ENUM('passager', 'conducteur', 'employe', 'admin') DEFAULT 'passager'
+    role ENUM('passager', 'conducteur', 'employe', 'admin') DEFAULT 'passager',
+    credits INT NOT NULL DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_utilisateur_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Table : trajet
@@ -27,7 +31,10 @@ CREATE TABLE trajet (
     heure_depart TIME NOT NULL,
     nb_places INT NOT NULL,
     description TEXT,
-    prix DECIMAL(5,2) NOT NULL,
+    prix DECIMAL(6,2) NOT NULL,
+    is_eco TINYINT(1) NOT NULL DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
 
     -- Clé étrangère : lien vers utilisateur
     CONSTRAINT fk_trajet_conducteur
@@ -42,7 +49,8 @@ CREATE TABLE reservation (
     id_user INT NOT NULL,
     id_trajet INT NOT NULL,
     date_reservation DATETIME DEFAULT CURRENT_TIMESTAMP,
-    statut ENUM('en_attente', 'confirmée','annulée') DEFAULT 'en_attente',
+    statut ENUM('en_attente','confirmée','annulée') DEFAULT 'en_attente',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
     -- Clés étrangères
     CONSTRAINT fk_reservation_user

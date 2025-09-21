@@ -11,6 +11,12 @@ use App\Core\Security;
   <a href="/trajets/<?= (int)$trajet['id_trajet'] ?>" class="btn btn-outline-secondary btn-sm mb-3">&larr; Retour</a>
 
   <h1>Modifier le trajet #<?= (int)$trajet['id_trajet'] ?></h1>
+  <?php if (!empty($_SESSION['flash'])): ?>
+      <div class="alert alert-info text-center my-3">
+          <?php echo htmlspecialchars($_SESSION['flash']); ?>
+      </div>
+      <?php unset($_SESSION['flash']); ?>
+  <?php endif; ?>
 
   <form method="post" action="/trajets/<?= (int)$trajet['id_trajet'] ?>/update" class="row g-3">
     <?= Security::csrfField() ?>

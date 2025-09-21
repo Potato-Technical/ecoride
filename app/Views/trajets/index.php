@@ -4,6 +4,12 @@ use App\Core\Security;
 ?>
 <div class="container my-4">
   <h1 class="mb-4">Liste des trajets</h1>
+  <?php if (!empty($_SESSION['flash'])): ?>
+      <div class="alert alert-info text-center my-3">
+          <?php echo htmlspecialchars($_SESSION['flash']); ?>
+      </div>
+      <?php unset($_SESSION['flash']); ?>
+  <?php endif; ?>
 
   <a href="/trajets/create" class="btn btn-success mb-3">+ Proposer un trajet</a>
 

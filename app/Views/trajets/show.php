@@ -13,6 +13,14 @@ use App\Core\Security;
 <div class="container my-4">
   <a href="/trajets" class="btn btn-outline-secondary btn-sm mb-3">&larr; Retour à la liste</a>
 
+  <!-- Flash message -->
+  <?php if (!empty($_SESSION['flash'])): ?>
+      <div class="alert alert-info text-center my-3">
+          <?= htmlspecialchars($_SESSION['flash']) ?>
+      </div>
+      <?php unset($_SESSION['flash']); ?>
+  <?php endif; ?>
+
   <div class="card shadow-sm">
     <div class="card-header">
       <h2 class="h5 mb-0">
@@ -90,5 +98,19 @@ use App\Core\Security;
         <button type="submit" class="btn btn-danger">Supprimer</button>
       </form>
     </div>
+
+    <!-- Formulaire réservation -->
+    <?php if (!empty($_SESSION['user'])): ?>
+        <form method="post" action="/reservation/store" class="mt-3">
+            <input type="hidden" name="id_trajet" value="<?= htmlspecialchars($trajet['id_trajet']) ?>">
+            <button type="submit" class="btn btn-success w-100">
+                Réserver ce trajet
+            </button>
+        </form>
+    <?php else: ?>
+        <div class="alert alert-info mt-3">
+            <a href="/login">Connectez-vous</a> pour réserver ce trajet.
+        </div>
+    <?php endif; ?>
   </div>
 </div>
