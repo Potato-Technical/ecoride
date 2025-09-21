@@ -2,6 +2,7 @@
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Core\Security;
 use App\Config\Database; // connexion PDO centralisée
 use Exception;
 use PDO;
@@ -14,11 +15,25 @@ use PDO;
 class ReservationController extends Controller
 {
     /**
+     * Vérifie la validité du token CSRF
+     */
+    private function assertCsrf(): void
+    {
+        if (!Security::verifyCsrf($_POST['_csrf'] ?? null)) {
+            http_response_code(403);
+            die('CSRF token invalide.');
+        }
+    }
+
+    /**
      * Crée une réservation
      * POST /reservation/store
      */
     public function store()
     {
+        // Vérif CSRF
+        $this->assertCsrf();
+
         // Vérifie si l’utilisateur est connecté
         if (empty($_SESSION['user']['id'])) {
             $_SESSION['flash'] = "Vous devez être connecté pour réserver.";

@@ -53,12 +53,14 @@ $router->post('trajets/([0-9]+)/delete', 'TrajetController@delete');    // Suppr
 // Authentification
 $router->get('login', 'AuthController@loginForm');   // Affiche formulaire de connexion
 $router->post('login', 'AuthController@login');      // Traite login (POST email+password)
-$router->get('logout', 'AuthController@logout');     // Déconnexion utilisateur
+$router->get('/logout', 'AuthController@logout');    // Déconnexion utilisateur
 
 // Réservations
 $router->post('reservation/store', 'ReservationController@store'); // Créer une réservation (débit crédits + insertion réservation)
 
 $router->get('admin/stats', 'AdminController@stats'); // Ajout d'une route pour les statistiques admin
+$router->get('admin/dashboard', 'AdminController@dashboard'); // Affiche le dashboard admin 
+
 
 // Exécute le dispatch (fait correspondre la route à l’action)
 $router->dispatch();

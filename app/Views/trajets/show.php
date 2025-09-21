@@ -5,7 +5,7 @@
  * - $trajet: [
  *     'id_trajet', 'ville_depart', 'ville_arrivee',
  *     'date_depart', 'heure_depart',
- *     'nb_places', 'prix', 'description'
+ *     'nb_places', 'prix', 'description', 'id_conducteur'
  *   ]
  */
 use App\Core\Security;
@@ -90,24 +90,33 @@ use App\Core\Security;
       </div>
     </div>
 
-    <div class="card-footer d-flex gap-2">
-      <a href="/trajets/<?= (int)$trajet['id_trajet'] ?>/edit" class="btn btn-primary">Modifier</a>
-      <form action="/trajets/<?= (int)$trajet['id_trajet'] ?>/delete" method="post" onsubmit="return confirm('Voulez-vous vraiment supprimer ce trajet ?');"
-        class="d-inline">
-        <?= Security::csrfField() ?>
-        <button type="submit" class="btn btn-danger">Supprimer</button>
-      </form>
-    </div>
+    <!-- Actions : Modifier / Supprimer visibles uniquement pour conducteur OU admin -->
+    <?php 
+    $isConducteur = isset($_SESSION['user']['id']) && $_SESSION['user']['id'] === $trajet['id_conducteur'];
+    $isAdmin = isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'admin';
+    if ($isConducteur || $isAdmin): ?>
+      <div class="card-footer d-flex gap-2">
+        <a href="/trajets/<?= (int)$trajet['id_trajet'] ?>/edit" class="btn btn-primary">Modifier</a>
+        <form action="/trajets/<?= (int)$trajet['id_trajet'] ?>/delete" method="post"
+              onsubmit="return confirm('Voulez-vous vraiment supprimer ce trajet ?');"
+              class="d-inline">
+          <?= Security::csrfField() ?>
+          <button type="submit" class="btn btn-danger">Supprimer</button>
+        </form>
+      </div>
+    <?php endif; ?>
 
     <!-- Formulaire réservation -->
     <?php if (!empty($_SESSION['user'])): ?>
         <form method="post" action="/reservation/store" class="mt-3">
+            <?= Security::csrfField() ?>
             <input type="hidden" name="id_trajet" value="<?= htmlspecialchars($trajet['id_trajet']) ?>">
             <button type="submit" class="btn btn-success w-100">
                 Réserver ce trajet
             </button>
         </form>
     <?php else: ?>
+
         <div class="alert alert-info mt-3">
             <a href="/login">Connectez-vous</a> pour réserver ce trajet.
         </div>

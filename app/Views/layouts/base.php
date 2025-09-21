@@ -12,10 +12,60 @@
 <body>
 
   <header>
-    <h1>EcoRide</h1>
-    <nav>
-      <!-- Navigation minimale ici -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/">EcoRide</a>
+        <div class="collapse navbar-collapse">
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+
+            <?php if (isset($_SESSION['user'])): ?>
+              
+              <!-- Liens communs à tous les utilisateurs connectés -->
+              <li class="nav-item">
+                <a class="nav-link" href="/trajets">Trajets</a>
+              </li>
+
+              <?php if ($_SESSION['user']['role'] === 'conducteur'): ?>
+                <li class="nav-item">
+                  <a class="nav-link" href="/trajets/mine">Mes trajets</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/trajets/create">Proposer un trajet</a>
+                </li>
+              <?php endif; ?>
+
+              <?php if ($_SESSION['user']['role'] === 'admin'): ?>
+                <li class="nav-item">
+                  <a class="nav-link" href="/admin/dashboard">Dashboard Admin</a>
+                </li>
+              <?php endif; ?>
+
+              <?php if ($_SESSION['user']['role'] === 'employe'): ?>
+                <li class="nav-item">
+                  <a class="nav-link" href="/employe/panel">Espace Employé</a>
+                </li>
+              <?php endif; ?>
+
+              <!-- Bouton de déconnexion -->
+              <li class="nav-item">
+                <a class="nav-link" href="/logout">Déconnexion</a>
+              </li>
+
+            <?php else: ?>
+              <!-- Liens visiteurs -->
+              <li class="nav-item">
+                <a class="nav-link" href="/login">Connexion</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/register">Inscription</a>
+              </li>
+            <?php endif; ?>
+
+          </ul>
+        </div>
+      </div>
     </nav>
+
   </header>
 
   <main>

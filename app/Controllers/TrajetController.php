@@ -7,6 +7,7 @@ use App\Models\TrajetModel;
 
 /**
  * TrajetController - Actions CRUD (MVP)
+ * Sécurisé : seuls le conducteur du trajet ou un admin peuvent modifier/supprimer
  */
 class TrajetController extends Controller
 {
@@ -15,6 +16,17 @@ class TrajetController extends Controller
     public function __construct()
     {
         $this->trajetModel = new TrajetModel();
+    }
+
+    /**
+     * Vérifie la validité du token CSRF
+     */
+    protected function assertCsrf(): void
+    {
+        if (!Security::verifyCsrf($_POST['_csrf'] ?? null)) {
+            http_response_code(403);
+            die('CSRF token invalide.');
+        }
     }
 
     /**
@@ -37,6 +49,13 @@ class TrajetController extends Controller
      */
     public function create(): void
     {
+        // Vérifie si un utilisateur est connecté
+        if (!isset($_SESSION['user']['id'])) {
+            http_response_code(403);
+            echo "Vous devez être connecté pour proposer un trajet.";
+            return;
+        }
+
         $this->render('trajets/create', [
             'title'  => 'Proposer un trajet',
             'errors' => []
@@ -52,6 +71,13 @@ class TrajetController extends Controller
         // Vérif CSRF
         $this->assertCsrf();
 
+        // Vérifie si un utilisateur est connecté
+        if (!isset($_SESSION['user']['id'])) {
+            http_response_code(403);
+            echo "Vous devez être connecté pour proposer un trajet.";
+            return;
+        }
+
         // Nettoyage basique (garde accents, supprime balises)
         $data = [
             'ville_depart'  => trim(strip_tags($_POST['ville_depart'] ?? '')),
@@ -62,6 +88,9 @@ class TrajetController extends Controller
             'prix'          => (float) ($_POST['prix'] ?? 0),
             'description'   => trim(strip_tags($_POST['description'] ?? '')),
         ];
+
+        // Ajout automatique de l’id du conducteur depuis la session
+        $data['id_conducteur'] = $_SESSION['user']['id'];
 
         // Validations
         $errors = [];
@@ -107,7 +136,6 @@ class TrajetController extends Controller
 
         $trajet = $this->trajetModel->getById($id);
 
-
         if (!$trajet) {
             http_response_code(404);
             $this->render('errors/404', [
@@ -140,6 +168,15 @@ class TrajetController extends Controller
             return;
         }
 
+        // Vérifie si l’utilisateur est le conducteur OU un admin
+        if (!isset($_SESSION['user']['id']) || 
+            ($trajet['id_conducteur'] !== $_SESSION['user']['id'] 
+             && ($_SESSION['user']['role'] ?? '') !== 'admin')) {
+            http_response_code(403);
+            echo "Accès refusé : vous n’êtes pas autorisé à modifier ce trajet.";
+            return;
+        }
+
         $this->render('trajets/edit', [
             'title'  => "Modifier le trajet #{$trajet['id_trajet']}",
             'trajet' => $trajet,
@@ -163,6 +200,16 @@ class TrajetController extends Controller
         // Vérif CSRF
         $this->assertCsrf();
 
+        // Vérifie si l’utilisateur est le conducteur OU un admin
+        if (!isset($_SESSION['user']['id']) || 
+            ($trajet['id_conducteur'] !== $_SESSION['user']['id'] 
+             && ($_SESSION['user']['role'] ?? '') !== 'admin')) {
+            http_response_code(403);
+            echo "Accès refusé : vous n’êtes pas autorisé à modifier ce trajet.";
+            return;
+        }
+
+        // Données nettoyées
         $data = [
             'ville_depart'  => trim(strip_tags($_POST['ville_depart'] ?? '')),
             'ville_arrivee' => trim(strip_tags($_POST['ville_arrivee'] ?? '')),
@@ -171,6 +218,8 @@ class TrajetController extends Controller
             'nb_places'     => (int) ($_POST['nb_places'] ?? 0),
             'prix'          => (float) ($_POST['prix'] ?? 0),
             'description'   => trim(strip_tags($_POST['description'] ?? '')),
+            // Injection de l’id_conducteur du trajet (utile pour le modèle update)
+            'id_conducteur' => $trajet['id_conducteur'],
         ];
 
         // Validations
@@ -216,6 +265,15 @@ class TrajetController extends Controller
 
         // Vérif CSRF
         $this->assertCsrf();
+
+        // Vérifie si l’utilisateur est le conducteur OU un admin
+        if (!isset($_SESSION['user']['id']) || 
+            ($trajet['id_conducteur'] !== $_SESSION['user']['id'] 
+             && ($_SESSION['user']['role'] ?? '') !== 'admin')) {
+            http_response_code(403);
+            echo "Accès refusé : vous n’êtes pas autorisé à supprimer ce trajet.";
+            return;
+        }
 
         $this->trajetModel->delete($id);
 
