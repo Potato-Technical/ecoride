@@ -58,8 +58,22 @@ $router->get('/logout', 'AuthController@logout');    // Déconnexion utilisateur
 // Réservations
 $router->post('reservation/store', 'ReservationController@store'); // Créer une réservation (débit crédits + insertion réservation)
 
+// Administration 
 $router->get('admin/stats', 'AdminController@stats'); // Ajout d'une route pour les statistiques admin
 $router->get('admin/dashboard', 'AdminController@dashboard'); // Affiche le dashboard admin 
+
+// Gestion véhicules
+$router->get('/vehicules', 'VehiculeController@index'); // Liste des véhicules de l’utilisateur connecté
+$router->get('/vehicules/nouveau', 'VehiculeController@create'); // Formulaire d’ajout d’un nouveau véhicule
+$router->get('/vehicules/{id}/edit', 'VehiculeController@edit'); // Formulaire d’édition d’un véhicule existant
+
+// Contact conducteur
+$router->get('/trajets/{id}/contact', 'MessageController@contact'); // Formulaire de contact associé à un trajet
+
+// Pages statiques
+$router->get('/mentions-legales', 'StaticController@mentions'); // Page Mentions légales
+$router->get('/cgu', 'StaticController@cgu'); // Page Conditions Générales d’Utilisation
+$router->get('/accessibilite', 'StaticController@access'); // Page Accessibilité
 
 
 // Exécute le dispatch (fait correspondre la route à l’action)
