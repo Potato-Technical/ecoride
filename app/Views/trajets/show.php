@@ -74,7 +74,7 @@ use App\Core\Security;
         <div class="col-6 col-md-3">
           <div class="border rounded p-3">
             <div class="fw-semibold text-muted">Prix</div>
-            <div><?= number_format((float)$trajet['prix'], 2, ',', ' ') ?> €</div>
+            <div><?= number_format((float)$trajet['prix'], 2, ',', ' ') ?></div>
           </div>
         </div>
 

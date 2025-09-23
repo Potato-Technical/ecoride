@@ -31,15 +31,19 @@ class Router
 
     private function addRoute(string $method, string $pattern, string $target): void
     {
-        // je transforme le pattern simple en regex : ^pattern$
-        // Note: si pattern contient parentheses (ex: ([0-9]+)) on les conserve
-        $regex = '#^' . trim($pattern, '/') . '$#';
+        // Convertit {param} en regex "([a-zA-Z0-9_-]+)" (alphanum basique)
+        $regex = preg_replace('#\{[a-zA-Z_][a-zA-Z0-9_]*\}#', '([0-9]+)', $pattern);
+
+        // Normalise (enlève les slashes début/fin) puis encadre de ^...$
+        $regex = '#^' . trim($regex, '/') . '$#';
+
         $this->routes[] = [
             'method' => $method,
             'pattern' => $regex,
-            'target' => $target
+            'target'  => $target
         ];
     }
+
 
     // dispatch : cherche une route correspondante et exécute
     public function dispatch(): void

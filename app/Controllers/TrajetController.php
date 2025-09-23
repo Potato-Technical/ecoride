@@ -101,7 +101,7 @@ class TrajetController extends Controller
         if ($data['heure_depart'] === '')  { $errors['heure_depart'] = "Heure obligatoire."; }
         if ($data['nb_places'] <= 0)       { $errors['nb_places'] = "Nombre de places doit être > 0."; }
         if ($data['prix'] < 0 || $data['prix'] > 1000) { 
-            $errors['prix'] = "Le prix doit être entre 0 et 1000 €"; 
+            $errors['prix'] = "Le prix doit être entre 0 et 1000 credits"; 
         }
 
         if (!empty($errors)) {
@@ -231,7 +231,7 @@ class TrajetController extends Controller
         if ($data['heure_depart'] === '')  { $errors['heure_depart'] = "Heure obligatoire."; }
         if ($data['nb_places'] <= 0)       { $errors['nb_places'] = "Nombre de places doit être > 0."; }
         if ($data['prix'] < 0 || $data['prix'] > 1000) { 
-            $errors['prix'] = "Le prix doit être entre 0 et 1000 €"; 
+            $errors['prix'] = "Le prix doit être entre 0 et 1000 credits"; 
         }
 
         if (!empty($errors)) {
@@ -280,4 +280,27 @@ class TrajetController extends Controller
         header("Location: /trajets");
         exit;
     }
+
+    /**
+     * GET /mes-trajets
+     * Liste des trajets de l’utilisateur connecté
+     */
+    public function myTrips(): void
+    {
+        if (empty($_SESSION['user']['id'])) {
+            $_SESSION['flash'] = "Vous devez être connecté pour voir vos trajets.";
+            header('Location: /login');
+            exit;
+        }
+
+        $idUser = $_SESSION['user']['id'];
+        // Avec passagers liés
+        $trajets = $this->trajetModel->getByUserWithReservations($idUser);
+
+        $this->render('users/my_trips', [
+            'title'   => 'Mes trajets',
+            'trajets' => $trajets
+        ]);
+    }
+
 }

@@ -78,7 +78,7 @@ use App\Core\Security;
 
     <!-- Prix -->
     <div class="col-md-4">
-      <label for="prix" class="form-label">Prix (€)</label>
+      <label for="prix" class="form-label">Prix (credits)</label>
       <input type="number" step="0.01" name="prix" id="prix"
              class="form-control <?= isset($errors['prix']) ? 'is-invalid' : '' ?>"
              value="<?= Security::h($old['prix'] ?? '') ?>">

@@ -51,21 +51,61 @@ $router->post('trajets/([0-9]+)/update', 'TrajetController@update');    // Mettr
 $router->post('trajets/([0-9]+)/delete', 'TrajetController@delete');    // Supprimer un trajet
 
 // Authentification
-$router->get('login', 'AuthController@loginForm');   // Affiche formulaire de connexion
-$router->post('login', 'AuthController@login');      // Traite login (POST email+password)
+$router->get('/login', 'AuthController@loginForm');   // Affiche formulaire de connexion
+$router->post('/login', 'AuthController@login');      // Traite login (POST email+password)
 $router->get('/logout', 'AuthController@logout');    // Déconnexion utilisateur
+$router->get('/register', 'AuthController@registerForm'); // Formulaire inscription
+$router->post('/register', 'AuthController@register');    // Traitement inscription
+
 
 // Réservations
-$router->post('reservation/store', 'ReservationController@store'); // Créer une réservation (débit crédits + insertion réservation)
+$router->post('/reservation/store', 'ReservationController@store'); // Créer une réservation (débit crédits + insertion réservation)
+$router->post('/reservation/{id}/cancel', 'ReservationController@cancel'); // Annule une réservation existante
+$router->post('/reservation/{id}/valider', 'ReservationController@valider'); // Valider une réservation (conducteur)
 
 // Administration 
-$router->get('admin/stats', 'AdminController@stats'); // Ajout d'une route pour les statistiques admin
-$router->get('admin/dashboard', 'AdminController@dashboard'); // Affiche le dashboard admin 
+$router->get('/admin', 'AdminController@index');                   // Accueil admin
+$router->get('/admin/dashboard', 'AdminController@dashboard');     // Redirige vers /admin
+$router->get('/admin/stats', 'AdminController@stats');             // Statistiques trajets
+$router->get('/admin/utilisateurs', 'AdminController@utilisateurs'); // Liste utilisateurs
+$router->get('/admin/credits', 'AdminController@credits');         // Liste crédits
+$router->post('/admin/credits/update', 'AdminController@updateCredits'); // MAJ crédits
+$router->post('/admin/utilisateurs/{id}/role', 'AdminController@updateRole'); // Modifier rôle d'un utilisateur
+$router->post('/admin/utilisateurs/{id}/credits', 'AdminController@updateCredits'); // Modifier crédits
+
+// Employe
+$router->get('/employe', 'EmployeController@index');                // Tableau de bord employé
+$router->get('/employe/avis', 'EmployeController@avis');            // Liste des avis
+$router->post('/employe/avis/update', 'EmployeController@updateAvis'); // Modifier statut avis
+$router->get('/employe/incidents', 'EmployeController@incidents');  // Liste des incidents
+$router->post('/employe/incidents/update', 'EmployeController@updateIncident'); // Modifier statut incident
+
+// Profil utilisateur
+$router->get('/profil', 'UserController@show');          // Profil utilisateur
+$router->get('/profil/edit', 'UserController@edit');     // Formulaire édition
+$router->post('/profil/update', 'UserController@update');// Soumission édition
+$router->post('/profil/delete', 'UserController@delete');// Supprimer compte
+$router->get('/mes-trajets', 'TrajetController@myTrips');// Trajets de l’utilisateur connecté
+$router->post('/vehicules/store', 'VehiculeController@store');    // Création véhicule
+$router->get('/mes-reservations', 'ReservationController@myReservations'); // Liste des réservations du user connecté
+$router->post('/profil/add-credits', 'UserController@addCredits'); // Ajoute +10 crédits au profil connecté (réservé aux utilisateurs loggés)
+$router->post('/profil/switch-role', 'UserController@switchRole');  // Permet de basculer entre passager et conducteur en 1 clic
+
+// Avis
+$router->post('/avis/store', 'AvisController@store');         // Création d’un avis (par passager/conducteur)
+
+// Incidents
+$router->post('/incidents/store', 'IncidentController@store'); // Signalement d’un incident
+
 
 // Gestion véhicules
-$router->get('/vehicules', 'VehiculeController@index'); // Liste des véhicules de l’utilisateur connecté
-$router->get('/vehicules/nouveau', 'VehiculeController@create'); // Formulaire d’ajout d’un nouveau véhicule
-$router->get('/vehicules/{id}/edit', 'VehiculeController@edit'); // Formulaire d’édition d’un véhicule existant
+$router->get('/vehicules', 'VehiculeController@index');          // Liste véhicules
+$router->get('/vehicules/nouveau', 'VehiculeController@create'); // Formulaire ajout
+$router->get('/vehicules/{id}', 'VehiculeController@show');       // Détail véhicule
+$router->get('/vehicules/{id}/edit', 'VehiculeController@edit');  // Formulaire édition
+$router->post('/vehicules/{id}/update', 'VehiculeController@update'); // Soumission édition
+$router->post('/vehicules/{id}/delete', 'VehiculeController@delete'); // Suppression
+
 
 // Contact conducteur
 $router->get('/trajets/{id}/contact', 'MessageController@contact'); // Formulaire de contact associé à un trajet

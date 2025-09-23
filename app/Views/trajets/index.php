@@ -49,7 +49,7 @@ use App\Core\Security;
                 ?>
               </td>
               <td><?= (int)$t['nb_places'] ?></td>
-              <td><?= number_format((float)$t['prix'], 2, ',', ' ') ?> €</td>
+              <td><?= number_format((float)$t['prix'], 2, ',', ' ') ?></td>
               <td>
                 <!-- Lien Voir détail (accessible à tous) -->
                 <a href="/trajets/<?= (int)$t['id_trajet'] ?>" class="btn btn-sm btn-outline-primary">Voir détail</a>

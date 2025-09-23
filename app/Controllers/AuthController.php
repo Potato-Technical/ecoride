@@ -35,10 +35,10 @@ class AuthController extends Controller
         $pdo = Database::get();
 
         // Recherche de l’utilisateur en BDD
-        $stmt = $pdo->prepare("SELECT id_user, email, mot_de_passe, role, credits 
-                               FROM utilisateur 
-                               WHERE email = :email 
-                               LIMIT 1");
+        $stmt = $pdo->prepare("SELECT id_user, nom, prenom, email, mot_de_passe, role, credits 
+                            FROM utilisateur 
+                            WHERE email = :email 
+                            LIMIT 1");
         $stmt->execute(['email' => $email]);
         $user = $stmt->fetch();
 
@@ -52,6 +52,8 @@ class AuthController extends Controller
         // Authentification réussie → stockage en session
         $_SESSION['user'] = [
             'id'      => (int)$user['id_user'],
+            'nom'     => $user['nom'],
+            'prenom'  => $user['prenom'],
             'email'   => $user['email'],
             'role'    => $user['role'],
             'credits' => (int)$user['credits'],
@@ -63,18 +65,77 @@ class AuthController extends Controller
         // Redirection selon le rôle
         switch ($user['role']) {
             case 'admin':
-                header('Location: /admin/dashboard');
+                header('Location: /admin');
                 break;
             case 'conducteur':
-                header('Location: /trajets/mine');
+                header('Location: /mes-trajets');
                 break;
             case 'employe':
-                header('Location: /employe/panel');
+                header('Location: /employe');
                 break;
             default: // passager
                 header('Location: /trajets');
         }
         exit;
+    }
+
+    /**
+     * Affiche le formulaire d’inscription
+     * GET /register
+     */
+    public function registerForm()
+    {
+        $this->render('auth/register'); // charge la vue app/Views/auth/register.php
+    }
+
+    /**
+     * Traite le formulaire d’inscription
+     * POST /register
+     */
+    public function register()
+    {
+        // Sécurisation des données POST
+        $nom     = trim($_POST['nom'] ?? '');
+        $prenom  = trim($_POST['prenom'] ?? '');
+        $email   = trim($_POST['email'] ?? '');
+        $password = $_POST['mot_de_passe'] ?? '';
+
+        if (empty($nom) || empty($prenom) || empty($email) || empty($password)) {
+            $_SESSION['flash'] = "Tous les champs sont requis.";
+            // Évite la redirection ici pour casser la boucle
+            $this->render('auth/register');
+            return;
+        }
+
+        // Hash sécurisé du mot de passe
+        $hash = password_hash($password, PASSWORD_BCRYPT);
+
+        try {
+            $pdo = Database::get();
+
+            // Insertion nouvel utilisateur avec 20 crédits par défaut
+            $stmt = $pdo->prepare("INSERT INTO utilisateur (nom, prenom, email, mot_de_passe, role, credits) 
+                                   VALUES (:nom, :prenom, :email, :mot_de_passe, 'passager', 20)");
+            $stmt->execute([
+                'nom'         => $nom,
+                'prenom'      => $prenom,
+                'email'       => $email,
+                'mot_de_passe'=> $hash,
+            ]);
+
+            $_SESSION['flash'] = "Compte créé avec succès. Connectez-vous.";
+            header('Location: /login');
+            exit;
+        } catch (\PDOException $e) {
+            // Gestion erreur email déjà pris
+            if ($e->getCode() === '23000') {
+                $_SESSION['flash'] = "Cet email est déjà utilisé.";
+            } else {
+                $_SESSION['flash'] = "Erreur lors de l'inscription.";
+            }
+            header('Location: /register');
+            exit;
+        }
     }
 
     /**
