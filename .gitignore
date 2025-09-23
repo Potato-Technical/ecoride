@@ -1,29 +1,43 @@
 # --- Fichiers parasites systèmes / IDE ---
-.DS_Store        # macOS : métadonnées Finder
-Thumbs.db        # Windows : cache de vignettes
-.vscode/         # Configurations VS Code
-.idea/           # Configurations JetBrains (PHPStorm, WebStorm…)
+.DS_Store             # macOS : métadonnées Finder
+Thumbs.db             # Windows : cache de vignettes
+.vscode/              # Configurations VS Code
+.idea/                # Configurations JetBrains (PHPStorm, WebStorm…)
 
 # --- Secrets et configurations locales ---
-.env             # Variables d'environnement sensibles
-config/*.local.php  # Configs locales non destinées au repo
+.env                  # Variables d'environnement sensibles
+config/*.local.php    # Configs locales non destinées au repo
+app/Config/Database.php  # Credentials DB (à ne pas publier)
 
 # --- Dépendances externes et artefacts de build ---
-vendor/          # Dépendances PHP (Composer)
-node_modules/    # Dépendances JS (npm / yarn)
-.cache/          # Caches de build ou outils
-dist/            # Dossier de distribution front (compilé)
+vendor/               # Dépendances PHP (Composer)
+node_modules/         # Dépendances JS (npm / yarn)
+.cache/               # Caches de build ou outils
+dist/                 # Dossier de distribution front (compilé)
 
 # --- Uploads et médias générés par l'utilisateur ---
-public/uploads/*     # Fichiers uploadés (non versionnés)
+public/uploads/*      # Fichiers uploadés (non versionnés)
 !public/uploads/.gitkeep  # Conserver le dossier vide dans Git
-pictures/*           # Images/médias lourds non critiques au code
+pictures/*            # Images/médias lourds non critiques au code
 
 # --- Logs et caches applicatifs ---
-storage/*        # Données internes app
+storage/*             # Données internes app
 !storage/.gitkeep
-cache/*          # Caches applicatifs
+cache/*               # Caches applicatifs
 !cache/.gitkeep
-logs/*           # Fichiers de log
+logs/*                # Fichiers de log
 !logs/.gitkeep
 
+# --- SQL privés (hors livrables officiels) ---
+sql/*.secret.sql      # Dumps sensibles
+sql/*_private.sql     # Dumps non destinés au repo
+
+# --- Dépendances (double sécurité) ---
+/vendor/
+
+# --- Debug / fichiers temporaires ---
+config/config.php
+sql/injection.sql
+tools/
+logs/
+tree.txt

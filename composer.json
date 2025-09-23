@@ -1,0 +1,17 @@
+{
+    "name": "potato-technical/ecoride",
+    "description": "Plateforme de covoiturage éco-responsable développée en PHP MVC natif",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "authors": [
+        {
+            "name": "potato-technical"
+        }
+    ],
+    "require": {}
+}
