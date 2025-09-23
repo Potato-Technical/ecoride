@@ -1,4 +1,9 @@
 <?php
+/**
+ * View: admin/credits.php
+ * Données disponibles :
+ * - $users (array)
+ */
 use App\Core\Security;
 ?>
 <div class="container my-4">

@@ -10,22 +10,19 @@
 use App\Core\Security;
 ?>
 <div class="container my-4">
-  <a href="/profil" class="btn btn-outline-secondary btn-sm mb-3">&larr; Retour au profil</a>
+  <a href="/profil" class="btn btn-outline-secondary btn-sm mb-2">&larr; Retour au profil</a>
   <a href="/vehicules" class="btn btn-outline-secondary btn-sm mb-3">&larr; Retour à la liste</a>
 
-  <!-- Flash message -->
   <?php if (!empty($_SESSION['flash'])): ?>
-      <div class="alert alert-info text-center my-3">
-          <?= htmlspecialchars($_SESSION['flash']) ?>
-      </div>
-      <?php unset($_SESSION['flash']); ?>
+    <div class="alert alert-info text-center my-3">
+      <?= htmlspecialchars($_SESSION['flash']) ?>
+    </div>
+    <?php unset($_SESSION['flash']); ?>
   <?php endif; ?>
 
   <div class="card shadow-sm">
     <div class="card-header">
-      <h2 class="h5 mb-0">
-        Véhicule #<?= (int)$vehicule['id_vehicule'] ?>
-      </h2>
+      <h2 class="h5 mb-0">Véhicule #<?= (int)$vehicule['id_vehicule'] ?></h2>
     </div>
 
     <div class="card-body">
@@ -74,7 +71,6 @@ use App\Core\Security;
       </div>
     </div>
 
-    <!-- Actions : Modifier / Supprimer visibles uniquement pour propriétaire OU admin -->
     <?php 
     $isOwner = isset($_SESSION['user']['id']) && $_SESSION['user']['id'] === $vehicule['proprietaire'];
     $isAdmin = isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'admin';

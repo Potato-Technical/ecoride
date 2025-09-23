@@ -1,10 +1,18 @@
 <?php
+/**
+ * View: users/my_trips.php
+ * Données disponibles:
+ * - $trajets: [
+ *     'id_trajet','ville_depart','ville_arrivee',
+ *     'date_depart','id_reservation','prenom','nom','reservation_statut'
+ *   ]
+ */
 use App\Core\Security;
 ?>
 <div class="container my-4">
   <a href="/profil" class="btn btn-outline-secondary btn-sm mb-3">&larr; Retour au profil</a>
 
-  <h1>Mes trajets</h1>
+  <h1 class="mb-4">Mes trajets</h1>
 
   <?php if (!empty($_SESSION['flash'])): ?>
       <div class="alert alert-info text-center my-3">
@@ -16,7 +24,7 @@ use App\Core\Security;
   <?php if (empty($trajets)): ?>
       <div class="alert alert-warning">Vous n’avez encore proposé aucun trajet.</div>
   <?php else: ?>
-      <div class="list-group">
+      <div class="list-group shadow-sm">
         <?php foreach ($trajets as $trajet): ?>
           <div class="list-group-item">
             <a href="/trajets/<?= (int)$trajet['id_trajet'] ?>" class="text-decoration-none">

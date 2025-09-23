@@ -1,5 +1,9 @@
 <?php
-/** View: trajets/index.php */
+/**
+ * View: trajets/index.php
+ * Données disponibles :
+ * - $trajets (array)
+ */
 use App\Core\Security;
 ?>
 <div class="container my-4">
@@ -16,7 +20,7 @@ use App\Core\Security;
   <?php if (empty($trajets)): ?>
     <div class="alert alert-info">Aucun trajet disponible pour le moment.</div>
   <?php else: ?>
-    <div class="table-responsive">
+    <div class="table-responsive shadow-sm">
       <table class="table table-bordered table-striped align-middle">
         <thead class="table-light">
           <tr>
@@ -36,34 +40,18 @@ use App\Core\Security;
               <td><?= (int)$t['id_trajet'] ?></td>
               <td><?= Security::h($t['ville_depart']) ?></td>
               <td><?= Security::h($t['ville_arrivee']) ?></td>
-              <td>
-                <?php
-                    $date = new DateTime($t['date_depart']);
-                    echo $date->format('d/m/Y');
-                ?>
-              </td>
-              <td>
-                <?php
-                    $heure = new DateTime($t['heure_depart']);
-                    echo $heure->format('H:i');
-                ?>
-              </td>
+              <td><?= (new DateTime($t['date_depart']))->format('d/m/Y') ?></td>
+              <td><?= (new DateTime($t['heure_depart']))->format('H:i') ?></td>
               <td><?= (int)$t['nb_places'] ?></td>
               <td><?= number_format((float)$t['prix'], 2, ',', ' ') ?></td>
               <td>
-                <!-- Lien Voir détail (accessible à tous) -->
                 <a href="/trajets/<?= (int)$t['id_trajet'] ?>" class="btn btn-sm btn-outline-primary">Voir détail</a>
 
                 <?php
-                // Vérifie si l'utilisateur est conducteur OU admin
                 $isConducteur = isset($_SESSION['user']['id']) && $_SESSION['user']['id'] === $t['id_conducteur'];
                 $isAdmin = isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'admin';
-
                 if ($isConducteur || $isAdmin): ?>
-                    <!-- Lien Modifier -->
                     <a href="/trajets/<?= (int)$t['id_trajet'] ?>/edit" class="btn btn-sm btn-outline-warning">Modifier</a>
-
-                    <!-- Formulaire suppression avec CSRF -->
                     <form method="post" action="/trajets/<?= (int)$t['id_trajet'] ?>/delete"
                           onsubmit="return confirm('Voulez-vous vraiment supprimer ce trajet ?');"
                           class="d-inline">

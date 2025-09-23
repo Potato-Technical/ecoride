@@ -22,7 +22,7 @@ use App\Core\Security;
   <?php endif; ?>
 
   <div class="card shadow-sm">
-    <div class="card-header">
+    <div class="card-header bg-light">
       <h2 class="h5 mb-0">
         Trajet #<?= (int)$trajet['id_trajet'] ?>
       </h2>
@@ -32,7 +32,7 @@ use App\Core\Security;
       <div class="row g-3">
         <!-- Départ -->
         <div class="col-12 col-md-6">
-          <div class="border rounded p-3">
+          <div class="border rounded p-3 bg-white">
             <div class="fw-semibold text-muted">Départ</div>
             <div class="fs-5"><?= Security::h($trajet['ville_depart']) ?></div>
           </div>
@@ -40,7 +40,7 @@ use App\Core\Security;
 
         <!-- Arrivée -->
         <div class="col-12 col-md-6">
-          <div class="border rounded p-3">
+          <div class="border rounded p-3 bg-white">
             <div class="fw-semibold text-muted">Arrivée</div>
             <div class="fs-5"><?= Security::h($trajet['ville_arrivee']) ?></div>
           </div>
@@ -48,7 +48,7 @@ use App\Core\Security;
 
         <!-- Date -->
         <div class="col-6 col-md-3">
-          <div class="border rounded p-3">
+          <div class="border rounded p-3 bg-white">
             <div class="fw-semibold text-muted">Date</div>
             <div class="fs-6"><?= (new DateTime($trajet['date_depart']))->format('d/m/Y') ?></div>
           </div>
@@ -56,7 +56,7 @@ use App\Core\Security;
 
         <!-- Heure -->
         <div class="col-6 col-md-3">
-          <div class="border rounded p-3">
+          <div class="border rounded p-3 bg-white">
             <div class="fw-semibold text-muted">Heure</div>
             <div><?= (new DateTime($trajet['heure_depart']))->format('H:i') ?></div>
           </div>
@@ -64,7 +64,7 @@ use App\Core\Security;
 
         <!-- Places -->
         <div class="col-6 col-md-3">
-          <div class="border rounded p-3">
+          <div class="border rounded p-3 bg-white">
             <div class="fw-semibold text-muted">Places</div>
             <div><?= (int)$trajet['nb_places'] ?></div>
           </div>
@@ -72,7 +72,7 @@ use App\Core\Security;
 
         <!-- Prix -->
         <div class="col-6 col-md-3">
-          <div class="border rounded p-3">
+          <div class="border rounded p-3 bg-white">
             <div class="fw-semibold text-muted">Prix</div>
             <div><?= number_format((float)$trajet['prix'], 2, ',', ' ') ?></div>
           </div>
@@ -81,7 +81,7 @@ use App\Core\Security;
         <!-- Description -->
         <?php if (!empty($trajet['description'])): ?>
         <div class="col-12">
-          <div class="border rounded p-3">
+          <div class="border rounded p-3 bg-white">
             <div class="fw-semibold text-muted">Description</div>
             <div><?= nl2br(Security::h($trajet['description'])) ?></div>
           </div>
@@ -90,7 +90,7 @@ use App\Core\Security;
       </div>
     </div>
 
-    <!-- Actions : Modifier / Supprimer visibles uniquement pour conducteur OU admin -->
+    <!-- Actions : Modifier / Supprimer -->
     <?php 
     $isConducteur = isset($_SESSION['user']['id']) && $_SESSION['user']['id'] === $trajet['id_conducteur'];
     $isAdmin = isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'admin';
@@ -116,7 +116,6 @@ use App\Core\Security;
             </button>
         </form>
     <?php else: ?>
-
         <div class="alert alert-info mt-3">
             <a href="/login">Connectez-vous</a> pour réserver ce trajet.
         </div>

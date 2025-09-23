@@ -1,3 +1,10 @@
+<?php
+/**
+ * View: admin/stats.php
+ * Données disponibles :
+ * - $stats (array)
+ */
+?>
 <div class="container my-4">
   <a href="/admin" class="btn btn-outline-secondary btn-sm mb-3">&larr; Retour au dashboard</a>
   <h1 class="mb-4">Statistiques trajets</h1>
@@ -18,7 +25,9 @@
       <div class="card shadow-sm border-success text-center">
         <div class="card-body">
           <h5 class="card-title">Prix moyen</h5>
-          <p class="display-6"><?= number_format((float)($stats['prix_moyen'] ?? 0), 2, ',', ' ') ?></p>
+          <p class="display-6">
+            <?= number_format((float)($stats['prix_moyen'] ?? 0), 2, ',', ' ') ?>
+          </p>
         </div>
       </div>
     </div>

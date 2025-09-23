@@ -1,8 +1,15 @@
 <?php
+/**
+ * View: users/show.php
+ * Données disponibles:
+ * - $user: [
+ *     'id_user','nom','prenom','email','role','credits'
+ *   ]
+ */
 use App\Core\Security;
 ?>
 <div class="container my-4">
-  <h1>Mon profil</h1>
+  <h1 class="mb-4">Mon profil</h1>
 
   <!-- Message flash -->
   <?php if (!empty($_SESSION['flash'])): ?>
@@ -19,11 +26,11 @@ use App\Core\Security;
       <p><strong>Prénom :</strong> <?= Security::h($user['prenom'] ?? '') ?></p>
       <p><strong>Email :</strong> <?= Security::h($user['email'] ?? '') ?></p>
       <p><strong>Rôle :</strong> <?= Security::h($user['role'] ?? '') ?></p>
-      <p><strong>Crédits :</strong> <?= (int)($user['credits'] ?? 0) ?></p>
+      <p><strong>Crédits :</strong> <span class="badge-credits"><?= (int)($user['credits'] ?? 0) ?></span></p>
     </div>
 
     <div class="card-footer d-flex flex-wrap gap-2">
-      <!-- Gestion profil (toujours dispo) -->
+      <!-- Gestion profil -->
       <a href="/profil/edit" class="btn btn-primary">Modifier profil</a>
       <form method="post" action="/profil/delete" 
             onsubmit="return confirm('Voulez-vous vraiment supprimer votre compte ?');">
@@ -32,24 +39,18 @@ use App\Core\Security;
       </form>
 
       <?php if ($_SESSION['user']['role'] === 'passager' || $_SESSION['user']['role'] === 'conducteur'): ?>
-        <!-- Gestion trajets -->
         <a href="/mes-trajets" class="btn btn-outline-primary">Mes trajets</a>
         <a href="/trajets/create" class="btn btn-success">Proposer un trajet</a>
-
-        <!-- Gestion réservations -->
         <a href="/mes-reservations" class="btn btn-outline-info">Mes réservations</a>
 
-        <!-- Bloc crédits -->
         <form method="post" action="/profil/add-credits" class="d-inline">
           <?= Security::csrfField() ?>
           <button type="submit" class="btn btn-success">+10 crédits</button>
         </form>
 
-        <!-- Gestion véhicules -->
         <a href="/vehicules" class="btn btn-outline-success">Mes véhicules</a>
         <a href="/vehicules/nouveau" class="btn btn-success">Ajouter un véhicule</a>
 
-        <!-- Switch rôle passager <-> conducteur -->
         <form method="post" action="/profil/switch-role" class="d-inline">
           <?= Security::csrfField() ?>
           <button type="submit" class="btn btn-warning">
@@ -57,7 +58,7 @@ use App\Core\Security;
           </button>
         </form>
 
-        <!-- Bloc signalement incident -->
+        <!-- Signalement incident -->
         <div class="card shadow-sm mt-4">
           <div class="card-body">
             <h5>Signaler un incident</h5>

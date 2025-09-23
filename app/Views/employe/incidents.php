@@ -1,9 +1,14 @@
 <?php
+/**
+ * View: employe/incidents.php
+ * Données disponibles :
+ * - $incidents (array)
+ */
 use App\Core\Security;
 ?>
 <div class="container my-4">
   <a href="/employe" class="btn btn-outline-secondary btn-sm mb-3">&larr; Retour au tableau de bord employé</a>
-  <h1>Gestion des incidents</h1>
+  <h1 class="mb-4">Gestion des incidents</h1>
 
   <?php if (!empty($_SESSION['flash'])): ?>
       <div class="alert alert-info text-center"><?= htmlspecialchars($_SESSION['flash']) ?></div>

@@ -1,10 +1,16 @@
 <?php
+/**
+ * View: users/edit.php
+ * Données disponibles:
+ * - $user: ['nom','prenom','email']
+ * - $errors: array de validation éventuelle
+ */
 use App\Core\Security;
 ?>
 <div class="container my-4">
   <a href="/profil" class="btn btn-outline-secondary btn-sm mb-3">&larr; Retour au profil</a>
 
-  <h1>Modifier mon profil</h1>
+  <h1 class="mb-4">Modifier mon profil</h1>
 
   <form method="post" action="/profil/update" class="row g-3">
     <?= Security::csrfField() ?>

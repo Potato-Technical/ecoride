@@ -1,3 +1,10 @@
+<?php
+/**
+ * View: employe/index.php
+ * Données disponibles :
+ * - $stats (array)
+ */
+?>
 <div class="container my-4">
   <a href="/" class="btn btn-outline-secondary btn-sm mb-3">&larr; Retour à l'accueil</a>
 

@@ -10,7 +10,7 @@ use App\Core\Security;
 <div class="container my-4">
   <a href="/trajets/<?= (int)$trajet['id_trajet'] ?>" class="btn btn-outline-secondary btn-sm mb-3">&larr; Retour</a>
 
-  <h1>Modifier le trajet #<?= (int)$trajet['id_trajet'] ?></h1>
+  <h1 class="mb-4">Modifier le trajet #<?= (int)$trajet['id_trajet'] ?></h1>
   <?php if (!empty($_SESSION['flash'])): ?>
       <div class="alert alert-info text-center my-3">
           <?php echo htmlspecialchars($_SESSION['flash']); ?>
@@ -18,7 +18,7 @@ use App\Core\Security;
       <?php unset($_SESSION['flash']); ?>
   <?php endif; ?>
 
-  <form method="post" action="/trajets/<?= (int)$trajet['id_trajet'] ?>/update" class="row g-3">
+  <form method="post" action="/trajets/<?= (int)$trajet['id_trajet'] ?>/update" class="row g-3 shadow-sm p-3 bg-white rounded">
     <?= Security::csrfField() ?>
 
     <!-- Ville de départ -->
@@ -78,7 +78,7 @@ use App\Core\Security;
 
     <!-- Prix -->
     <div class="col-md-4">
-      <label for="prix" class="form-label">Prix (credits)</label>
+      <label for="prix" class="form-label">Prix (crédits)</label>
       <input type="number" step="0.01" name="prix" id="prix"
              class="form-control <?= isset($errors['prix']) ? 'is-invalid' : '' ?>"
              value="<?= number_format((float)$trajet['prix'], 2, '.', '') ?>">

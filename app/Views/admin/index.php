@@ -1,3 +1,11 @@
+<?php
+/**
+ * View: admin/index.php
+ * Tableau de bord avec KPIs + accès rapide
+ * Variables disponibles :
+ * - $stats (array)
+ */
+?>
 <div class="container my-4">
   <a href="/" class="btn btn-outline-secondary btn-sm mb-3">&larr; Retour à l'accueil</a>
 

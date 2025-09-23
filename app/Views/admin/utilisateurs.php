@@ -1,4 +1,9 @@
 <?php
+/**
+ * View: admin/utilisateurs.php
+ * Données disponibles :
+ * - $users (array)
+ */
 use App\Core\Security;
 ?>
 <div class="container my-4">
@@ -40,10 +45,10 @@ use App\Core\Security;
                   <form method="post" action="/admin/utilisateurs/<?= (int)$u['id_user'] ?>/role" class="d-flex">
                     <?= Security::csrfField() ?>
                     <select name="role" class="form-select form-select-sm me-2">
-                      <option value="passager" <?= $u['role']==='passager'?'selected':'' ?>>Passager</option>
+                      <option value="passager"   <?= $u['role']==='passager'?'selected':'' ?>>Passager</option>
                       <option value="conducteur" <?= $u['role']==='conducteur'?'selected':'' ?>>Conducteur</option>
-                      <option value="employe" <?= $u['role']==='employe'?'selected':'' ?>>Employé</option>
-                      <option value="admin" <?= $u['role']==='admin'?'selected':'' ?>>Admin</option>
+                      <option value="employe"    <?= $u['role']==='employe'?'selected':'' ?>>Employé</option>
+                      <option value="admin"      <?= $u['role']==='admin'?'selected':'' ?>>Admin</option>
                     </select>
                     <button type="submit" class="btn btn-sm btn-warning">Mettre à jour</button>
                   </form>

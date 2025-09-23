@@ -1,4 +1,9 @@
-<?php use App\Core\Security; ?>
+<?php
+/**
+ * View: auth/register.php
+ */
+use App\Core\Security;
+?>
 <div class="container my-4" style="max-width:520px">
   <h1 class="mb-3">Inscription</h1>
   <?php if (!empty($_SESSION['flash'])): ?>
@@ -8,7 +13,7 @@
     <?php unset($_SESSION['flash']); ?>
   <?php endif; ?>
 
-  <form method="post" action="/register" class="border rounded p-3 bg-light">
+  <form method="post" action="/register" class="border rounded shadow-sm p-4 bg-white">
     <?= method_exists(Security::class, 'csrfField') ? Security::csrfField() : '' ?>
 
     <div class="mb-3">

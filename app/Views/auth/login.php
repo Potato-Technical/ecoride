@@ -1,4 +1,9 @@
-<?php use App\Core\Security; ?>
+<?php
+/**
+ * View: auth/login.php
+ */
+use App\Core\Security;
+?>
 <div class="container my-4" style="max-width:420px">
   <h1 class="mb-3">Se connecter</h1>
 
@@ -9,7 +14,7 @@
     <?php unset($_SESSION['flash']); ?>
   <?php endif; ?>
 
-  <form method="post" action="/login" class="border rounded p-3 bg-light">
+  <form method="post" action="/login" class="border rounded shadow-sm p-4 bg-white">
     <?= method_exists(Security::class, 'csrfField') ? Security::csrfField() : '' ?>
 
     <div class="mb-3">
