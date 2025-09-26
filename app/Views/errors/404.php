@@ -1,22 +1,33 @@
 <?php
 /**
  * View: errors/404.php
- * Variables possibles :
- * - $title   (string)
- * - $message (string)
  */
 use App\Core\Security;
 ?>
-<div class="container my-5 text-center">
-  <div class="card shadow-sm">
-    <div class="card-body">
-      <h1 class="display-4 text-danger mb-3">
-        <?= Security::h($title ?? "Page non trouvée") ?>
-      </h1>
-      <p class="lead mb-4">
-        <?= Security::h($message ?? "La ressource demandée est introuvable.") ?>
-      </p>
-      <a href="/" class="btn btn-outline-primary">&larr; Retour à l’accueil</a>
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-body text-center p-5">
+          <div class="mb-4">
+            <i class="bi bi-search text-danger" style="font-size:4rem;"></i>
+          </div>
+          <h1 class="display-5 fw-bold text-danger mb-3">
+            <?= Security::h($title ?? "Erreur 404 - Page introuvable") ?>
+          </h1>
+          <p class="lead mb-4">
+            <?= Security::h($message ?? "La ressource demandée est introuvable.") ?>
+          </p>
+          <div class="d-flex flex-wrap justify-content-center gap-3">
+            <a href="/trajets" class="btn btn-success btn-lg rounded-pill px-5">
+              <i class="bi bi-car-front me-2"></i> Voir les trajets
+            </a>
+            <a href="/" class="btn btn-outline-primary btn-lg rounded-pill px-5">
+              <i class="bi bi-house-door me-2"></i> Retour à l’accueil
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

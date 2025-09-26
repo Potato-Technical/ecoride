@@ -6,80 +6,72 @@
  * - $stats (array)
  */
 ?>
-<div class="container my-4">
-  <a href="/" class="btn btn-outline-secondary btn-sm mb-3">&larr; Retour à l'accueil</a>
+<div class="container my-5">
+  <!-- Bouton retour -->
+  <a href="/" class="btn btn-outline-secondary btn-sm mb-4">&larr; Retour à l'accueil</a>
 
-  <h1 class="mb-3">Dashboard Administrateur</h1>
-  <p class="mb-4">Bienvenue dans l’espace d’administration. Voici un aperçu des principales données :</p>
+  <!-- Titre -->
+  <h1 class="fw-bold mb-3 text-center">
+    <i class="bi bi-speedometer2 text-success"></i> Dashboard Administrateur
+  </h1>
+  <p class="text-muted text-center mb-5">
+    Bienvenue dans l’espace d’administration. Voici un aperçu des principales données :
+  </p>
 
   <!-- KPIs -->
-  <div class="row g-3 mb-4 text-center">
-    <div class="col-md-3">
-      <div class="card shadow-sm border-primary">
-        <div class="card-body">
-          <h5 class="card-title">Utilisateurs</h5>
-          <p class="display-6"><?= (int)($stats['users'] ?? 0) ?></p>
-        </div>
+  <div class="row g-4 mb-5 text-center">
+    <div class="col-12 col-md-6 col-lg-3">
+      <div class="card shadow-sm border-0 rounded-4 p-4">
+        <h6 class="text-muted">Utilisateurs</h6>
+        <h2 class="fw-bold text-primary"><?= (int)($stats['users'] ?? 0) ?></h2>
       </div>
     </div>
-    <div class="col-md-3">
-      <div class="card shadow-sm border-success">
-        <div class="card-body">
-          <h5 class="card-title">Trajets</h5>
-          <p class="display-6"><?= (int)($stats['trajets'] ?? 0) ?></p>
-        </div>
+    <div class="col-12 col-md-6 col-lg-3">
+      <div class="card shadow-sm border-0 rounded-4 p-4">
+        <h6 class="text-muted">Trajets</h6>
+        <h2 class="fw-bold text-success"><?= (int)($stats['trajets'] ?? 0) ?></h2>
       </div>
     </div>
-    <div class="col-md-3">
-      <div class="card shadow-sm border-warning">
-        <div class="card-body">
-          <h5 class="card-title">Réservations</h5>
-          <p class="display-6"><?= (int)($stats['reservations'] ?? 0) ?></p>
-        </div>
+    <div class="col-12 col-md-6 col-lg-3">
+      <div class="card shadow-sm border-0 rounded-4 p-4">
+        <h6 class="text-muted">Réservations</h6>
+        <h2 class="fw-bold text-warning"><?= (int)($stats['reservations'] ?? 0) ?></h2>
       </div>
     </div>
-    <div class="col-md-3">
-      <div class="card shadow-sm border-info">
-        <div class="card-body">
-          <h5 class="card-title">Crédits totaux</h5>
-          <p class="display-6"><?= (int)($stats['credits'] ?? 0) ?></p>
-        </div>
+    <div class="col-12 col-md-6 col-lg-3">
+      <div class="card shadow-sm border-0 rounded-4 p-4">
+        <h6 class="text-muted">Crédits totaux</h6>
+        <h2 class="fw-bold text-info"><?= (int)($stats['credits'] ?? 0) ?></h2>
       </div>
     </div>
   </div>
 
   <!-- Liens rapides -->
-  <div class="row g-3">
+  <div class="row g-4">
     <!-- Gestion utilisateurs -->
-    <div class="col-md-4">
-      <div class="card shadow-sm h-100">
-        <div class="card-body text-center">
-          <h5 class="card-title">Utilisateurs</h5>
-          <p class="card-text">Consulter et modifier les rôles des utilisateurs.</p>
-          <a href="/admin/utilisateurs" class="btn btn-primary btn-sm">Gérer</a>
-        </div>
+    <div class="col-12 col-md-4">
+      <div class="card shadow-sm border-0 rounded-4 h-100 p-4 text-center">
+        <h5 class="fw-bold mb-2"><i class="bi bi-people text-success"></i> Utilisateurs</h5>
+        <p class="text-muted mb-3">Consulter et modifier les rôles des utilisateurs.</p>
+        <a href="/admin/utilisateurs" class="btn btn-outline-success rounded-pill px-4">Gérer</a>
       </div>
     </div>
 
     <!-- Gestion crédits -->
-    <div class="col-md-4">
-      <div class="card shadow-sm h-100">
-        <div class="card-body text-center">
-          <h5 class="card-title">Crédits</h5>
-          <p class="card-text">Ajouter ou modifier les crédits des comptes.</p>
-          <a href="/admin/credits" class="btn btn-success btn-sm">Gérer</a>
-        </div>
+    <div class="col-12 col-md-4">
+      <div class="card shadow-sm border-0 rounded-4 h-100 p-4 text-center">
+        <h5 class="fw-bold mb-2"><i class="bi bi-wallet2 text-success"></i> Crédits</h5>
+        <p class="text-muted mb-3">Ajouter ou modifier les crédits des comptes.</p>
+        <a href="/admin/credits" class="btn btn-success rounded-pill px-4">Gérer</a>
       </div>
     </div>
 
     <!-- Statistiques -->
-    <div class="col-md-4">
-      <div class="card shadow-sm h-100">
-        <div class="card-body text-center">
-          <h5 class="card-title">Statistiques</h5>
-          <p class="card-text">Consulter les statistiques des trajets.</p>
-          <a href="/admin/stats" class="btn btn-info btn-sm">Voir</a>
-        </div>
+    <div class="col-12 col-md-4">
+      <div class="card shadow-sm border-0 rounded-4 h-100 p-4 text-center">
+        <h5 class="fw-bold mb-2"><i class="bi bi-graph-up text-info"></i> Statistiques</h5>
+        <p class="text-muted mb-3">Consulter les statistiques des trajets.</p>
+        <a href="/admin/stats" class="btn btn-outline-primary rounded-pill px-4">Voir</a>
       </div>
     </div>
   </div>

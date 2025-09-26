@@ -31,15 +31,34 @@ class TrajetController extends Controller
 
     /**
      * GET /trajets
-     * Liste tous les trajets
+     * Liste des trajets avec filtres, recherche et pagination
      */
     public function index(): void
     {
-        $trajets = $this->trajetModel->getAll();
+        $filters = [
+            'ville_depart'  => trim($_GET['ville_depart'] ?? ''),
+            'ville_arrivee' => trim($_GET['ville_arrivee'] ?? ''),
+            'date_depart'   => trim($_GET['date_depart'] ?? ''),
+            'filters'       => $_GET['filters'] ?? [], // tableau de filtres (eco, prix, duree)
+        ];
+
+        $limit = 10;
+
+        if ($filters['ville_depart'] || $filters['ville_arrivee'] || $filters['date_depart'] || !empty($filters['filters'])) {
+            $trajets = $this->trajetModel->searchWithLimit($filters, $limit + 1);
+        } else {
+            $trajets = $this->trajetModel->getWithLimit($limit + 1);
+        }
+
+        $hasMore = count($trajets) > $limit;
+        if ($hasMore) {
+            array_pop($trajets); // on garde seulement $limit trajets
+        }
 
         $this->render('trajets/index', [
             'title'   => 'Liste des trajets',
             'trajets' => $trajets,
+            'hasMore' => $hasMore,
         ]);
     }
 
@@ -49,10 +68,12 @@ class TrajetController extends Controller
      */
     public function create(): void
     {
-        // Vérifie si un utilisateur est connecté
         if (!isset($_SESSION['user']['id'])) {
             http_response_code(403);
-            echo "Vous devez être connecté pour proposer un trajet.";
+            $this->render('errors/403', [
+                'title'   => 'Accès interdit',
+                'message' => "Vous devez être connecté pour proposer un trajet."
+            ]);
             return;
         }
 
@@ -68,15 +89,17 @@ class TrajetController extends Controller
      */
     public function store(): void
     {
-        // Vérif CSRF
         $this->assertCsrf();
 
-        // Vérifie si un utilisateur est connecté
         if (!isset($_SESSION['user']['id'])) {
             http_response_code(403);
-            echo "Vous devez être connecté pour proposer un trajet.";
+            $this->render('errors/403', [
+                'title'   => 'Accès interdit',
+                'message' => "Vous devez être connecté pour proposer un trajet."
+            ]);
             return;
         }
+
 
         // Nettoyage basique (garde accents, supprime balises)
         $data = [
@@ -162,18 +185,20 @@ class TrajetController extends Controller
         if (!$trajet) {
             http_response_code(404);
             $this->render('errors/404', [
-                'title' => 'Trajet introuvable',
+                'title'   => 'Trajet introuvable',
                 'message' => "Impossible d’éditer : trajet #{$id} introuvable."
             ]);
             return;
         }
 
-        // Vérifie si l’utilisateur est le conducteur OU un admin
         if (!isset($_SESSION['user']['id']) || 
             ($trajet['id_conducteur'] !== $_SESSION['user']['id'] 
-             && ($_SESSION['user']['role'] ?? '') !== 'admin')) {
+            && ($_SESSION['user']['role'] ?? '') !== 'admin')) {
             http_response_code(403);
-            echo "Accès refusé : vous n’êtes pas autorisé à modifier ce trajet.";
+            $this->render('errors/403', [
+                'title'   => 'Accès refusé',
+                'message' => "Vous n’êtes pas autorisé à modifier ce trajet."
+            ]);
             return;
         }
 
@@ -193,19 +218,23 @@ class TrajetController extends Controller
         $trajet = $this->trajetModel->getById($id);
         if (!$trajet) {
             http_response_code(404);
-            echo "Trajet introuvable.";
+            $this->render('errors/404', [
+                'title'   => 'Trajet introuvable',
+                'message' => "Impossible de mettre à jour : trajet #{$id} introuvable."
+            ]);
             return;
         }
 
-        // Vérif CSRF
         $this->assertCsrf();
 
-        // Vérifie si l’utilisateur est le conducteur OU un admin
         if (!isset($_SESSION['user']['id']) || 
             ($trajet['id_conducteur'] !== $_SESSION['user']['id'] 
-             && ($_SESSION['user']['role'] ?? '') !== 'admin')) {
+            && ($_SESSION['user']['role'] ?? '') !== 'admin')) {
             http_response_code(403);
-            echo "Accès refusé : vous n’êtes pas autorisé à modifier ce trajet.";
+            $this->render('errors/403', [
+                'title'   => 'Accès refusé',
+                'message' => "Vous n’êtes pas autorisé à modifier ce trajet."
+            ]);
             return;
         }
 
@@ -259,24 +288,27 @@ class TrajetController extends Controller
         $trajet = $this->trajetModel->getById($id);
         if (!$trajet) {
             http_response_code(404);
-            echo "Trajet introuvable.";
+            $this->render('errors/404', [
+                'title'   => 'Trajet introuvable',
+                'message' => "Impossible de supprimer : trajet #{$id} introuvable."
+            ]);
             return;
         }
 
-        // Vérif CSRF
         $this->assertCsrf();
 
-        // Vérifie si l’utilisateur est le conducteur OU un admin
         if (!isset($_SESSION['user']['id']) || 
             ($trajet['id_conducteur'] !== $_SESSION['user']['id'] 
-             && ($_SESSION['user']['role'] ?? '') !== 'admin')) {
+            && ($_SESSION['user']['role'] ?? '') !== 'admin')) {
             http_response_code(403);
-            echo "Accès refusé : vous n’êtes pas autorisé à supprimer ce trajet.";
+            $this->render('errors/403', [
+                'title'   => 'Accès refusé',
+                'message' => "Vous n’êtes pas autorisé à supprimer ce trajet."
+            ]);
             return;
         }
 
         $this->trajetModel->delete($id);
-
         header("Location: /trajets");
         exit;
     }

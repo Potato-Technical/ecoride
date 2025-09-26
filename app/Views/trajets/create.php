@@ -7,23 +7,36 @@
  */
 use App\Core\Security;
 ?>
-<div class="container my-4">
-  <a href="/trajets" class="btn btn-outline-secondary btn-sm mb-3">&larr; Retour à la liste</a>
+<div class="container my-5">
+  <!-- Retour -->
+  <a href="/trajets" class="btn btn-outline-secondary btn-sm mb-4">
+    &larr; Retour à la liste
+  </a>
 
-  <h1 class="mb-4">Proposer un trajet</h1>
+  <!-- Titre -->
+  <h1 class="fw-bold mb-4 text-center">
+    <i class="bi bi-plus-circle text-success"></i>
+    Proposer un trajet
+  </h1>
+
+  <!-- Flash -->
   <?php if (!empty($_SESSION['flash'])): ?>
-      <div class="alert alert-info text-center my-3">
-          <?php echo htmlspecialchars($_SESSION['flash']); ?>
-      </div>
-      <?php unset($_SESSION['flash']); ?>
+    <div class="alert alert-info text-center rounded-pill">
+      <?= htmlspecialchars($_SESSION['flash']); ?>
+    </div>
+    <?php unset($_SESSION['flash']); ?>
   <?php endif; ?>
 
-  <form method="post" action="/trajets/store" class="row g-3 shadow-sm p-3 bg-white rounded">
+  <!-- Formulaire -->
+  <form method="post" action="/trajets/store"
+        class="row g-3 shadow-sm p-4 bg-white rounded-4">
     <?= Security::csrfField() ?>
     
     <!-- Ville de départ -->
     <div class="col-md-6">
-      <label for="ville_depart" class="form-label">Ville de départ</label>
+      <label for="ville_depart" class="form-label fw-semibold">
+        <i class="bi bi-geo-alt text-success me-1"></i> Ville de départ
+      </label>
       <input type="text" name="ville_depart" id="ville_depart"
              class="form-control <?= isset($errors['ville_depart']) ? 'is-invalid' : '' ?>"
              value="<?= Security::h($old['ville_depart'] ?? '') ?>">
@@ -34,7 +47,9 @@ use App\Core\Security;
 
     <!-- Ville d’arrivée -->
     <div class="col-md-6">
-      <label for="ville_arrivee" class="form-label">Ville d’arrivée</label>
+      <label for="ville_arrivee" class="form-label fw-semibold">
+        <i class="bi bi-flag text-danger me-1"></i> Ville d’arrivée
+      </label>
       <input type="text" name="ville_arrivee" id="ville_arrivee"
              class="form-control <?= isset($errors['ville_arrivee']) ? 'is-invalid' : '' ?>"
              value="<?= Security::h($old['ville_arrivee'] ?? '') ?>">
@@ -45,7 +60,9 @@ use App\Core\Security;
 
     <!-- Date -->
     <div class="col-md-6">
-      <label for="date_depart" class="form-label">Date</label>
+      <label for="date_depart" class="form-label fw-semibold">
+        <i class="bi bi-calendar-event text-primary me-1"></i> Date
+      </label>
       <input type="date" name="date_depart" id="date_depart"
              class="form-control <?= isset($errors['date_depart']) ? 'is-invalid' : '' ?>"
              value="<?= Security::h($old['date_depart'] ?? '') ?>">
@@ -56,7 +73,9 @@ use App\Core\Security;
 
     <!-- Heure -->
     <div class="col-md-6">
-      <label for="heure_depart" class="form-label">Heure</label>
+      <label for="heure_depart" class="form-label fw-semibold">
+        <i class="bi bi-clock text-info me-1"></i> Heure
+      </label>
       <input type="time" name="heure_depart" id="heure_depart"
              class="form-control <?= isset($errors['heure_depart']) ? 'is-invalid' : '' ?>"
              value="<?= Security::h(substr($old['heure_depart'] ?? '', 0, 5)) ?>">
@@ -67,7 +86,9 @@ use App\Core\Security;
 
     <!-- Nombre de places -->
     <div class="col-md-4">
-      <label for="nb_places" class="form-label">Places</label>
+      <label for="nb_places" class="form-label fw-semibold">
+        <i class="bi bi-people-fill text-secondary me-1"></i> Places
+      </label>
       <input type="number" name="nb_places" id="nb_places"
              class="form-control <?= isset($errors['nb_places']) ? 'is-invalid' : '' ?>"
              value="<?= Security::h($old['nb_places'] ?? '') ?>">
@@ -78,7 +99,9 @@ use App\Core\Security;
 
     <!-- Prix -->
     <div class="col-md-4">
-      <label for="prix" class="form-label">Prix (crédits)</label>
+      <label for="prix" class="form-label fw-semibold">
+        <i class="bi bi-cash-coin text-success me-1"></i> Prix (crédits)
+      </label>
       <input type="number" step="0.01" name="prix" id="prix"
              class="form-control <?= isset($errors['prix']) ? 'is-invalid' : '' ?>"
              value="<?= Security::h($old['prix'] ?? '') ?>">
@@ -89,13 +112,18 @@ use App\Core\Security;
 
     <!-- Description -->
     <div class="col-md-12">
-      <label for="description" class="form-label">Description</label>
+      <label for="description" class="form-label fw-semibold">
+        <i class="bi bi-card-text me-1"></i> Description
+      </label>
       <textarea name="description" id="description" rows="3"
                 class="form-control"><?= Security::h($old['description'] ?? '') ?></textarea>
     </div>
 
-    <div class="col-12">
-      <button type="submit" class="btn btn-success">Enregistrer</button>
+    <!-- Bouton -->
+    <div class="col-12 text-center">
+      <button type="submit" class="btn btn-success rounded-pill px-5">
+        <i class="bi bi-check-circle me-1"></i> Enregistrer le trajet
+      </button>
     </div>
   </form>
 </div>
