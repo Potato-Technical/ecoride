@@ -27,8 +27,8 @@ class Database
             // Paramètres de connexion : à adapter selon ton serveur
             $host     = 'localhost';     // ou 'localhost'
             $dbname   = 'ecoride';       // nom de ta base
-            $username = 'ekko';          // utilisateur MySQL (ou autre si config différente)
-            $password = '1234';          // mot de passe MySQL
+            $username = 'root';          // utilisateur MySQL (ou autre si config différente)
+            $password = '';          // mot de passe MySQL
 
             // DSN PDO
             $dsn = "mysql:host=$host;dbname=$dbname;charset=utf8mb4";
