@@ -7,20 +7,32 @@
  */
 use App\Core\Security;
 ?>
-<div class="container my-4">
-  <a href="/profil" class="btn btn-outline-secondary btn-sm mb-2">&larr; Retour au profil</a>
-  <a href="/vehicules" class="btn btn-outline-secondary btn-sm mb-3">&larr; Retour à la liste</a>
+<div class="container my-5" style="max-width: 700px;">
+  <!-- Navigation -->
+  <div class="d-flex justify-content-between flex-wrap gap-2 mb-4">
+    <a href="/profil" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-person-circle"></i> Profil
+    </a>
+    <a href="/vehicules" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-car-front"></i> Mes véhicules
+    </a>
+  </div>
 
-  <h1 class="mb-4">Ajouter un véhicule</h1>
+  <!-- Titre -->
+  <h1 class="fw-bold mb-4 text-center">
+    <i class="bi bi-car-front text-success"></i> Ajouter un véhicule
+  </h1>
 
+  <!-- Flash -->
   <?php if (!empty($_SESSION['flash'])): ?>
-    <div class="alert alert-info text-center my-3">
-      <?= htmlspecialchars($_SESSION['flash']) ?>
+    <div class="alert alert-info text-center rounded-4 shadow-sm mb-4">
+      <?= Security::h($_SESSION['flash']) ?>
     </div>
     <?php unset($_SESSION['flash']); ?>
   <?php endif; ?>
 
-  <div class="card shadow-sm">
+  <!-- Formulaire -->
+  <div class="card shadow-sm border-0 rounded-4">
     <div class="card-body">
       <form method="post" action="/vehicules/store" class="row g-3">
         <?= Security::csrfField() ?>
@@ -69,8 +81,11 @@ use App\Core\Security;
           <?php endif; ?>
         </div>
 
-        <div class="col-12">
-          <button type="submit" class="btn btn-success">Enregistrer</button>
+        <!-- Bouton -->
+        <div class="col-12 text-center">
+          <button type="submit" class="btn btn-success rounded-pill px-4">
+            <i class="bi bi-check-circle"></i> Enregistrer le véhicule
+          </button>
         </div>
       </form>
     </div>

@@ -97,7 +97,6 @@ $router->post('/avis/store', 'AvisController@store');         // Création d’u
 // Incidents
 $router->post('/incidents/store', 'IncidentController@store'); // Signalement d’un incident
 
-
 // Gestion véhicules
 $router->get('/vehicules', 'VehiculeController@index');          // Liste véhicules
 $router->get('/vehicules/nouveau', 'VehiculeController@create'); // Formulaire ajout
@@ -106,15 +105,15 @@ $router->get('/vehicules/{id}/edit', 'VehiculeController@edit');  // Formulaire 
 $router->post('/vehicules/{id}/update', 'VehiculeController@update'); // Soumission édition
 $router->post('/vehicules/{id}/delete', 'VehiculeController@delete'); // Suppression
 
-
 // Contact conducteur
-$router->get('/trajets/{id}/contact', 'MessageController@contact'); // Formulaire de contact associé à un trajet
+$router->get('/trajets/{id}/contact', 'MessageController@contact'); // Contact conducteur (lié à un trajet spécifique)
+$router->get('/contact', 'MessageController@contactForm'); // Formulaire général de contact
+$router->post('/messages/send', 'MessageController@send'); // Envoi du formulaire
 
 // Pages statiques
 $router->get('/mentions-legales', 'StaticController@mentions'); // Page Mentions légales
 $router->get('/cgu', 'StaticController@cgu'); // Page Conditions Générales d’Utilisation
 $router->get('/accessibilite', 'StaticController@access'); // Page Accessibilité
-
 
 // Exécute le dispatch (fait correspondre la route à l’action)
 $router->dispatch();

@@ -7,20 +7,38 @@
  */
 use App\Core\Security;
 ?>
-<div class="container my-4">
-  <a href="/profil" class="btn btn-outline-secondary btn-sm mb-2">&larr; Retour au profil</a>
-  <a href="/vehicules/<?= (int)$vehicule['id_vehicule'] ?>" class="btn btn-outline-secondary btn-sm mb-3">&larr; Retour</a>
+<div class="container my-5" style="max-width: 700px;">
+  <!-- Barre de navigation locale -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="btn-group">
+      <a href="/profil" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-person-circle"></i> Profil
+      </a>
+      <a href="/vehicules" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-car-front"></i> Mes véhicules
+      </a>
+      <a href="/vehicules/<?= (int)$vehicule['id_vehicule'] ?>" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-eye"></i> Voir
+      </a>
+    </div>
+  </div>
 
-  <h1 class="mb-4">Modifier le véhicule #<?= (int)$vehicule['id_vehicule'] ?></h1>
+  <!-- Titre -->
+  <h1 class="fw-bold mb-4 text-center">
+    <i class="bi bi-pencil-square text-primary"></i>
+    Modifier le véhicule #<?= (int)$vehicule['id_vehicule'] ?>
+  </h1>
 
+  <!-- Flash -->
   <?php if (!empty($_SESSION['flash'])): ?>
-    <div class="alert alert-info text-center my-3">
+    <div class="alert alert-info text-center rounded-4 shadow-sm mb-4">
       <?= htmlspecialchars($_SESSION['flash']) ?>
     </div>
     <?php unset($_SESSION['flash']); ?>
   <?php endif; ?>
 
-  <div class="card shadow-sm">
+  <!-- Formulaire -->
+  <div class="card shadow-sm border-0 rounded-4">
     <div class="card-body">
       <form method="post" action="/vehicules/<?= (int)$vehicule['id_vehicule'] ?>/update" class="row g-3">
         <?= Security::csrfField() ?>
@@ -58,7 +76,7 @@ use App\Core\Security;
           <?php endif; ?>
         </div>
 
-        <!-- Nombre de places -->
+        <!-- Places -->
         <div class="col-md-6">
           <label for="nb_places" class="form-label">Places</label>
           <input type="number" name="nb_places" id="nb_places" min="1" required
@@ -69,8 +87,11 @@ use App\Core\Security;
           <?php endif; ?>
         </div>
 
-        <div class="col-12">
-          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        <!-- Bouton -->
+        <div class="col-12 text-center">
+          <button type="submit" class="btn btn-success rounded-pill px-4">
+            <i class="bi bi-check-circle"></i> Enregistrer
+          </button>
         </div>
       </form>
     </div>

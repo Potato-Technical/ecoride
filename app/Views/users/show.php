@@ -8,68 +8,89 @@
  */
 use App\Core\Security;
 ?>
-<div class="container my-4">
-  <h1 class="mb-4">Mon profil</h1>
-
-  <!-- Message flash -->
-  <?php if (!empty($_SESSION['flash'])): ?>
-      <div class="alert alert-info text-center my-3">
-          <?= Security::h($_SESSION['flash']) ?>
-      </div>
-      <?php unset($_SESSION['flash']); ?>
-  <?php endif; ?>
-
-  <div class="card shadow-sm">
-    <div class="card-body">
-      <!-- Infos utilisateur -->
-      <p><strong>Nom :</strong> <?= Security::h($user['nom'] ?? '') ?></p>
-      <p><strong>Prénom :</strong> <?= Security::h($user['prenom'] ?? '') ?></p>
-      <p><strong>Email :</strong> <?= Security::h($user['email'] ?? '') ?></p>
-      <p><strong>Rôle :</strong> <?= Security::h($user['role'] ?? '') ?></p>
-      <p><strong>Crédits :</strong> <span class="badge-credits"><?= (int)($user['credits'] ?? 0) ?></span></p>
-    </div>
-
-    <div class="card-footer d-flex flex-wrap gap-2">
-      <!-- Gestion profil -->
-      <a href="/profil/edit" class="btn btn-primary">Modifier profil</a>
-      <form method="post" action="/profil/delete" 
-            onsubmit="return confirm('Voulez-vous vraiment supprimer votre compte ?');">
-        <?= Security::csrfField() ?>
-        <button type="submit" class="btn btn-danger">Supprimer compte</button>
-      </form>
-
-      <?php if ($_SESSION['user']['role'] === 'passager' || $_SESSION['user']['role'] === 'conducteur'): ?>
-        <a href="/mes-trajets" class="btn btn-outline-primary">Mes trajets</a>
-        <a href="/trajets/create" class="btn btn-success">Proposer un trajet</a>
-        <a href="/mes-reservations" class="btn btn-outline-info">Mes réservations</a>
-
-        <form method="post" action="/profil/add-credits" class="d-inline">
-          <?= Security::csrfField() ?>
-          <button type="submit" class="btn btn-success">+10 crédits</button>
-        </form>
-
-        <a href="/vehicules" class="btn btn-outline-success">Mes véhicules</a>
-        <a href="/vehicules/nouveau" class="btn btn-success">Ajouter un véhicule</a>
-
-        <form method="post" action="/profil/switch-role" class="d-inline">
-          <?= Security::csrfField() ?>
-          <button type="submit" class="btn btn-warning">
-            <?= ($_SESSION['user']['role'] === 'passager') ? 'Devenir conducteur' : 'Revenir passager' ?>
-          </button>
-        </form>
-
-        <!-- Signalement incident -->
-        <div class="card shadow-sm mt-4">
-          <div class="card-body">
-            <h5>Signaler un incident</h5>
-            <form method="post" action="/incidents/store">
-              <?= Security::csrfField() ?>
-              <textarea name="description" class="form-control mb-2" placeholder="Décrivez l’incident..." required></textarea>
-              <button type="submit" class="btn btn-sm btn-warning">Signaler</button>
-            </form>
+<div class="container my-5">
+  <div class="row g-4">
+    
+    <!-- Colonne gauche : Profil utilisateur -->
+    <div class="col-12 col-lg-4">
+      <div class="card shadow-sm border-0 rounded-4 text-center p-4 h-100">
+        <!-- Avatar rond avec initiales -->
+        <div class="mb-3">
+          <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center"
+               style="width: 100px; height: 100px; font-size: 2rem; font-weight: bold;">
+            <?= strtoupper(substr(Security::h($user['prenom'] ?? ''), 0, 1)) ?>
+            <?= strtoupper(substr(Security::h($user['nom'] ?? ''), 0, 1)) ?>
           </div>
         </div>
-      <?php endif; ?>
+
+        <!-- Nom complet -->
+        <h4 class="fw-bold mb-1"><?= Security::h(($user['prenom'] ?? '') . ' ' . ($user['nom'] ?? '')) ?></h4>
+        <!-- Email -->
+        <p class="text-muted mb-2"><?= Security::h($user['email'] ?? '') ?></p>
+
+        <!-- Rôle + Crédits -->
+        <div class="d-flex flex-column gap-2 align-items-center mb-3">
+          <span class="badge bg-success px-3 py-2 rounded-pill text-white">
+            <?= ucfirst(Security::h($user['role'] ?? '')) ?>
+          </span>
+          <span class="badge-credits"><?= (int)($user['credits'] ?? 0) ?> crédits</span>
+        </div>
+
+        <!-- Boutons principaux -->
+        <div class="d-flex flex-column gap-2">
+          <a href="/profil/edit" class="btn btn-outline-primary rounded-pill">Modifier profil</a>
+          <form method="post" action="/profil/delete"
+                onsubmit="return confirm('Voulez-vous vraiment supprimer votre compte ?');" class="d-inline">
+            <?= Security::csrfField() ?>
+            <button type="submit" class="btn btn-outline-danger rounded-pill w-100">Supprimer compte</button>
+          </form>
+          <form method="post" action="/profil/switch-role" class="d-inline">
+            <?= Security::csrfField() ?>
+            <button type="submit" class="btn btn-warning rounded-pill w-100">
+              <?= ($_SESSION['user']['role'] === 'passager') ? 'Devenir conducteur' : 'Revenir passager' ?>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Colonne droite : Actions et infos -->
+    <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+
+      <!-- Bloc trajets & crédits -->
+      <div class="card shadow-sm border-0 rounded-4 p-4">
+        <h5 class="fw-bold mb-3">Trajets & crédits</h5>
+        <div class="d-flex flex-wrap gap-2">
+          <a href="/mes-trajets" class="btn btn-outline-primary rounded-pill">Mes trajets</a>
+          <a href="/trajets/create" class="btn btn-success rounded-pill">Proposer un trajet</a>
+          <a href="/mes-reservations" class="btn btn-outline-info rounded-pill">Mes réservations</a>
+          <form method="post" action="/profil/add-credits" class="d-inline">
+            <?= Security::csrfField() ?>
+            <button type="submit" class="btn btn-success rounded-pill">+10 crédits</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Bloc véhicules -->
+      <div class="card shadow-sm border-0 rounded-4 p-4">
+        <h5 class="fw-bold mb-3">Mes véhicules</h5>
+        <div class="d-flex flex-wrap gap-2">
+          <a href="/vehicules" class="btn btn-outline-success rounded-pill">Voir mes véhicules</a>
+          <a href="/vehicules/nouveau" class="btn btn-success rounded-pill">Ajouter un véhicule</a>
+        </div>
+      </div>
+
+      <!-- Bloc signalement -->
+      <div class="card shadow-sm border-0 rounded-4 p-4">
+        <h5 class="fw-bold mb-3">Signaler un incident</h5>
+        <form method="post" action="/incidents/store">
+          <?= Security::csrfField() ?>
+          <textarea name="description" class="form-control mb-3 rounded-3"
+                    placeholder="Décrivez l’incident..." required></textarea>
+          <button type="submit" class="btn btn-warning rounded-pill">Envoyer</button>
+        </form>
+      </div>
+
     </div>
   </div>
 </div>

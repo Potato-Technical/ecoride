@@ -156,5 +156,121 @@ class TrajetModel
         $stmt->execute(['id' => $idUser]);
         return $stmt->fetchAll();
     }
-        
+
+    /**
+     * Recherche des trajets selon filtres (ville_depart, ville_arrivee, date_depart)
+     */
+    public function search(array $filters): array
+    {
+        $sql = "SELECT * FROM trajet WHERE 1=1";
+        $params = [];
+
+        if (!empty($filters['ville_depart'])) {
+            $sql .= " AND ville_depart LIKE :ville_depart";
+            $params['ville_depart'] = '%' . $filters['ville_depart'] . '%';
+        }
+        if (!empty($filters['ville_arrivee'])) {
+            $sql .= " AND ville_arrivee LIKE :ville_arrivee";
+            $params['ville_arrivee'] = '%' . $filters['ville_arrivee'] . '%';
+        }
+        if (!empty($filters['date_depart'])) {
+            $sql .= " AND date_depart = :date_depart";
+            $params['date_depart'] = $filters['date_depart'];
+        }
+
+        $sql .= " ORDER BY date_depart ASC";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Récupère une liste de trajets avec limite (pagination simple)
+     *
+     * @param int $limit Nombre maximum de trajets à récupérer
+     * @return array Liste des trajets
+     */
+    public function getWithLimit(int $limit): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT t.*, u.nom, u.prenom
+            FROM trajet t
+            JOIN utilisateur u ON t.id_conducteur = u.id_user
+            ORDER BY t.date_depart ASC
+            LIMIT :limit
+        ");
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Recherche des trajets avec filtres multiples et limite
+     *
+     * @param array $filters
+     * @param int $limit
+     * @return array
+     */
+    public function searchWithLimit(array $filters, int $limit): array
+    {
+        $sql = "SELECT t.*, u.nom, u.prenom
+                FROM trajet t
+                JOIN utilisateur u ON t.id_conducteur = u.id_user
+                WHERE 1=1";
+        $params = [];
+
+        // Ville de départ
+        if (!empty($filters['ville_depart'])) {
+            $sql .= " AND t.ville_depart LIKE :ville_depart";
+            $params['ville_depart'] = '%' . $filters['ville_depart'] . '%';
+        }
+
+        // Ville d’arrivée
+        if (!empty($filters['ville_arrivee'])) {
+            $sql .= " AND t.ville_arrivee LIKE :ville_arrivee";
+            $params['ville_arrivee'] = '%' . $filters['ville_arrivee'] . '%';
+        }
+
+        // Date exacte
+        if (!empty($filters['date_depart'])) {
+            $sql .= " AND t.date_depart = :date_depart";
+            $params['date_depart'] = $filters['date_depart'];
+        }
+
+        // Filtres multiples
+        $orderBy = [];
+        if (!empty($filters['filters'])) {
+            foreach ($filters['filters'] as $f) {
+                switch ($f) {
+                    case 'eco':
+                        $sql .= " AND t.is_eco = 1";
+                        break;
+                    case 'prix':
+                        $orderBy[] = "t.prix ASC";
+                        break;
+                }
+            }
+        }
+
+        // Si aucun tri, tri par date par défaut
+        if (!empty($orderBy)) {
+            $sql .= " ORDER BY " . implode(', ', $orderBy);
+        } else {
+            $sql .= " ORDER BY t.date_depart ASC";
+        }
+
+        $sql .= " LIMIT :limit";
+
+        $stmt = $this->pdo->prepare($sql);
+
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(":$key", $value);
+        }
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
 }

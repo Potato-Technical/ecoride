@@ -5,7 +5,8 @@
   <title>EcoRide<?= isset($title) ? ' – ' . htmlspecialchars($title) : '' ?></title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="/assets/css/app.css">
 </head>
 <body>
 
@@ -65,17 +66,31 @@
     <?= $content ?>
   </main>
 
-  <footer class="text-center py-3 border-top mt-4">
+  <footer class="text-center py-4 border-top mt-5 bg-light">
     <div class="container">
-      <p class="mb-1">&copy; <?= date('Y') ?> EcoRide. Tous droits réservés.</p>
-      <div class="d-flex justify-content-center gap-3 small">
-        <a href="/mentions" class="text-muted text-decoration-none">Mentions légales</a>
-        <a href="/cgu" class="text-muted text-decoration-none">CGU</a>
-        <a href="/accessibilite" class="text-muted text-decoration-none">Accessibilité</a>
-        <a href="/message/contact" class="text-muted text-decoration-none">Contact</a>
+      <!-- Copyright -->
+      <p class="mb-2 small text-muted">
+        &copy; <?= date('Y') ?> EcoRide — Tous droits réservés.
+      </p>
+
+      <!-- Liens -->
+      <div class="d-flex flex-wrap justify-content-center gap-4 small">
+        <a href="/mentions-legales" class="text-muted text-decoration-none d-flex align-items-center gap-1">
+          <i class="bi bi-info-circle"></i> Mentions légales
+        </a>
+        <a href="/cgu" class="text-muted text-decoration-none d-flex align-items-center gap-1">
+          <i class="bi bi-file-text"></i> CGU
+        </a>
+        <a href="/accessibilite" class="text-muted text-decoration-none d-flex align-items-center gap-1">
+          <i class="bi bi-universal-access"></i> Accessibilité
+        </a>
+        <a href="/contact" class="text-muted text-decoration-none d-flex align-items-center gap-1">
+          <i class="bi bi-envelope"></i> Contact
+        </a>
       </div>
     </div>
   </footer>
+
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="/js/app.js"></script>
