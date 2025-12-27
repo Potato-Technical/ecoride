@@ -47,4 +47,35 @@ class Controller
             exit;
         }
     }
+    /**
+     * Vérifie que l'utilisateur connecté possède le rôle requis
+     *
+     * @param string $roleLibelle Rôle attendu (ex: 'administrateur')
+     */
+    protected function requireRole(string $roleLibelle): void
+    {
+        if (empty($_SESSION['user_id'])) {
+            header('Location: /login');
+            exit;
+        }
+
+        $userRepo = new \App\Models\UserRepository();
+        $user = $userRepo->findById($_SESSION['user_id']);
+
+        if (!$user) {
+            session_destroy();
+            header('Location: /login');
+            exit;
+        }
+
+        $roleRepo = new \App\Models\RoleRepository();
+        $role = $roleRepo->findByLibelle($roleLibelle);
+
+        if (!$role || (int)$user['role_id'] !== (int)$role['id']) {
+            http_response_code(403);
+            echo 'Accès interdit';
+            exit;
+        }
+    }
+
 }

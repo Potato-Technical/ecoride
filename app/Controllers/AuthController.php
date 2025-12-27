@@ -12,6 +12,11 @@ class AuthController extends Controller
      */
     public function login(): void
     {
+        // Si l'utilisateur est déjà connecté, on le redirige
+        if (!empty($_SESSION['user_id'])) {
+            header('Location: /');
+            exit;
+        }
         // Si le formulaire a été soumis
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
