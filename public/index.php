@@ -32,6 +32,7 @@ require_once __DIR__ . '/../app/Core/Database.php';
 require_once __DIR__ . '/../app/Models/UserRepository.php';
 require_once __DIR__ . '/../app/Models/RoleRepository.php';
 require_once __DIR__ . '/../app/Models/TrajetRepository.php';
+require_once __DIR__ . '/../app/Models/ParticipationRepository.php';
 
 // Controllers (Chargement des contrôleurs)
 require_once __DIR__ . '/../app/Controllers/HomeController.php';
