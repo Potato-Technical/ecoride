@@ -23,18 +23,20 @@ if (file_exists($envPath)) {
 
 // On charge manuellement les fichiers de classes nécessaires
 // Sans Composer, PHP ne charge rien tout seul
-// Core
+// Core (MVC)
 require_once __DIR__ . '/../app/Core/Controller.php';
 require_once __DIR__ . '/../app/Core/Router.php';
 require_once __DIR__ . '/../app/Core/Database.php';
 
-// Models
+// Models (accès aux données)
 require_once __DIR__ . '/../app/Models/UserRepository.php';
 require_once __DIR__ . '/../app/Models/RoleRepository.php';
+require_once __DIR__ . '/../app/Models/TrajetRepository.php';
 
-// Controllers
+// Controllers (Chargement des contrôleurs)
 require_once __DIR__ . '/../app/Controllers/HomeController.php';
 require_once __DIR__ . '/../app/Controllers/AuthController.php';
+require_once __DIR__ . '/../app/Controllers/TrajetController.php';
 
 // On crée le routeur (attention : nom complet avec le namespace)
 $router = new \App\Core\Router();

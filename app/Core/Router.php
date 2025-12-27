@@ -9,10 +9,13 @@ class Router
         // Récupération du chemin de l’URL (ex: /login ou /index.php/login)
         $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-        // Normalisation : suppression de /index.php si présent
+        // Suppression de /index.php si présent dans l’URL
         $uri = str_replace('/index.php', '', $uri);
 
-        // Si l’URL est vide, on considère que c’est la racine
+        // Normalisation : suppression du slash final
+        $uri = rtrim($uri, '/');
+
+        // Si l’URL est vide après normalisation, on considère que c’est la racine
         if ($uri === '') {
             $uri = '/';
         }
@@ -33,7 +36,7 @@ class Router
         // Construction du nom complet de la classe contrôleur
         $controllerClass = 'App\\Controllers\\' . $controller;
 
-        // Sécurité minimale : vérifie que la classe existe
+        // Vérifie que la classe contrôleur existe
         if (!class_exists($controllerClass)) {
             http_response_code(500);
             echo 'Controller not found';

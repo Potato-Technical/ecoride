@@ -6,6 +6,13 @@
 */
 return [
     '/' => ['HomeController', 'index'],
+
+    // Authentification
     '/login'  => ['AuthController', 'login'],
     '/logout' => ['AuthController', 'logout'],
+
+    // Trajets
+    '/trajets' => ['TrajetController', 'index'],
+    '/trajet'  => ['TrajetController', 'show'], // ?id=1
+    '/trajets/create' => ['TrajetController', 'create'],
 ];
