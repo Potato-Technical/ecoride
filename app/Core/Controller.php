@@ -1,29 +1,50 @@
 <?php
 
-/* Ce fichier contient le contrôleur "parent"
-   Tous les contrôleurs vont hériter de celui-ci */
+/*
+ * Contrôleur parent de l’application
+ * Tous les contrôleurs héritent de cette classe
+ * Elle centralise les comportements communs (render, sécurité, etc.)
+ */
 namespace App\Core;
 
 class Controller
 {
+    /**
+     * Affiche une vue dans le layout principal
+     *
+     * @param string $view  Chemin de la vue (ex: 'home/index')
+     * @param array  $data  Données transmises à la vue
+     */
     protected function render(string $view, array $data = []): void
     {
-        // On transforme le tableau en variables utilisables
-        // ['title' => 'Accueil'] devient $title = 'Accueil'
+        // Transforme le tableau $data en variables PHP
+        // Exemple : ['title' => 'Accueil'] → $title = 'Accueil'
         extract($data);
 
-        // On commence à capturer le HTML de la vue
+        // Démarre la capture du HTML de la vue
         ob_start();
 
-        // On charge la vue demandée
+        // Charge la vue demandée
         // Exemple : home/index → app/Views/home/index.php
         require dirname(__DIR__) . "/Views/{$view}.php";
 
-        // On récupère le HTML généré par la vue
+        // Récupère le contenu HTML généré par la vue
         $content = ob_get_clean();
 
-        // On charge le layout principal
-        // Le layout affichera $content
+        // Charge le layout principal
+        // Le layout utilisera la variable $content
         require dirname(__DIR__) . "/Views/layouts/main.php";
+    }
+
+    /**
+     * Vérifie que l'utilisateur est authentifié
+     * Si non connecté, redirige vers la page de connexion
+     */
+    protected function requireAuth(): void
+    {
+        if (empty($_SESSION['user_id'])) {
+            header('Location: /login');
+            exit;
+        }
     }
 }

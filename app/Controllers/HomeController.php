@@ -2,14 +2,16 @@
 
 namespace App\Controllers; // Namespace des contrôleurs
 
-use App\Core\Controller;          // Contrôleur parent (render)
-use App\Models\UserRepository;    // Repository utilisateur
+use App\Core\Controller; // Contrôleur parent (render, sécurité)
 
 class HomeController extends Controller
 {
     public function index(): void
     {
-        // Affichage normal de la page (à réactiver après le test)
+        // Accès réservé aux utilisateurs connectés
+        $this->requireAuth();
+
+        // Affichage de la page d’accueil
         $this->render('home/index', [
             'title' => 'Accueil'
         ]);
