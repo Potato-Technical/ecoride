@@ -2,6 +2,7 @@
 
 // Ce contrôleur gère les pages "home"
 namespace App\Controllers;
+use App\Core\Database;
 
 // On hérite du contrôleur parent
 use App\Core\Controller;
