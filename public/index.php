@@ -1,6 +1,9 @@
 <?php
 // Démarre la session PHP (utile plus tard pour login, messages, etc.)
 session_start();
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 // Chargement manuel des variables d’environnement depuis .env
 $envPath = __DIR__ . '/../.env';
@@ -20,11 +23,17 @@ if (file_exists($envPath)) {
 
 // On charge manuellement les fichiers de classes nécessaires
 // Sans Composer, PHP ne charge rien tout seul
+// Core
 require_once __DIR__ . '/../app/Core/Controller.php';
 require_once __DIR__ . '/../app/Core/Router.php';
-require_once __DIR__ . '/../app/Controllers/HomeController.php';
 require_once __DIR__ . '/../app/Core/Database.php';
 
+// Models
+require_once __DIR__ . '/../app/Models/UserRepository.php';
+require_once __DIR__ . '/../app/Models/RoleRepository.php';
+
+// Controllers
+require_once __DIR__ . '/../app/Controllers/HomeController.php';
 
 // On crée le routeur (attention : nom complet avec le namespace)
 $router = new \App\Core\Router();
