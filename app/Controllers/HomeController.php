@@ -1,18 +1,15 @@
 <?php
 
-// Ce contrôleur gère les pages "home"
-namespace App\Controllers;
-use App\Core\Database;
+namespace App\Controllers; // Namespace des contrôleurs
 
-// On hérite du contrôleur parent
-use App\Core\Controller;
+use App\Core\Controller;          // Contrôleur parent (render)
+use App\Models\UserRepository;    // Repository utilisateur
 
 class HomeController extends Controller
 {
     public function index(): void
     {
-        // On affiche la vue home/index
-        // Le layout sera appliqué automatiquement
+        // Affichage normal de la page (à réactiver après le test)
         $this->render('home/index', [
             'title' => 'Accueil'
         ]);
