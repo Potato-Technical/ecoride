@@ -6,4 +6,6 @@
 */
 return [
     '/' => ['HomeController', 'index'],
+    '/login'  => ['AuthController', 'login'],
+    '/logout' => ['AuthController', 'logout'],
 ];

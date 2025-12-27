@@ -34,6 +34,7 @@ require_once __DIR__ . '/../app/Models/RoleRepository.php';
 
 // Controllers
 require_once __DIR__ . '/../app/Controllers/HomeController.php';
+require_once __DIR__ . '/../app/Controllers/AuthController.php';
 
 // On crée le routeur (attention : nom complet avec le namespace)
 $router = new \App\Core\Router();
