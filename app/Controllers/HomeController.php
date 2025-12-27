@@ -9,7 +9,7 @@ class HomeController extends Controller
     public function index(): void
     {
         // Accès réservé aux utilisateurs connectés
-        $this->requireAuth();
+        $this->requireRole('administrateur');
 
         // Affichage de la page d’accueil
         $this->render('home/index', [
