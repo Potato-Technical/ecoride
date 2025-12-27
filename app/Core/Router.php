@@ -1,23 +1,37 @@
 <?php
 
+// Le Router appartient au dossier Core
+namespace App\Core;
+
+/* On indique qu’on va utiliser le HomeController
+   Ça évite d’écrire le chemin complet à chaque fois */
+use App\Controllers\HomeController;
+
 class Router
 {
-    public function dispatch()
+    public function dispatch(): void
     {
+        // On récupère l’URL demandée (ex: /)
         $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-        $routes = require __DIR__ . '/../../routes/web.php';
 
+        // On charge la liste des routes
+        // C’est un tableau qui fait le lien URL → contrôleur
+        $routes = require dirname(__DIR__, 2) . '/routes/web.php';
+
+        // Si l’URL n’existe pas dans les routes
         if (!isset($routes[$uri])) {
             http_response_code(404);
             echo '404';
             return;
         }
 
+        // On récupère le contrôleur et la méthode à appeler
         [$controller, $method] = $routes[$uri];
 
-        require_once __DIR__ . '/../Controllers/' . $controller . '.php';
+        // Pour l’instant, on instancie directement HomeController
+        $controllerInstance = new HomeController();
 
-        $controllerInstance = new $controller();
+        // On appelle la méthode demandée (ex: index)
         $controllerInstance->$method();
     }
 }

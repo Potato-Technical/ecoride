@@ -1,9 +1,19 @@
 <?php
 
-class HomeController
+// Ce contrôleur gère les pages "home"
+namespace App\Controllers;
+
+// On hérite du contrôleur parent
+use App\Core\Controller;
+
+class HomeController extends Controller
 {
-    public function index()
+    public function index(): void
     {
-        require __DIR__ . '/../Views/home/index.php';
+        // On affiche la vue home/index
+        // Le layout sera appliqué automatiquement
+        $this->render('home/index', [
+            'title' => 'Accueil'
+        ]);
     }
 }
