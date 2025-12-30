@@ -15,4 +15,6 @@ return [
     '/trajets' => ['TrajetController', 'index'],
     '/trajet'  => ['TrajetController', 'show'], // ?id=1
     '/trajets/create' => ['TrajetController', 'create'],
+    '/trajets/reserver' => ['ReservationController', 'reserve'],
+    '/reservations/annuler' => ['ReservationController', 'cancel'],
 ];

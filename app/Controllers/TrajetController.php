@@ -8,45 +8,40 @@ use App\Models\TrajetRepository;
 class TrajetController extends Controller
 {
     /**
-     * Page de recherche des trajets (covoiturages).
-     * - Affiche le formulaire
-     * - Affiche les résultats si des critères sont fournis
+     * Page de consultation des trajets (covoiturages).
+     * - Affiche tous les trajets disponibles par défaut
+     * - Applique un filtrage si des critères sont fournis
      *
      * US 3 : Consulter les covoiturages disponibles
      */
     public function index(): void
     {
-        // Tableau des trajets à afficher (vide par défaut)
-        $trajets = [];
+        // Accès aux données via le repository
+        $repo = new TrajetRepository();
 
         // Récupération et nettoyage des paramètres GET attendus
-        // Si absents, on initialise à une chaîne vide
-        $depart = isset($_GET['depart']) ? trim($_GET['depart']) : '';
+        $depart  = isset($_GET['depart'])  ? trim($_GET['depart'])  : '';
         $arrivee = isset($_GET['arrivee']) ? trim($_GET['arrivee']) : '';
-        $date = isset($_GET['date']) ? trim($_GET['date']) : '';
+        $date    = isset($_GET['date'])    ? trim($_GET['date'])    : '';
 
-        // Le traitement ne se fait que si les 3 critères sont présents et non vides
+        // Si les critères sont tous présents → recherche filtrée
         if (
             $_SERVER['REQUEST_METHOD'] === 'GET'
             && $depart !== ''
             && $arrivee !== ''
             && $date !== ''
         ) {
-            // Accès aux données via le repository
-            $repo = new TrajetRepository();
-
-            // Recherche des trajets selon les critères utilisateur
-            $trajets = $repo->search(
-                $depart,
-                $arrivee,
-                $date
-            );
+            $trajets = $repo->search($depart, $arrivee, $date);
+        }
+        // Sinon → affichage par défaut de tous les trajets disponibles
+        else {
+            $trajets = $repo->findAllAvailable();
         }
 
-        // Affichage de la vue avec les résultats éventuels
+        // Affichage de la vue avec la liste des trajets
         $this->render('trajets/index', [
             'trajets' => $trajets,
-            'title' => 'Recherche de covoiturages'
+            'title'   => 'Recherche de covoiturages'
         ]);
     }
 
@@ -59,7 +54,6 @@ class TrajetController extends Controller
      */
     public function show(int $id): void
     {
-        // Accès aux données via le repository
         $repo = new TrajetRepository();
         $trajet = $repo->findById($id);
 
@@ -73,7 +67,7 @@ class TrajetController extends Controller
         // Affichage de la vue détail
         $this->render('trajets/show', [
             'trajet' => $trajet,
-            'title' => 'Détail du covoiturage'
+            'title'  => 'Détail du covoiturage'
         ]);
     }
 
@@ -93,13 +87,13 @@ class TrajetController extends Controller
             $repo = new TrajetRepository();
 
             $repo->create([
-                'lieu_depart' => trim($_POST['lieu_depart']),
-                'lieu_arrivee' => trim($_POST['lieu_arrivee']),
-                'date_heure_depart' => $_POST['date_heure_depart'],
-                'prix' => (float) $_POST['prix'],
-                'nb_places' => (int) $_POST['nb_places'],
-                'chauffeur_id' => $_SESSION['user_id'],
-                'vehicule_id' => 1 // temporaire (gestion véhicule plus tard)
+                'lieu_depart'        => trim($_POST['lieu_depart']),
+                'lieu_arrivee'       => trim($_POST['lieu_arrivee']),
+                'date_heure_depart'  => $_POST['date_heure_depart'],
+                'prix'               => (float) $_POST['prix'],
+                'nb_places'          => (int) $_POST['nb_places'],
+                'chauffeur_id'       => $_SESSION['user_id'],
+                'vehicule_id'        => 1 // temporaire (gestion véhicule plus tard)
             ]);
 
             header('Location: /trajets');
@@ -111,5 +105,4 @@ class TrajetController extends Controller
             'title' => 'Créer un trajet'
         ]);
     }
-
 }

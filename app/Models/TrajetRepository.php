@@ -16,7 +16,7 @@ class TrajetRepository
      *
      * @param string $depart  Ville de départ
      * @param string $arrivee Ville d’arrivée
-     * @param string $date    Date du trajet
+     * @param string $date    Date du trajet (YYYY-MM-DD)
      * @return array Liste des trajets correspondants
      */
     public function search(string $depart, string $arrivee, string $date): array
@@ -24,7 +24,7 @@ class TrajetRepository
         // Connexion à la base de données
         $pdo = Database::getInstance();
 
-        // Requête de recherche avec jointures utilisateur et véhicule
+        // Requête de recherche filtrée
         $stmt = $pdo->prepare(
             "
             SELECT t.*, u.pseudo, v.energie
@@ -36,17 +36,45 @@ class TrajetRepository
               AND DATE(t.date_heure_depart) = :date
               AND t.nb_places > 0
               AND t.statut = 'planifié'
+            ORDER BY t.date_heure_depart ASC
             "
         );
 
         // Exécution sécurisée avec paramètres liés
         $stmt->execute([
-            'depart' => $depart,
+            'depart'  => $depart,
             'arrivee' => $arrivee,
-            'date' => $date,
+            'date'    => $date,
         ]);
 
         // Retourne tous les trajets trouvés
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Récupère tous les trajets planifiés et disponibles.
+     * Utilisé pour l’affichage par défaut de /trajets.
+     *
+     * @return array Liste des trajets disponibles
+     */
+    public function findAllAvailable(): array
+    {
+        // Connexion à la base de données
+        $pdo = Database::getInstance();
+
+        // Requête simple sans critères utilisateur
+        $stmt = $pdo->query(
+            "
+            SELECT t.*, u.pseudo, v.energie
+            FROM trajet t
+            JOIN utilisateur u ON u.id = t.chauffeur_id
+            JOIN vehicule v ON v.id = t.vehicule_id
+            WHERE t.nb_places > 0
+              AND t.statut = 'planifié'
+            ORDER BY t.date_heure_depart ASC
+            "
+        );
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 

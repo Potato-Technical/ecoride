@@ -8,6 +8,12 @@
         →
         <?= htmlspecialchars($trajet['lieu_arrivee']) ?>
         (<?= htmlspecialchars($trajet['date_heure_depart']) ?>)
+
+        <?php if (!empty($_SESSION['user_id'])): ?>
+            <a href="/trajets/reserver?id=<?= (int) $trajet['id'] ?>">
+                Réserver
+            </a>
+        <?php endif; ?>
     </li>
 <?php endforeach; ?>
 </ul>
