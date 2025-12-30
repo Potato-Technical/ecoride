@@ -26,7 +26,12 @@ class Router
         // Si la route n’existe pas → 404 applicative
         if (!isset($routes[$uri])) {
             http_response_code(404);
-            echo '404';
+
+            // Affichage d'une page d'erreur applicative
+            $controller = new \App\Core\Controller();
+            $controller->render('errors/404', [
+                'title' => 'Page introuvable'
+            ]);
             return;
         }
 

@@ -73,7 +73,10 @@ class Controller
 
         if (!$role || (int)$user['role_id'] !== (int)$role['id']) {
             http_response_code(403);
-            echo 'Accès interdit';
+
+            $this->render('errors/403', [
+                'title' => 'Accès interdit'
+            ]);
             exit;
         }
     }
