@@ -23,7 +23,9 @@ class ReservationController extends Controller
 
         if ($trajetId <= 0) {
             http_response_code(400);
-            echo 'Trajet invalide';
+            $this->render('errors/400', [
+                'title' => 'Requête invalide'
+            ]);
             return;
         }
 
@@ -34,7 +36,9 @@ class ReservationController extends Controller
         // Trajet inexistant ou non réservable
         if (!$trajet || $trajet['statut'] !== 'planifié') {
             http_response_code(404);
-            echo 'Trajet non réservable';
+            $this->render('errors/404', [
+                'title' => 'Page introuvable'
+            ]);
             return;
         }
 
@@ -47,13 +51,16 @@ class ReservationController extends Controller
             (int) $trajet['prix']
         );
 
+        // Échec métier de la réservation (plus de place, doublon, etc.)
         if (!$ok) {
             http_response_code(400);
-            echo 'Réservation impossible';
+            $this->render('errors/400', [
+                'title' => 'Réservation impossible'
+            ]);
             return;
         }
 
-        // Redirection vers la liste des trajets
+        // Redirection après réservation réussie
         header('Location: /trajets');
         exit;
     }
@@ -73,7 +80,9 @@ class ReservationController extends Controller
 
         if ($participationId <= 0) {
             http_response_code(400);
-            echo 'Réservation invalide';
+            $this->render('errors/400', [
+                'title' => 'Requête invalide'
+            ]);
             return;
         }
 
@@ -81,12 +90,16 @@ class ReservationController extends Controller
 
         $ok = $repo->cancel($participationId, $_SESSION['user_id']);
 
+        // Échec métier de l’annulation (déjà annulée, pas propriétaire, etc.)
         if (!$ok) {
             http_response_code(400);
-            echo 'Annulation impossible';
+            $this->render('errors/400', [
+                'title' => 'Annulation impossible'
+            ]);
             return;
         }
 
+        // Redirection après annulation réussie
         header('Location: /trajets');
         exit;
     }

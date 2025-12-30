@@ -9,9 +9,10 @@ class TrajetController extends Controller
 {
     /**
      * Page de consultation des trajets (covoiturages).
-     * - Affiche tous les trajets disponibles par défaut
-     * - Applique un filtrage si des critères sont fournis
-     *
+     * Responsabilités :
+     * - afficher tous les trajets disponibles par défaut
+     * - appliquer un filtrage si des critères sont fournis par l'utilisateur
+
      * US 3 : Consulter les covoiturages disponibles
      */
     public function index(): void
@@ -24,7 +25,8 @@ class TrajetController extends Controller
         $arrivee = isset($_GET['arrivee']) ? trim($_GET['arrivee']) : '';
         $date    = isset($_GET['date'])    ? trim($_GET['date'])    : '';
 
-        // Si les critères sont tous présents → recherche filtrée
+        // Si les trois critères sont présents et valides :
+        // on effectue une recherche filtrée
         if (
             $_SERVER['REQUEST_METHOD'] === 'GET'
             && $depart !== ''
@@ -33,7 +35,8 @@ class TrajetController extends Controller
         ) {
             $trajets = $repo->search($depart, $arrivee, $date);
         }
-        // Sinon → affichage par défaut de tous les trajets disponibles
+        // Sinon :
+        // affichage de tous les trajets disponibles
         else {
             $trajets = $repo->findAllAvailable();
         }
@@ -47,9 +50,7 @@ class TrajetController extends Controller
 
     /**
      * Affiche le détail d’un trajet spécifique.
-     *
      * US 5 : Consulter le détail d’un covoiturage
-     *
      * L’identifiant du trajet est récupéré via l’URL (?id=).
      */
     public function show(): void
@@ -59,7 +60,9 @@ class TrajetController extends Controller
 
         if ($id <= 0) {
             http_response_code(400);
-            echo 'Trajet invalide';
+            $this->render('errors/400', [
+                'title' => 'Requête invalide'
+            ]);
             return;
         }
 
@@ -67,14 +70,16 @@ class TrajetController extends Controller
         $repo = new TrajetRepository();
         $trajet = $repo->findById($id);
 
-        // Si le trajet n’existe pas, on renvoie une 404
+        // Si le trajet n’existe pas → 404 applicative
         if (!$trajet) {
             http_response_code(404);
-            echo 'Trajet introuvable';
+            $this->render('errors/404', [
+                'title' => 'Page introuvable'
+            ]);
             return;
         }
 
-        // Affichage de la vue détail
+        // Affichage de la vue de détail
         $this->render('trajets/show', [
             'trajet' => $trajet,
             'title'  => 'Détail du covoiturage'
@@ -84,28 +89,29 @@ class TrajetController extends Controller
     /**
      * Création d’un trajet.
      * Accès réservé aux administrateurs.
-     *
      * US 4 : Proposer un covoiturage
      */
     public function create(): void
     {
-        // Accès réservé aux administrateurs
+        // Vérification du rôle administrateur
         $this->requireRole('administrateur');
 
-        // Traitement du formulaire
+        // Traitement du formulaire de création
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $repo = new TrajetRepository();
 
+            // Délégation de la création au repository
             $repo->create([
-                'lieu_depart'        => trim($_POST['lieu_depart']),
-                'lieu_arrivee'       => trim($_POST['lieu_arrivee']),
-                'date_heure_depart'  => $_POST['date_heure_depart'],
-                'prix'               => (float) $_POST['prix'],
-                'nb_places'          => (int) $_POST['nb_places'],
-                'chauffeur_id'       => $_SESSION['user_id'],
-                'vehicule_id'        => 1 // temporaire (gestion véhicule plus tard)
+                'lieu_depart'       => trim($_POST['lieu_depart']),
+                'lieu_arrivee'      => trim($_POST['lieu_arrivee']),
+                'date_heure_depart' => $_POST['date_heure_depart'],
+                'prix'              => (float) $_POST['prix'],
+                'nb_places'         => (int) $_POST['nb_places'],
+                'chauffeur_id'      => $_SESSION['user_id'],
+                'vehicule_id'       => 1 // temporaire (gestion des véhicules prévue plus tard)
             ]);
 
+            // Redirection après création réussie
             header('Location: /trajets');
             exit;
         }

@@ -1,20 +1,27 @@
 <?php
+/*
+ Définition des routes de l'application
+ clé   → URL
+ valeur → [Contrôleur, méthode]
+ */
 
-/* Tableau des routes
-   clé = URL
-   valeur = [nom du contrôleur, méthode à appeler]
-*/
 return [
+    // Accueil public
     '/' => ['HomeController', 'index'],
 
     // Authentification
     '/login'  => ['AuthController', 'login'],
     '/logout' => ['AuthController', 'logout'],
 
-    // Trajets
-    '/trajets' => ['TrajetController', 'index'],
-    '/trajet'  => ['TrajetController', 'show'], // ?id=1
-    '/trajets/create' => ['TrajetController', 'create'],
-    '/trajets/reserver' => ['ReservationController', 'reserve'],
+    // Trajets (public / utilisateur)
+    '/trajets'              => ['TrajetController', 'index'],
+    '/trajet'               => ['TrajetController', 'show'], // ?id=
+    '/trajets/create'       => ['TrajetController', 'create'],
+
+    // Réservations
+    '/trajets/reserver'     => ['ReservationController', 'reserve'],
     '/reservations/annuler' => ['ReservationController', 'cancel'],
+
+    // Administration
+    '/admin' => ['AdminController', 'index'],
 ];

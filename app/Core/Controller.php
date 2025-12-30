@@ -1,12 +1,12 @@
 <?php
 
+namespace App\Core;
+
 /*
  * Contrôleur parent de l’application
  * Tous les contrôleurs héritent de cette classe
- * Elle centralise les comportements communs (render, sécurité, etc.)
+ * Elle centralise les comportements communs (render, sécurité, erreurs)
  */
-namespace App\Core;
-
 class Controller
 {
     /**
@@ -17,28 +17,35 @@ class Controller
      */
     protected function render(string $view, array $data = []): void
     {
-        // Transforme le tableau $data en variables PHP
-        // Exemple : ['title' => 'Accueil'] → $title = 'Accueil'
+        // Rend les clés du tableau accessibles comme variables
         extract($data);
 
-        // Démarre la capture du HTML de la vue
+        // Capture du contenu de la vue
         ob_start();
-
-        // Charge la vue demandée
-        // Exemple : home/index → app/Views/home/index.php
         require dirname(__DIR__) . "/Views/{$view}.php";
-
-        // Récupère le contenu HTML généré par la vue
         $content = ob_get_clean();
 
-        // Charge le layout principal
-        // Le layout utilisera la variable $content
+        // Layout principal
         require dirname(__DIR__) . "/Views/layouts/main.php";
     }
 
     /**
+     * Affiche une page d'erreur applicative
+     *
+     * @param int $code Code HTTP (400, 403, 404…)
+     */
+    protected function error(int $code): void
+    {
+        http_response_code($code);
+        $this->render("errors/{$code}", [
+            'title' => "Erreur {$code}"
+        ]);
+        exit;
+    }
+
+    /**
      * Vérifie que l'utilisateur est authentifié
-     * Si non connecté, redirige vers la page de connexion
+     * Sinon redirige vers la page de connexion
      */
     protected function requireAuth(): void
     {
@@ -47,6 +54,7 @@ class Controller
             exit;
         }
     }
+
     /**
      * Vérifie que l'utilisateur connecté possède le rôle requis
      *
@@ -54,10 +62,7 @@ class Controller
      */
     protected function requireRole(string $roleLibelle): void
     {
-        if (empty($_SESSION['user_id'])) {
-            header('Location: /login');
-            exit;
-        }
+        $this->requireAuth();
 
         $userRepo = new \App\Models\UserRepository();
         $user = $userRepo->findById($_SESSION['user_id']);
@@ -71,14 +76,8 @@ class Controller
         $roleRepo = new \App\Models\RoleRepository();
         $role = $roleRepo->findByLibelle($roleLibelle);
 
-        if (!$role || (int)$user['role_id'] !== (int)$role['id']) {
-            http_response_code(403);
-
-            $this->render('errors/403', [
-                'title' => 'Accès interdit'
-            ]);
-            exit;
+        if (!$role || (int) $user['role_id'] !== (int) $role['id']) {
+            $this->error(403);
         }
     }
-
 }

@@ -6,57 +6,42 @@ class Router
 {
     public function dispatch(): void
     {
-        // Récupération du chemin de l’URL (ex: /login ou /index.php/login)
+        // Récupération et normalisation de l’URL
         $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-
-        // Suppression de /index.php si présent dans l’URL
         $uri = str_replace('/index.php', '', $uri);
+        $uri = rtrim($uri, '/') ?: '/';
 
-        // Normalisation : suppression du slash final
-        $uri = rtrim($uri, '/');
-
-        // Si l’URL est vide après normalisation, on considère que c’est la racine
-        if ($uri === '') {
-            $uri = '/';
-        }
-
-        // Chargement des routes définies par l’application
+        // Chargement des routes applicatives
         $routes = require dirname(__DIR__, 2) . '/routes/web.php';
 
-        // Si la route n’existe pas → 404 applicative
+        // Route inexistante → 404
         if (!isset($routes[$uri])) {
             http_response_code(404);
-
-            // Affichage d'une page d'erreur applicative
-            $controller = new \App\Core\Controller();
-            $controller->render('errors/404', [
-                'title' => 'Page introuvable'
-            ]);
+            require dirname(__DIR__) . '/Views/errors/404.php';
             return;
         }
 
-        // Récupération du contrôleur et de la méthode
+        // Résolution du contrôleur et de la méthode
         [$controller, $method] = $routes[$uri];
-
-        // Construction du nom complet de la classe contrôleur
         $controllerClass = 'App\\Controllers\\' . $controller;
 
-        // Vérifie que la classe contrôleur existe
+        // Contrôleur introuvable → 500
         if (!class_exists($controllerClass)) {
             http_response_code(500);
-            echo 'Controller not found';
+            require dirname(__DIR__) . '/Views/errors/500.php';
             return;
         }
 
-        // Instanciation dynamique du contrôleur
-        $controllerInstance = new $controllerClass();
+        $instance = new $controllerClass();
 
-        // Appel de la méthode demandée
-        if (!method_exists($controllerInstance, $method)) {
+        // Méthode introuvable → 500
+        if (!method_exists($instance, $method)) {
             http_response_code(500);
-            echo 'Method not found';
+            require dirname(__DIR__) . '/Views/errors/500.php';
             return;
         }
-        $controllerInstance->$method();
+
+        // Exécution de l’action
+        $instance->$method();
     }
 }
