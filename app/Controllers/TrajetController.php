@@ -50,10 +50,20 @@ class TrajetController extends Controller
      *
      * US 5 : Consulter le détail d’un covoiturage
      *
-     * @param int $id Identifiant du trajet
+     * L’identifiant du trajet est récupéré via l’URL (?id=).
      */
-    public function show(int $id): void
+    public function show(): void
     {
+        // Récupération et validation de l’identifiant du trajet
+        $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+
+        if ($id <= 0) {
+            http_response_code(400);
+            echo 'Trajet invalide';
+            return;
+        }
+
+        // Accès aux données via le repository
         $repo = new TrajetRepository();
         $trajet = $repo->findById($id);
 

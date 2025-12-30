@@ -56,14 +56,16 @@ class ParticipationRepository
 
             // Création de la participation
             $stmt = $pdo->prepare(
-                'INSERT INTO participation (etat, credits_utilises, utilisateur_id, trajet_id)
-                 VALUES ("confirmé", :credits, :uid, :tid)'
+                'INSERT INTO participation (etat, confirme_le, credits_utilises, utilisateur_id, trajet_id)
+                 VALUES ("confirmé", NOW(), :credits, :uid, :tid)'
             );
             $stmt->execute([
                 'credits' => $prix,
                 'uid' => $userId,
                 'tid' => $trajetId
             ]);
+            // ID réel de la participation
+            $participationId = (int) $pdo->lastInsertId();
 
             // Décrémentation des places
             $stmt = $pdo->prepare(
@@ -73,12 +75,13 @@ class ParticipationRepository
 
             // Mouvement de crédit (débit)
             $stmt = $pdo->prepare(
-                'INSERT INTO credit_mouvement (type, montant, utilisateur_id)
-                 VALUES ("debit_reservation", :montant, :uid)'
+                'INSERT INTO credit_mouvement (type, montant, utilisateur_id, participation_id)
+                 VALUES ("debit_reservation", :montant, :uid, :pid)'
             );
             $stmt->execute([
                 'montant' => -$prix,
-                'uid' => $userId
+                'uid' => $userId,
+                'pid' => $participationId
             ]);
 
             // Valide la transaction
@@ -118,7 +121,7 @@ class ParticipationRepository
 
             $participation = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if (!$participation) {
+            if (!$participation || $participation['etat'] !== 'confirmé') {
                 $pdo->rollBack();
                 return false;
             }
@@ -137,12 +140,13 @@ class ParticipationRepository
 
             // Remboursement
             $stmt = $pdo->prepare(
-                'INSERT INTO credit_mouvement (type, montant, utilisateur_id)
-                 VALUES ("remboursement", :montant, :uid)'
+                'INSERT INTO credit_mouvement (type, montant, utilisateur_id, participation_id)
+                 VALUES ("remboursement", :montant, :uid, :pid)'
             );
             $stmt->execute([
                 'montant' => abs((int)$participation['credits_utilises']),
-                'uid' => $userId
+                'uid' => $userId,
+                'pid' => $participation['id']
             ]);
 
             $pdo->commit();
