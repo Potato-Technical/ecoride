@@ -47,6 +47,11 @@ class Router
         $controllerInstance = new $controllerClass();
 
         // Appel de la méthode demandée
+        if (!method_exists($controllerInstance, $method)) {
+            http_response_code(500);
+            echo 'Method not found';
+            return;
+        }
         $controllerInstance->$method();
     }
 }
