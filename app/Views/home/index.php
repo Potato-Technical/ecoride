@@ -12,6 +12,7 @@
   <p><a href="/login">Connexion</a></p>
 <?php endif; ?>
 
-<?php if (!empty($_SESSION['user']) && !empty($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'admin'): ?>
+<?php if (!empty($_SESSION['user_id'])): ?>
   <p><a href="/admin">Administration</a></p>
 <?php endif; ?>
+

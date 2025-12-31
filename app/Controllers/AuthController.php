@@ -62,8 +62,8 @@ class AuthController extends Controller
         // Destruction de la session active
         session_destroy();
 
-        // Redirection vers la page de connexion
-        header('Location: /login');
+        // Redirection vers la page d'accueil
+        header('Location: /');
         exit;
     }
 }

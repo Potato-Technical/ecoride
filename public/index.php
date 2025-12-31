@@ -39,6 +39,7 @@ require_once __DIR__ . '/../app/Controllers/HomeController.php';
 require_once __DIR__ . '/../app/Controllers/AuthController.php';
 require_once __DIR__ . '/../app/Controllers/TrajetController.php';
 require_once __DIR__ . '/../app/Controllers/ReservationController.php';
+require_once __DIR__ . '/../app/Controllers/AdminController.php';
 
 // On crée le routeur (attention : nom complet avec le namespace)
 $router = new \App\Core\Router();
