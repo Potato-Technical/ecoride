@@ -5,7 +5,7 @@
   <a href="/trajets">Rechercher un trajet</a>
 </p>
 
-<?php if (!empty($_SESSION['user'])): ?>
+<?php if (!empty($_SESSION['user_id'])): ?>
   <p><a href="/reservations">Mes réservations</a></p>
   <p><a href="/logout">Déconnexion</a></p>
 <?php else: ?>

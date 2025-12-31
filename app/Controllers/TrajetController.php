@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Models\TrajetRepository;
+use App\Models\ParticipationRepository;
 
 class TrajetController extends Controller
 {
@@ -79,10 +80,21 @@ class TrajetController extends Controller
             return;
         }
 
+        // Détection "déjà réservé" (UX uniquement)
+        $hasParticipation = false;
+        if (!empty($_SESSION['user_id'])) {
+            $pRepo = new ParticipationRepository();
+            $hasParticipation = $pRepo->hasParticipation(
+                $_SESSION['user_id'],
+                $id
+            );
+        }
+
         // Affichage de la vue de détail
         $this->render('trajets/show', [
-            'trajet' => $trajet,
-            'title'  => 'Détail du covoiturage'
+            'trajet'           => $trajet,
+            'hasParticipation' => $hasParticipation,
+            'title'            => 'Détail du covoiturage'
         ]);
     }
 

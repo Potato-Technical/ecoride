@@ -122,6 +122,26 @@ class ParticipationRepository
     }
 
     /**
+     * Indique si l'utilisateur a déjà une participation (quel que soit l'état) pour un trajet.
+     */
+    public function hasParticipation(int $userId, int $trajetId): bool
+    {
+        $pdo = Database::getInstance();
+
+        $stmt = $pdo->prepare(
+            'SELECT 1 FROM participation
+            WHERE utilisateur_id = :uid AND trajet_id = :tid
+            LIMIT 1'
+        );
+        $stmt->execute([
+            'uid' => $userId,
+            'tid' => $trajetId
+        ]);
+
+        return (bool) $stmt->fetchColumn();
+    }
+
+    /**
      * Annule une réservation.
      * - Réincrémente les places
      * - Crée un mouvement de remboursement
