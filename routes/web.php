@@ -19,6 +19,7 @@ return [
     '/trajets/create'       => ['TrajetController', 'create'],
 
     // Réservations
+    '/reservations' => ['ReservationController', 'index'],
     '/trajets/reserver'     => ['ReservationController', 'reserve'],
     '/reservations/annuler' => ['ReservationController', 'cancel'],
 

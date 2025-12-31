@@ -16,9 +16,6 @@ class HomeController extends Controller
      */
     public function index(): void
     {
-        // Sécurité : accès réservé aux administrateurs
-        $this->requireRole('administrateur');
-
         // Affichage de la page d’accueil
         $this->render('home/index', [
             'title' => 'Accueil'

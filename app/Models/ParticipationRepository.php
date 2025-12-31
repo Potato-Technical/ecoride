@@ -95,6 +95,33 @@ class ParticipationRepository
     }
 
     /**
+     * Liste les réservations d’un utilisateur (toutes, y compris annulées).
+     */
+    public function findByUser(int $userId): array
+    {
+        $pdo = Database::getInstance();
+
+        $stmt = $pdo->prepare(
+            'SELECT
+                p.id            AS participation_id,
+                p.etat          AS etat,
+                p.created_at    AS created_at,
+                t.id            AS trajet_id,
+                t.lieu_depart,
+                t.lieu_arrivee,
+                t.date_heure_depart,
+                t.prix
+            FROM participation p
+            JOIN trajet t ON t.id = p.trajet_id
+            WHERE p.utilisateur_id = :uid
+            ORDER BY p.created_at DESC'
+        );
+
+        $stmt->execute(['uid' => $userId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
      * Annule une réservation.
      * - Réincrémente les places
      * - Crée un mouvement de remboursement

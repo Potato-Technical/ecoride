@@ -66,6 +66,22 @@ class ReservationController extends Controller
     }
 
     /**
+     * Liste des réservations de l’utilisateur connecté.
+     */
+    public function index(): void
+    {
+        $this->requireAuth();
+
+        $repo = new ParticipationRepository();
+        $reservations = $repo->findByUser($_SESSION['user_id']);
+
+        $this->render('reservations/index', [
+            'reservations' => $reservations,
+            'title' => 'Mes réservations'
+        ]);
+    }
+
+    /**
      * Annule une réservation appartenant à l'utilisateur connecté.
      *
      * L'identifiant de la participation est récupéré via l'URL (?id=).
