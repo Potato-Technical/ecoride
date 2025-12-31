@@ -28,7 +28,7 @@ CREATE TABLE utilisateur (
     est_suspendu BOOLEAN NOT NULL DEFAULT FALSE, -- désactivation logique du compte
     role_id INT NOT NULL, -- rôle fonctionnel de l'utilisateur
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- date de création du compte
-	updated_at DATETIME DEFAULT NULL, -- date de dernière modification du compte
+    updated_at DATETIME DEFAULT NULL, -- date de dernière modification du compte
 
     KEY idx_utilisateur_role (role_id),
     FOREIGN KEY (role_id) REFERENCES role(id) -- attribution du rôle
@@ -44,7 +44,7 @@ CREATE TABLE vehicule (
     modele VARCHAR(100) NOT NULL,
     marque VARCHAR(100) NOT NULL,
     couleur VARCHAR(50) NOT NULL,
-	energie ENUM('thermique','electrique','hybride') NOT NULL, -- type d’énergie du véhicule
+    energie ENUM('thermique','electrique','hybride') NOT NULL, -- type d’énergie du véhicule
     fumeur_accepte BOOLEAN NOT NULL,
     animaux_acceptes BOOLEAN NOT NULL,
     preferences_libres TEXT, -- préférences complémentaires du chauffeur
@@ -71,7 +71,7 @@ CREATE TABLE trajet (
     vehicule_id INT NOT NULL, -- véhicule utilisé
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- date de création du trajet
 
-    CHECK (statut IN ('planifié','démarré','terminé','annulé')), -- domaine autorisé
+    CHECK (statut IN ('planifie','demarre','termine','annule')), -- domaine autorisé
 
     KEY idx_trajet_chauffeur (chauffeur_id),
     KEY idx_trajet_vehicule (vehicule_id),
@@ -92,7 +92,7 @@ CREATE TABLE participation (
     trajet_id INT NOT NULL, -- trajet réservé
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- date de la demande de participation
 
-    CHECK (etat IN ('demandé','confirmé','annulé')),
+    CHECK (etat IN ('demande','confirme','annule')),
     UNIQUE (utilisateur_id, trajet_id), -- une seule réservation par utilisateur et trajet
 
     KEY idx_participation_utilisateur (utilisateur_id),
@@ -114,7 +114,7 @@ CREATE TABLE avis (
     cible_id INT NOT NULL, -- chauffeur évalué
     trajet_id INT NOT NULL, -- trajet concerné
 
-    CHECK (statut_validation IN ('en_attente','validé','refusé')),
+    CHECK (statut_validation IN ('en_attente','valide','refuse')),
     UNIQUE (trajet_id, auteur_id, cible_id), -- un avis par auteur et trajet
 
     KEY idx_avis_trajet (trajet_id),
@@ -150,6 +150,7 @@ CREATE TABLE credit_mouvement (
     FOREIGN KEY (utilisateur_id) REFERENCES utilisateur(id),
     FOREIGN KEY (participation_id) REFERENCES participation(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
 -- Table : notification_mail
 -- Rôle : journalisation des notifications envoyées

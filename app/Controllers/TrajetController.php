@@ -26,19 +26,12 @@ class TrajetController extends Controller
         $arrivee = isset($_GET['arrivee']) ? trim($_GET['arrivee']) : '';
         $date    = isset($_GET['date'])    ? trim($_GET['date'])    : '';
 
-        // Si les trois critères sont présents et valides :
-        // on effectue une recherche filtrée
-        if (
-            $_SERVER['REQUEST_METHOD'] === 'GET'
-            && $depart !== ''
-            && $arrivee !== ''
-            && $date !== ''
-        ) {
+        // Si les trois paramètres sont fournis (valeurs non nulles / non vides) :
+        if ($depart && $arrivee && $date) {
+            // recherche avec filtres départ, arrivée et date
             $trajets = $repo->search($depart, $arrivee, $date);
-        }
-        // Sinon :
-        // affichage de tous les trajets disponibles
-        else {
+        } else {
+        // au moins un paramètre manquant → récupération de tous les trajets disponibles
             $trajets = $repo->findAllAvailable();
         }
 
