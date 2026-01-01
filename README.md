@@ -20,7 +20,7 @@ Le projet s’appuie sur une architecture MVC en PHP et un environnement Dockeri
 * **Architecture MVC personnalisée**
 * **PDO** (requêtes préparées, transactions SQL)
 * **Apache**
-* * **Composer** (autoload PSR-4)
+* **Composer** (autoload PSR-4)
 
 **Base de données**
 
