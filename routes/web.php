@@ -21,6 +21,7 @@ return [
     // Réservations
     '/reservations' => ['ReservationController', 'index'],
     '/trajets/reserver'     => ['ReservationController', 'reserve'],
+    '/trajets/reserver/confirm' => ['ReservationController', 'confirm'],
     '/reservations/annuler' => ['ReservationController', 'cancel'],
 
     // Administration

@@ -14,12 +14,17 @@
   <?php if ($hasParticipation): ?>
     <p><em>Vous avez déjà participé à ce trajet.</em></p>
   <?php elseif ((int)$trajet['nb_places'] > 0): ?>
-    <a href="/trajets/reserver?id=<?= (int)$trajet['id'] ?>">
-      Réserver
-    </a>
+      <form method="POST" action="/trajets/reserver">
+          <input type="hidden" name="trajet_id" value="<?= (int)$trajet['id'] ?>">
+          <button type="submit">Réserver</button>
+      </form>
   <?php else: ?>
     <p>Aucune place disponible.</p>
   <?php endif; ?>
 <?php else: ?>
-  <p><a href="/login">Se connecter pour réserver</a></p>
+  <p>
+    <a href="/login?redirect=<?= urlencode($_SERVER['REQUEST_URI']) ?>">
+      Se connecter pour réserver
+    </a>
+  </p>
 <?php endif; ?>

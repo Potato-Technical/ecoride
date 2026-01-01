@@ -14,11 +14,12 @@ class ParticipationRepository
      * - Empêche une double réservation
      * - Décrémente le nombre de places
      * - Crée le mouvement de crédit (débit)
-     *
      * @param int $trajetId
      * @param int $userId
      * @param int $prix
      * @return bool
+     * @deprecated Utiliser une transaction explicite côté contrôleur
+     *            avec create(), debitCredits() et TrajetRepository::decrementPlaces().
      */
     public function reserve(int $trajetId, int $userId, int $prix): bool
     {
@@ -57,7 +58,7 @@ class ParticipationRepository
             // Création de la participation
             $stmt = $pdo->prepare(
                 'INSERT INTO participation (etat, confirme_le, credits_utilises, utilisateur_id, trajet_id)
-                 VALUES ("confirmé", NOW(), :credits, :uid, :tid)'
+                 VALUES ("confirme", NOW(), :credits, :uid, :tid)'
             );
             $stmt->execute([
                 'credits' => $prix,
@@ -92,6 +93,20 @@ class ParticipationRepository
             $pdo->rollBack();
             return false;
         }
+    }
+
+    public function create(int $userId, int $trajetId, int $prix): void
+    {
+        $pdo = Database::getInstance();
+        $stmt = $pdo->prepare(
+            'INSERT INTO participation (etat, confirme_le, credits_utilises, utilisateur_id, trajet_id)
+            VALUES ("confirme", NOW(), :credits, :uid, :tid)'
+        );
+        $stmt->execute([
+            'credits' => $prix,
+            'uid'     => $userId,
+            'tid'     => $trajetId
+        ]);
     }
 
     /**
@@ -129,9 +144,10 @@ class ParticipationRepository
         $pdo = Database::getInstance();
 
         $stmt = $pdo->prepare(
-            'SELECT 1 FROM participation
+            "SELECT 1 FROM participation
             WHERE utilisateur_id = :uid AND trajet_id = :tid
-            LIMIT 1'
+            AND etat = 'confirme'
+            LIMIT 1"
         );
         $stmt->execute([
             'uid' => $userId,
@@ -139,6 +155,69 @@ class ParticipationRepository
         ]);
 
         return (bool) $stmt->fetchColumn();
+    }
+
+    /**
+     * Indique si l'utilisateur possède déjà une participation
+     * (quel que soit l'état) pour un trajet donné.
+     */
+    public function hasAnyParticipation(int $userId, int $trajetId): bool
+    {
+        $pdo = Database::getInstance();
+
+        $stmt = $pdo->prepare(
+            'SELECT 1
+            FROM participation
+            WHERE utilisateur_id = :uid
+            AND trajet_id = :tid
+            LIMIT 1'
+        );
+
+        $stmt->execute([
+            'uid' => $userId,
+            'tid' => $trajetId
+        ]);
+
+        return (bool) $stmt->fetchColumn();
+    }
+
+public function hasCancelledParticipation(int $userId, int $trajetId): bool
+{
+    $pdo = Database::getInstance();
+
+    $stmt = $pdo->prepare(
+        'SELECT 1 FROM participation
+         WHERE utilisateur_id = :uid
+           AND trajet_id = :tid
+           AND etat = "annule"
+         LIMIT 1'
+    );
+
+    $stmt->execute([
+        'uid' => $userId,
+        'tid' => $trajetId
+    ]);
+
+    return (bool) $stmt->fetchColumn();
+}
+
+
+    public function reactivate(int $userId, int $trajetId): void
+    {
+        $pdo = Database::getInstance();
+
+        $stmt = $pdo->prepare(
+            'UPDATE participation
+            SET etat = "confirme", confirme_le = NOW()
+            WHERE utilisateur_id = :uid
+            AND trajet_id = :tid
+            AND etat = "annule"'
+        );
+
+        $stmt->execute([
+            'uid' => $userId,
+            'tid' => $trajetId
+        ]);
     }
 
     /**
@@ -168,14 +247,14 @@ class ParticipationRepository
 
             $participation = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if (!$participation || $participation['etat'] !== 'confirmé') {
+            if (!$participation || $participation['etat'] !== 'confirme') {
                 $pdo->rollBack();
                 return false;
             }
 
             // Annulation logique
             $stmt = $pdo->prepare(
-                'UPDATE participation SET etat = "annulé" WHERE id = :id'
+                'UPDATE participation SET etat = "annule" WHERE id = :id'
             );
             $stmt->execute(['id' => $participationId]);
 

@@ -16,7 +16,7 @@
 
         État : <strong><?= htmlspecialchars($r['etat']) ?></strong>
 
-        <?php if ($r['etat'] === 'confirmé'): ?>
+        <?php if ($r['etat'] === 'confirme'): ?>
           <form method="get" action="/reservations/annuler" style="display:inline;">
             <input type="hidden" name="id" value="<?= (int)$r['participation_id'] ?>">
             <button type="submit">Annuler</button>

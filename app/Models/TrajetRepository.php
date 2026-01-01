@@ -35,7 +35,7 @@ class TrajetRepository
               AND t.lieu_arrivee = :arrivee
               AND DATE(t.date_heure_depart) = :date
               AND t.nb_places > 0
-              AND t.statut = 'planifié'
+              AND t.statut = 'planifie'
             ORDER BY t.date_heure_depart ASC
             "
         );
@@ -70,7 +70,7 @@ class TrajetRepository
             JOIN utilisateur u ON u.id = t.chauffeur_id
             JOIN vehicule v ON v.id = t.vehicule_id
             WHERE t.nb_places > 0
-              AND t.statut = 'planifié'
+              AND t.statut = 'planifie'
             ORDER BY t.date_heure_depart ASC
             "
         );
@@ -100,5 +100,14 @@ class TrajetRepository
 
         // Retourne null si aucun résultat
         return $trajet ?: null;
+    }
+
+    public function decrementPlaces(int $trajetId): void
+    {
+        $pdo = Database::getInstance();
+        $stmt = $pdo->prepare(
+            'UPDATE trajet SET nb_places = nb_places - 1 WHERE id = :id'
+        );
+        $stmt->execute(['id' => $trajetId]);
     }
 }
