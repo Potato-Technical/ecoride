@@ -1,0 +1,32 @@
+services:
+  web:
+    build: .
+    container_name: ecoride_web
+    ports:
+      - "8080:80"              # port local 8080 → Apache du conteneur
+    volumes:
+      - ./:/var/www/html       # partage du code source avec le conteneur
+    depends_on:
+      - db                     # le service web dépend de la base de données
+    env_file:
+      - .env                   # variables d’environnement pour PHP
+
+  db:
+    image: mysql:8.0           # version stable de MySQL
+    container_name: ecoride_db
+    command:
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+                              # force l'encodage UTF-8 complet
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}       # nom de la base
+      MYSQL_USER: ${DB_USER}           # utilisateur MySQL
+      MYSQL_PASSWORD: ${DB_PASS}       # mot de passe utilisateur
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS} # mot de passe root
+    ports:
+      - "3307:3306"            # port local 3307 → MySQL du conteneur
+    volumes:
+      - db_data:/var/lib/mysql # stockage persistant des données MySQL
+
+volumes:
+  db_data:                     # volume Docker pour la base
