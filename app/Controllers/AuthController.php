@@ -36,8 +36,9 @@ class AuthController extends Controller
                 // Stocke l'identifiant utilisateur en session
                 $_SESSION['user_id'] = $user['id'];
 
-                // Redirection après connexion réussie
-                header('Location: /');
+                // Redirection post-login (retour à la page demandée si fournie)
+                $redirect = $_GET['redirect'] ?? '/';
+                header('Location: ' . $redirect);
                 exit;
             }
 
