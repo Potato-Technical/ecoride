@@ -15,11 +15,14 @@
 <!-- $content provient du contrôleur via ob_start / ob_get_clean -->
 <div class="container mt-4">
 
-    <?php if (!empty($_SESSION['flash'])): ?>
-        <div class="alert alert-<?= htmlspecialchars($_SESSION['flash']['type']) ?>" role="alert">
-            <?= htmlspecialchars($_SESSION['flash']['message']) ?>
-        </div>
-        <?php unset($_SESSION['flash']); ?>
+    <?php if (!empty($_SESSION['flash'])):
+        $type = $_SESSION['flash']['type'] === 'error' ? 'danger' : $_SESSION['flash']['type']; ?>
+
+    <div class="alert alert-<?= htmlspecialchars($type) ?>" role="alert">
+        <?= htmlspecialchars($_SESSION['flash']['message']) ?>
+    </div>
+
+    <?php unset($_SESSION['flash']); ?>
     <?php endif; ?>
 
     <?= $content ?>

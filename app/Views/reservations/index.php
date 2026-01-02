@@ -6,18 +6,18 @@
   <ul>
     <?php foreach ($reservations as $r): ?>
       <li>
-        <strong><?= htmlspecialchars($r['lieu_depart']) ?></strong>
+        <strong><?= htmlspecialchars((string) ($r['lieu_depart'] ?? '')) ?></strong>
         →
-        <strong><?= htmlspecialchars($r['lieu_arrivee']) ?></strong><br>
+        <strong><?= htmlspecialchars((string) ($r['lieu_arrivee'] ?? '')) ?></strong><br>
 
         Départ :
         <?= htmlspecialchars(date('d/m/Y H:i', strtotime($r['date_heure_depart']))) ?>
         — Prix : <?= (int)$r['prix'] ?> crédits<br>
 
-        État : <strong><?= htmlspecialchars($r['etat']) ?></strong>
+        État : <strong><?= htmlspecialchars((string) ($r['etat'] ?? '')) ?></strong>
 
         <?php if ($r['etat'] === 'confirme'): ?>
-          <form method="post" action="/reservation/cancel" class="d-inline">
+          <form method="post" action="/reservations/annuler" class="d-inline">
               <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
               <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
               <button type="submit" class="btn btn-danger btn-sm">

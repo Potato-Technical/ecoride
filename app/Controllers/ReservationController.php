@@ -140,7 +140,8 @@ class ReservationController extends Controller
 
         // 4) Création normale
         if ($partRepo->hasAnyParticipation((int) $_SESSION['user_id'], $trajetId)) {
-            $this->render('errors/400', ['title' => 'Réservation déjà existante']);
+            $this->setFlash('error', 'Vous avez déjà réservé ce trajet');
+            header('Location: /reservations');
             return;
         }
 
@@ -197,10 +198,8 @@ class ReservationController extends Controller
 
         // Échec métier de l’annulation (déjà annulée, pas propriétaire, etc.)
         if (!$ok) {
-            http_response_code(400);
-            $this->render('errors/400', [
-                'title' => 'Annulation impossible'
-            ]);
+            $this->setFlash('error', 'Vous avez déjà réservé ce trajet');
+            header('Location: /reservations');
             return;
         }
 

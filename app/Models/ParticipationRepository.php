@@ -118,7 +118,7 @@ class ParticipationRepository
 
         $stmt = $pdo->prepare(
             'SELECT
-                p.id            AS participation_id,
+                p.id            AS id,
                 p.etat          AS etat,
                 p.created_at    AS created_at,
                 t.id            AS trajet_id,
