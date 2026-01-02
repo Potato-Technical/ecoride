@@ -1,4 +1,14 @@
-# EcoRide
+<h1 align="center">EcoRide</h1>
+
+###
+
+<p align="center">
+  <img src="https://img.shields.io/badge/PHP-8.x-777BB4" />
+  <img src="https://img.shields.io/badge/Docker-enabled-2496ED" />
+  <img src="https://img.shields.io/badge/version-0.1.0-brightgreen" />
+</p>
+
+###
 
 EcoRide est une application web de covoiturage. Elle permet la consultation et la réservation de trajets, ainsi que la gestion des participations utilisateurs, avec une logique métier sécurisée et transactionnelle.
 Le projet s’appuie sur une architecture MVC en PHP et un environnement Dockerisé pour assurer la cohérence du développement.

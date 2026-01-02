@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.0] - Unreleased
+### Added
+- Protection CSRF sur les formulaires sensibles
+- Messages utilisateur (feedback action)
+- Renforcement des contrôles métier côté serveur
+
 ## [0.1.0] - 2026-01-02
 
 ### Added
