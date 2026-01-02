@@ -18,6 +18,7 @@
 </p>
 
 <form method="POST" action="/trajets/reserver/confirm">
+    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
     <input type="hidden" name="trajet_id" value="<?= (int) $trajet['id'] ?>">
     <button type="submit">Confirmer la réservation</button>
 </form>

@@ -6,7 +6,15 @@ use App\Core\Controller;
 use App\Core\Database;
 use App\Models\ParticipationRepository;
 use App\Models\TrajetRepository;
-
+    /**
+     * Contrôleur de réservation.
+     *
+     * Sécurité :
+     * - Toutes les actions sont réservées aux utilisateurs authentifiés
+     * - Les actions POST sont protégées par un token CSRF
+     * - Les vérifications métier (statut, places, ownership) sont faites côté serveur
+     * - Les opérations critiques sont exécutées dans des transactions SQL atomiques
+     */
 
 class ReservationController extends Controller
 {
@@ -19,6 +27,10 @@ class ReservationController extends Controller
     {
         // Accès réservé aux utilisateurs connectés
         $this->requireAuth();
+        
+        // Protection CSRF : empêche l'appel de l'action depuis une source externe
+        $this->verifyCsrfToken();
+
 
         // Récupération et validation de l'identifiant du trajet
         $trajetId = isset($_POST['trajet_id']) ? (int) $_POST['trajet_id'] : 0;
@@ -56,7 +68,8 @@ class ReservationController extends Controller
 
         $this->render('reservations/confirm', [
             'trajet' => $trajet,
-            'title'  => 'Confirmer la réservation'
+            'title'  => 'Confirmer la réservation',
+            'csrf_token' => $this->generateCsrfToken()
         ]);
     }
 
@@ -72,7 +85,8 @@ class ReservationController extends Controller
 
         $this->render('reservations/index', [
             'reservations' => $reservations,
-            'title' => 'Mes réservations'
+            'title' => 'Mes réservations',
+            'csrf_token' => $this->generateCsrfToken()
         ]);
     }
 
@@ -85,6 +99,7 @@ class ReservationController extends Controller
     public function confirm(): void
     {
         $this->requireAuth();
+        $this->verifyCsrfToken();
 
         // 1) Récupération et validation
         $trajetId = isset($_POST['trajet_id']) ? (int) $_POST['trajet_id'] : 0;
@@ -117,8 +132,10 @@ class ReservationController extends Controller
 
             $pdo->commit();
 
+            $this->setFlash('success', 'Réservation réactivée');
             header('Location: /reservations');
             exit;
+
         }
 
         // 4) Création normale
@@ -140,6 +157,7 @@ class ReservationController extends Controller
 
             $pdo->commit();
 
+            $this->setFlash('success', 'Réservation confirmée');
             header('Location: /reservations');
             exit;
 
@@ -159,8 +177,11 @@ class ReservationController extends Controller
         // Accès réservé aux utilisateurs connectés
         $this->requireAuth();
 
+        // Sécurité CSRF
+        $this->verifyCsrfToken();
+
         // Récupération et validation de l'identifiant de la participation
-        $participationId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+        $participationId = isset($_POST['id']) ? (int) $_POST['id'] : 0;
 
         if ($participationId <= 0) {
             http_response_code(400);
@@ -184,6 +205,7 @@ class ReservationController extends Controller
         }
 
         // Redirection après annulation réussie
+        $this->setFlash('success', 'Réservation annulée');
         header('Location: /trajets');
         exit;
     }

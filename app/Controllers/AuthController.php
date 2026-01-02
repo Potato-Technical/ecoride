@@ -23,6 +23,10 @@ class AuthController extends Controller
         // Traitement du formulaire de connexion
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
+            // Vérification CSRF obligatoire avant tout traitement métier
+            // Empêche l'envoi du formulaire depuis une source externe non autorisée
+            $this->verifyCsrfToken();
+
             // Accès à la table utilisateur via le repository
             $repo = new UserRepository();
             $user = $repo->findByEmail($_POST['email']);
@@ -50,7 +54,9 @@ class AuthController extends Controller
         }
 
         // Affichage simple du formulaire de connexion (requête GET)
-        $this->render('auth/login');
+        $this->render('auth/login', [
+            'csrf_token' => $this->generateCsrfToken()
+        ]);
     }
 
     /**

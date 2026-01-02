@@ -80,4 +80,63 @@ class Controller
             $this->error(403);
         }
     }
+
+    /**
+     * Génère un token CSRF unique et le stocke en session.
+     *
+     * Sécurité :
+     * - Protège contre les attaques CSRF (Cross-Site Request Forgery)
+     * - Le token est généré côté serveur et lié à la session utilisateur
+     * - Utilise random_bytes pour une entropie cryptographiquement sûre
+     *
+     * Utilisation :
+     * - Appelé lors de l'affichage des formulaires POST
+     * - Le token est injecté dans un champ hidden
+     */
+    protected function generateCsrfToken(): string
+    {
+        if (empty($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+
+        return $_SESSION['csrf_token'];
+    }
+
+    /**
+     * Vérifie la validité du token CSRF transmis via un formulaire POST.
+     *
+     * Sécurité :
+     * - Empêche l'exécution d'actions sensibles sans validation explicite de l'utilisateur
+     * - Compare le token POST avec celui stocké en session
+     * - Utilise hash_equals pour éviter les attaques par timing
+     *
+     * Comportement :
+     * - En cas d'absence ou d'invalidité du token → erreur 403
+     * - Aucune action métier n'est exécutée avant cette vérification
+     */
+    protected function verifyCsrfToken(): void
+    {
+        if (
+            empty($_POST['csrf_token']) ||
+            empty($_SESSION['csrf_token']) ||
+            !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])
+        ) {
+            $this->error(403);
+        }
+    }
+
+    /**
+     * Définit un message flash (affiché une seule fois).
+     *
+     * @param string $type    success | error | info
+     * @param string $message Message à afficher
+     */
+    protected function setFlash(string $type, string $message): void
+    {
+        $_SESSION['flash'] = [
+            'type' => $type,
+            'message' => $message
+        ];
+    }
+
 }

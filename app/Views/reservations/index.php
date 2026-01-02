@@ -17,9 +17,10 @@
         État : <strong><?= htmlspecialchars($r['etat']) ?></strong>
 
         <?php if ($r['etat'] === 'confirme'): ?>
-          <form method="get" action="/reservations/annuler" style="display:inline;">
-            <input type="hidden" name="id" value="<?= (int)$r['participation_id'] ?>">
-            <button type="submit">Annuler</button>
+          <form method="post" action="/reservation/cancel">
+              <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
+              <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
+              <button type="submit">Annuler</button>
           </form>
         <?php endif; ?>
       </li>
