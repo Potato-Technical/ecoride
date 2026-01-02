@@ -8,7 +8,7 @@ Ce projet suit le versioning sémantique (SemVer).
 ### Added
 - Protection CSRF sur toutes les actions POST sensibles
 - Vérification centralisée des tokens CSRF côté serveur
-- Messages flash utilisateur (succès) après actions métier
+- Messages flash utilisateur (succès et erreur) après actions métier
 - Feedback utilisateur global via layout Bootstrap
 
 ### Changed
@@ -17,8 +17,9 @@ Ce projet suit le versioning sémantique (SemVer).
 - Clarification des responsabilités contrôleur / vue
 
 ### Security
-- Renforcement des contrôles d’ownership sur les réservations
+- Protection CSRF sur toutes les actions POST sensibles (authentification, réservation, annulation)
 - Rejet systématique des requêtes POST sans token CSRF valide
+- Renforcement des contrôles d’ownership sur les réservations
 - Suppression des actions destructrices accessibles via GET
 
 ---

@@ -5,7 +5,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/PHP-8.x-777BB4" />
   <img src="https://img.shields.io/badge/Docker-enabled-2496ED" />
-  <img src="https://img.shields.io/badge/version-0.1.0-brightgreen" />
+  <img src="https://img.shields.io/badge/version-0.2.0-brightgreen" />
 </p>
 
 ###
@@ -131,7 +131,7 @@ Les comptes suivants sont disponibles après initialisation de la base :
 ## Sécurité & fiabilité
 
 - Vérification des accès (authentification requise)
-- Validation systématique des entrées utilisateur
+- Protection CSRF sur toutes les actions POST sensibles
 - Requêtes SQL préparées (PDO)
 - Transactions SQL atomiques
 - Protection contre les doubles réservations

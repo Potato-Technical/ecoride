@@ -93,38 +93,72 @@ class TrajetController extends Controller
     }
 
     /**
-     * Création d’un trajet.
-     * Accès réservé aux administrateurs.
+     * Création d’un trajet (covoiturage).
+     *
+     * Sécurité :
+     * - Accès réservé aux utilisateurs authentifiés
+     * - L’utilisateur connecté devient le conducteur du trajet
+     * - Action POST protégée par token CSRF
+     * - Validation serveur stricte des champs
+     *
      * US 4 : Proposer un covoiturage
      */
     public function create(): void
     {
-        // Vérification du rôle administrateur
-        $this->requireRole('administrateur');
+        // Accès réservé aux utilisateurs connectés (conducteur)
+        $this->requireAuth();
 
-        // Traitement du formulaire de création
+        // Traitement du formulaire
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+            // Protection CSRF
+            $this->verifyCsrfToken();
+
+            // Récupération et validation serveur des champs
+            $lieuDepart  = trim($_POST['lieu_depart'] ?? '');
+            $lieuArrivee = trim($_POST['lieu_arrivee'] ?? '');
+            $dateDepart  = $_POST['date_heure_depart'] ?? '';
+            $prix        = (int) ($_POST['prix'] ?? 0);
+            $nbPlaces    = (int) ($_POST['nb_places'] ?? 0);
+
+            // Validation minimale mais stricte
+            if (
+                $lieuDepart === '' ||
+                $lieuArrivee === '' ||
+                $dateDepart === '' ||
+                $prix <= 0 ||
+                $nbPlaces <= 0
+            ) {
+                http_response_code(400);
+                $this->render('errors/400', [
+                    'title' => 'Données invalides'
+                ]);
+                return;
+            }
+
+            // Création du trajet via le repository
             $repo = new TrajetRepository();
 
-            // Délégation de la création au repository
             $repo->create([
-                'lieu_depart'       => trim($_POST['lieu_depart']),
-                'lieu_arrivee'      => trim($_POST['lieu_arrivee']),
-                'date_heure_depart' => $_POST['date_heure_depart'],
-                'prix'              => (float) $_POST['prix'],
-                'nb_places'         => (int) $_POST['nb_places'],
-                'chauffeur_id'      => $_SESSION['user_id'],
-                'vehicule_id'       => 1 // temporaire (gestion des véhicules prévue plus tard)
+                'lieu_depart'       => $lieuDepart,
+                'lieu_arrivee'      => $lieuArrivee,
+                'date_heure_depart' => $dateDepart,
+                'prix'              => $prix,
+                'nb_places'         => $nbPlaces,
+                'chauffeur_id'      => $_SESSION['user_id'], // ownership clair
+                'vehicule_id'       => 1 // temporaire (évolution prévue)
             ]);
 
-            // Redirection après création réussie
+            // Feedback utilisateur + redirection
+            $this->setFlash('success', 'Trajet créé avec succès');
             header('Location: /trajets');
             exit;
         }
 
-        // Affichage du formulaire de création
+        // Affichage du formulaire (GET)
         $this->render('trajets/create', [
-            'title' => 'Créer un trajet'
+            'title'      => 'Créer un trajet',
+            'csrf_token' => $this->generateCsrfToken()
         ]);
     }
 }

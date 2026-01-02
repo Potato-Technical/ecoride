@@ -102,12 +102,86 @@ class TrajetRepository
         return $trajet ?: null;
     }
 
+    /**
+     * Décrémente le nombre de places disponibles pour un trajet.
+     *
+     * Utilisation :
+     * - Lors d’une réservation confirmée
+     * - Appelée uniquement dans un contexte transactionnel
+     *   (contrôleur ou service métier)
+     *
+     * Hypothèses :
+     * - Le trajet existe
+     * - Le nombre de places a déjà été validé (> 0)
+     *
+     * @param int $trajetId Identifiant du trajet
+     */
     public function decrementPlaces(int $trajetId): void
     {
+        // Connexion à la base de données
         $pdo = Database::getInstance();
+
+        // Mise à jour atomique du nombre de places
         $stmt = $pdo->prepare(
             'UPDATE trajet SET nb_places = nb_places - 1 WHERE id = :id'
         );
+
+        // Exécution sécurisée
         $stmt->execute(['id' => $trajetId]);
+    }
+
+    /**
+     * Crée un nouveau trajet (covoiturage).
+     *
+     * Responsabilités :
+     * - Insérer un trajet planifié en base
+     * - Associer le conducteur (utilisateur connecté)
+     * - Initialiser le statut métier à "planifie"
+     *
+     * La validation des données et la sécurité (CSRF, droits)
+     * sont gérées côté contrôleur.
+     *
+     * @param array $data Données du trajet
+     */
+    public function create(array $data): void
+    {
+        // Connexion à la base de données
+        $pdo = Database::getInstance();
+
+        // Requête d’insertion sécurisée
+        $stmt = $pdo->prepare(
+            '
+            INSERT INTO trajet (
+                lieu_depart,
+                lieu_arrivee,
+                date_heure_depart,
+                prix,
+                nb_places,
+                statut,
+                chauffeur_id,
+                vehicule_id
+            ) VALUES (
+                :lieu_depart,
+                :lieu_arrivee,
+                :date_heure_depart,
+                :prix,
+                :nb_places,
+                "planifie",
+                :chauffeur_id,
+                :vehicule_id
+            )
+            '
+        );
+
+        // Exécution avec paramètres liés
+        $stmt->execute([
+            'lieu_depart'       => $data['lieu_depart'],
+            'lieu_arrivee'      => $data['lieu_arrivee'],
+            'date_heure_depart' => $data['date_heure_depart'],
+            'prix'              => $data['prix'],
+            'nb_places'         => $data['nb_places'],
+            'chauffeur_id'      => $data['chauffeur_id'],
+            'vehicule_id'       => $data['vehicule_id'],
+        ]);
     }
 }
