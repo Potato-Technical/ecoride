@@ -10,21 +10,30 @@
 <p><strong>Places restantes :</strong> <?= (int)$trajet['nb_places'] ?></p>
 <p><strong>Statut :</strong> <?= htmlspecialchars($trajet['statut']) ?></p>
 
-<?php if (!empty($_SESSION['user_id'])): ?>
-  <?php if ($hasParticipation): ?>
-    <p><em>Vous avez déjà participé à ce trajet.</em></p>
-  <?php elseif ((int)$trajet['nb_places'] > 0): ?>
-      <form method="POST" action="/trajets/reserver">
-          <input type="hidden" name="trajet_id" value="<?= (int)$trajet['id'] ?>">
-          <button type="submit">Réserver</button>
-      </form>
-  <?php else: ?>
-    <p>Aucune place disponible.</p>
-  <?php endif; ?>
-<?php else: ?>
-  <p>
-    <a href="/login?redirect=<?= urlencode($_SERVER['REQUEST_URI']) ?>">
-      Se connecter pour réserver
+<hr>
+
+<?php if (empty($_SESSION['user_id'])): ?>
+
+<p>
+    <a href="/login?redirect=<?= urlencode($_SERVER['REQUEST_URI']) ?>" class="btn btn-outline-primary">
+        Se connecter pour réserver
     </a>
-  </p>
+</p>
+
+<?php elseif ($hasParticipation): ?>
+
+<button class="btn btn-secondary" disabled>Déjà réservé</button>
+
+<?php elseif ((int)$trajet['nb_places'] <= 0): ?>
+
+<button class="btn btn-secondary" disabled>Trajet complet</button>
+
+<?php else: ?>
+
+<form method="POST" action="/trajets/reserver" class="d-inline">
+    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
+    <input type="hidden" name="trajet_id" value="<?= (int)$trajet['id'] ?>">
+    <button type="submit" class="btn btn-primary">Réserver</button>
+</form>
+
 <?php endif; ?>

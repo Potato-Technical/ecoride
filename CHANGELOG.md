@@ -1,19 +1,36 @@
 # Changelog
 
-## [0.2.0] - Unreleased
-### Added
-- Protection CSRF sur les formulaires sensibles
-- Messages utilisateur (feedback action)
-- Renforcement des contrôles métier côté serveur
+Tous les changements notables de ce projet sont documentés ici.
+Ce projet suit le versioning sémantique (SemVer).
 
-## [0.1.0] - 2026-01-02
+## [0.2.0] – 2026-01-03
 
 ### Added
-- Architecture MVC PHP complète
+- Protection CSRF sur toutes les actions POST sensibles
+- Vérification centralisée des tokens CSRF côté serveur
+- Messages flash utilisateur (succès) après actions métier
+- Feedback utilisateur global via layout Bootstrap
+
+### Changed
+- Annulation de réservation déplacée de GET vers POST
+- Harmonisation des parcours POST → Redirect → GET
+- Clarification des responsabilités contrôleur / vue
+
+### Security
+- Renforcement des contrôles d’ownership sur les réservations
+- Rejet systématique des requêtes POST sans token CSRF valide
+- Suppression des actions destructrices accessibles via GET
+
+---
+
+## [0.1.0] – 2026-01-02
+
+### Added
+- Architecture MVC PHP complète (sans framework)
 - Environnement Docker (PHP / Apache / MySQL)
-- Orchestration Docker via docker-compose (web + db)
+- Orchestration Docker via docker-compose
 - Modèle de données relationnel (MySQL 8, InnoDB, utf8mb4)
-- Scripts SQL versionnés (schema + seed idempotent)
+- Scripts SQL versionnés (schema + seed idempotents)
 - Authentification utilisateur et contrôle d’accès par rôles
 - Consultation et réservation de trajets
 - Annulation et réactivation des participations
@@ -27,21 +44,9 @@
 - Protection contre les doubles réservations
 - Sécurisation des opérations critiques via transactions SQL
 
-### Security
-- Contrôle d’accès centralisé (authentification et rôles)
-- Protection des routes sensibles (admin, réservation)
-- Validation serveur des paramètres critiques (id, états)
-- Suppression des sorties techniques (echo, die)
-
-### Refactor
-- Nettoyage des contrôleurs (responsabilités claires)
-- Harmonisation des commentaires métier (User Stories)
-
 ### Technical
 - Requêtes SQL préparées via PDO
 - Transactions SQL atomiques
 - Gestion centralisée des erreurs HTTP (400, 403, 404, 500)
 - Routing centralisé via fichier `routes`
-- Scripts shell déterministes pour réinitialisation complète de la base (reset / schema / seed)
-- Sanity check CLI pour validation de la connectivité PDO/MySQL
-- Support des environnements local et Docker via variables d’environnement
+- Scripts shell déterministes pour réinitialisation de la base

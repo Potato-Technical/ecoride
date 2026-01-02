@@ -87,6 +87,7 @@ class TrajetController extends Controller
         $this->render('trajets/show', [
             'trajet'           => $trajet,
             'hasParticipation' => $hasParticipation,
+            'csrf_token'       => $this->generateCsrfToken(),
             'title'            => 'Détail du covoiturage'
         ]);
     }
