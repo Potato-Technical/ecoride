@@ -88,7 +88,8 @@ class TrajetController extends Controller
             'trajet'           => $trajet,
             'hasParticipation' => $hasParticipation,
             'csrf_token'       => $this->generateCsrfToken(),
-            'title'            => 'Détail du covoiturage'
+            'title'            => 'Détail du covoiturage',
+            'scripts'          => ['/assets/js/reservations.js']
         ]);
     }
 

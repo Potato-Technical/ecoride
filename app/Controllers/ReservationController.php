@@ -86,6 +86,7 @@ class ReservationController extends Controller
         $this->render('reservations/index', [
             'reservations' => $reservations,
             'title' => 'Mes réservations',
+            'scripts' => ['/assets/js/reservations.js'],
             'csrf_token' => $this->generateCsrfToken()
         ]);
     }
