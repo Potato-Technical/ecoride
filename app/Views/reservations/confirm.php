@@ -1,28 +1,51 @@
-<h1>Confirmer la réservation</h1>
+<h1 class="mb-4">Confirmer la réservation</h1>
 
-<p>
-    Trajet :
-    <?= htmlspecialchars($trajet['lieu_depart']) ?>
-    →
-    <?= htmlspecialchars($trajet['lieu_arrivee']) ?>
-</p>
+<div class="card shadow-sm">
+    <div class="card-body">
 
-<p>
-    Date :
-    <?= htmlspecialchars(date('d/m/Y H:i', strtotime($trajet['date_heure_depart']))) ?>
-</p>
+        <h2 class="h6 mb-3">
+            <?= htmlspecialchars($trajet['lieu_depart']) ?>
+            →
+            <?= htmlspecialchars($trajet['lieu_arrivee']) ?>
+        </h2>
 
-<p>
-    Prix :
-    <?= (int) $trajet['prix'] ?> crédits
-</p>
+        <ul class="list-unstyled mb-4">
+            <li class="mb-2">
+                <strong>Date :</strong>
+                <?= htmlspecialchars(date('d/m/Y H:i', strtotime($trajet['date_heure_depart']))) ?>
+            </li>
+            <li>
+                <strong>Prix :</strong>
+                <?= (int) $trajet['prix'] ?> crédits
+            </li>
+        </ul>
 
-<form method="POST" action="/trajets/reserver/confirm">
-    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
-    <input type="hidden" name="trajet_id" value="<?= (int) $trajet['id'] ?>">
-    <button type="submit">Confirmer la réservation</button>
-</form>
+        <div class="d-flex gap-2">
 
-<p>
-    <a href="/trajet?id=<?= (int) $trajet['id'] ?>">Annuler</a>
-</p>
+            <form method="POST"
+                  action="/trajets/reserver/confirm"
+                  class="js-reserve-form">
+
+                <input type="hidden"
+                       name="csrf_token"
+                       value="<?= htmlspecialchars($csrf_token) ?>">
+
+                <input type="hidden"
+                       name="trajet_id"
+                       value="<?= (int) $trajet['id'] ?>">
+
+                <button type="submit"
+                        class="btn btn-primary">
+                    Confirmer
+                </button>
+            </form>
+
+            <a href="/trajet?id=<?= (int) $trajet['id'] ?>"
+               class="btn btn-outline-secondary">
+                Annuler
+            </a>
+
+        </div>
+
+    </div>
+</div>
