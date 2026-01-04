@@ -1,14 +1,14 @@
+# Git
 .git
 .gitignore
-
+# Dépendances locales (reconstruites dans l’image si besoin)
 node_modules
 vendor
-
+# Environnement local
 .env
-
+# IDE / éditeurs
 .vscode
 .idea
-
-database/sql/*.sql
-
+# Fichiers inutiles au runtime
 tree.txt
+Note.txt

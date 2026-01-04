@@ -1,8 +1,15 @@
+# Environnement / secrets
 .env
-/vendor
-/node_modules
+# Dépendances
+/vendor/
+/node_modules/
+# IDE / éditeurs
+.idea/
+.vscode/
+# OS
 .DS_Store
-.idea
-.vscode
-tree.txt
+# Fichiers locaux non projet
 Note.txt
+tree.txt
+# Config locale (si spécifique machine)
+config/database.php

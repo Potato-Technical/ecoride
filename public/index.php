@@ -1,6 +1,7 @@
 <?php
-// Démarre la session PHP (utile plus tard pour login, messages, etc.)
+// Session
 session_start();
+// Configuration PHP (dev)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -21,28 +22,15 @@ if (file_exists($envPath)) {
     }
 }
 
-// On charge manuellement les fichiers de classes nécessaires
-// Sans Composer, PHP ne charge rien tout seul
-// Core (MVC)
-require_once __DIR__ . '/../app/Core/Controller.php';
-require_once __DIR__ . '/../app/Core/Router.php';
-require_once __DIR__ . '/../app/Core/Database.php';
+// Autoload Composer (REMPLACE TOUS LES require_once)
+require_once __DIR__ . '/../vendor/autoload.php';
 
-// Models (accès aux données)
-require_once __DIR__ . '/../app/Models/UserRepository.php';
-require_once __DIR__ . '/../app/Models/RoleRepository.php';
-require_once __DIR__ . '/../app/Models/TrajetRepository.php';
-require_once __DIR__ . '/../app/Models/ParticipationRepository.php';
+// Démarrage de l’application
+use App\Core\Router; // Import du routeur principal de l’application
 
-// Controllers (Chargement des contrôleurs)
-require_once __DIR__ . '/../app/Controllers/HomeController.php';
-require_once __DIR__ . '/../app/Controllers/AuthController.php';
-require_once __DIR__ . '/../app/Controllers/TrajetController.php';
-require_once __DIR__ . '/../app/Controllers/ReservationController.php';
-require_once __DIR__ . '/../app/Controllers/AdminController.php';
+// Instanciation du routeur
+$router = new Router(); // Il se charge de lire l’URL, résoudre la route et appeler le bon contrôleur
 
-// On crée le routeur (attention : nom complet avec le namespace)
-$router = new \App\Core\Router();
+// Démarrage du cycle de requête
+$router->dispatch();   // À partir d’ici, le routeur prend le contrôle du flux applicatif
 
-// On lance le routeur. À partir d’ici, c’est lui qui décide quoi afficher
-$router->dispatch();
