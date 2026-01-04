@@ -78,3 +78,20 @@ function showToast(message, status) {
     delay: 3000
   }).show();
 }
+
+// Prévention du double clic sur la réservation (POST classique)
+document.querySelectorAll('.js-reserve-form').forEach(form => {
+
+  form.addEventListener('submit', () => {
+    const btn = form.querySelector('button');
+
+    if (!btn) return;
+
+    // Désactivation immédiate pour éviter double soumission
+    btn.disabled = true;
+
+    // Feedback visuel simple (UX)
+    btn.textContent = 'Réservation en cours...';
+  });
+
+});

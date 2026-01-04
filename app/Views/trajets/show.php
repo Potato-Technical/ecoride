@@ -30,10 +30,18 @@
 
 <?php else: ?>
 
-<form method="POST" action="/trajets/reserver" class="d-inline">
+<form method="POST"
+      action="/trajets/reserver"
+      class="d-inline js-reserve-form">
+
     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
     <input type="hidden" name="trajet_id" value="<?= (int)$trajet['id'] ?>">
-    <button type="submit" class="btn btn-primary">Réserver</button>
+
+    <button type="submit"
+            class="btn btn-primary"
+            data-original-text="Réserver">
+        Réserver
+    </button>
 </form>
 
 <?php endif; ?>
