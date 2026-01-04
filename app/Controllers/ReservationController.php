@@ -181,13 +181,17 @@ class ReservationController extends Controller
         // Sécurité CSRF
         $this->verifyCsrfToken();
 
+        // Réponse JSON
+        header('Content-Type: application/json');
+
         // Récupération et validation de l'identifiant de la participation
         $participationId = isset($_POST['id']) ? (int) $_POST['id'] : 0;
 
         if ($participationId <= 0) {
             http_response_code(400);
-            $this->render('errors/400', [
-                'title' => 'Requête invalide'
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'Requête invalide'
             ]);
             return;
         }
@@ -196,16 +200,19 @@ class ReservationController extends Controller
 
         $ok = $repo->cancel($participationId, $_SESSION['user_id']);
 
-        // Échec métier de l’annulation (déjà annulée, pas propriétaire, etc.)
+        // Échec métier de l’annulation
         if (!$ok) {
-            $this->setFlash('error', 'Vous avez déjà réservé ce trajet');
-            header('Location: /reservations');
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'Annulation impossible'
+            ]);
             return;
         }
 
-        // Redirection après annulation réussie
-        $this->setFlash('success', 'Réservation annulée');
-        header('Location: /trajets');
-        exit;
+        // Succès
+        echo json_encode([
+            'status'  => 'success',
+            'message' => 'Réservation annulée'
+        ]);
     }
 }
