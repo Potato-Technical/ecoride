@@ -4,6 +4,7 @@ namespace App\Controllers; // Namespace des contrôleurs
 
 use App\Core\Controller;       // Contrôleur parent (render, sécurité, redirections)
 use App\Models\UserRepository; // Accès aux utilisateurs en base
+use App\Models\RoleRepository;
 
 class AuthController extends Controller
 {
@@ -39,6 +40,13 @@ class AuthController extends Controller
             ) {
                 // Stocke l'identifiant utilisateur en session
                 $_SESSION['user_id'] = $user['id'];
+
+                // Récupération du rôle associé à l'utilisateur
+                $roleRepo = new RoleRepository();
+                $role = $roleRepo->findById($user['role_id']);
+
+                // Stockage du libellé du rôle en session (Option B)
+                $_SESSION['role'] = $role['libelle'];
 
                 // Redirection post-login (retour à la page demandée si fournie)
                 $redirect = $_GET['redirect'] ?? '/';

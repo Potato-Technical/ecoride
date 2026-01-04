@@ -1,18 +1,35 @@
-<h1>EcoRide</h1>
-<p>Covoiturage simple, économique, et plus responsable.</p>
+<section class="text-center py-5">
+    <h1 class="mb-3">EcoRide</h1>
+    <p class="lead text-muted mb-4">
+        Covoiturage simple, économique et plus responsable.
+    </p>
 
-<p>
-  <a href="/trajets">Rechercher un trajet</a>
-</p>
+    <a href="/trajets" class="btn btn-primary btn-lg">
+        Rechercher un trajet
+    </a>
+</section>
 
-<?php if (!empty($_SESSION['user_id'])): ?>
-  <p><a href="/reservations">Mes réservations</a></p>
-  <p><a href="/logout">Déconnexion</a></p>
-<?php else: ?>
-  <p><a href="/login">Connexion</a></p>
-<?php endif; ?>
+<hr class="my-5">
 
-<?php if (!empty($_SESSION['user_id'])): ?>
-  <p><a href="/admin">Administration</a></p>
-<?php endif; ?>
+<section class="row text-center">
+    <div class="col-md-4 mb-4">
+        <h2 class="h5">Économique</h2>
+        <p class="text-muted">
+            Voyagez à moindre coût en partageant les frais.
+        </p>
+    </div>
 
+    <div class="col-md-4 mb-4">
+        <h2 class="h5">Responsable</h2>
+        <p class="text-muted">
+            Réduisez votre impact environnemental.
+        </p>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <h2 class="h5">Confiance</h2>
+        <p class="text-muted">
+            Profils vérifiés et trajets transparents.
+        </p>
+    </div>
+</section>
