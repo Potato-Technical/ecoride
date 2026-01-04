@@ -1,4 +1,5 @@
-<h1>403</h1>
-<p>Accès interdit.</p>
+<h1 class="mb-4">403 - Accès refusé</h1>
 
-<a href="/">Retour à l’accueil</a>
+<div class="alert alert-danger">
+    Vous n’êtes pas autorisé à accéder à cette page.
+</div>

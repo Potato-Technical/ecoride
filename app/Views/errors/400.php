@@ -1,4 +1,5 @@
-<h1>400</h1>
-<p>La requête envoyée est invalide ou mal formée.</p>
+<h1 class="mb-4">400 - Requête invalide</h1>
 
-<a href="/">Retour à l’accueil</a>
+<div class="alert alert-warning">
+    La requête envoyée est incorrecte.
+</div>
