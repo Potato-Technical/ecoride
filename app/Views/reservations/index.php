@@ -17,7 +17,7 @@
         État : <strong><?= htmlspecialchars((string) ($r['etat'] ?? '')) ?></strong>
 
         <?php if ($r['etat'] === 'confirme'): ?>
-          <form method="post" action="/reservations/annuler" class="d-inline">
+          <form method="POST" action="/reservations/annuler" class="d-inline">
               <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
               <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
               <button type="submit" class="btn btn-danger btn-sm">

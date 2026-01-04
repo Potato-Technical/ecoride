@@ -95,6 +95,22 @@ class ParticipationRepository
         }
     }
 
+    /**
+     * Crée une participation confirmée pour un utilisateur sur un trajet donné.
+     *
+     * Rôle métier :
+     * - Insère une nouvelle participation à l’état "confirme"
+     * - Enregistre le montant de crédits utilisés
+     *
+     * Sécurité / cohérence :
+     * - Cette méthode n’effectue aucune vérification métier
+     * - Les contrôles (places, ownership, doublons) doivent être faits
+     *   impérativement côté contrôleur avant l’appel
+     *
+     * @param int $userId  Identifiant de l’utilisateur
+     * @param int $trajetId Identifiant du trajet
+     * @param int $prix    Nombre de crédits utilisés
+     */
     public function create(int $userId, int $trajetId, int $prix): void
     {
         $pdo = Database::getInstance();
@@ -181,27 +197,53 @@ class ParticipationRepository
         return (bool) $stmt->fetchColumn();
     }
 
-public function hasCancelledParticipation(int $userId, int $trajetId): bool
-{
-    $pdo = Database::getInstance();
+    /**
+     * Vérifie si l’utilisateur possède une participation annulée
+     * pour un trajet donné.
+     *
+     * Utilisation :
+     * - Permet de détecter un cas de réactivation de réservation
+     * - Évite la création d’une nouvelle participation inutile
+     *
+     * @param int $userId   Identifiant de l’utilisateur
+     * @param int $trajetId Identifiant du trajet
+     * @return bool True si une participation annulée existe
+     */
+    public function hasCancelledParticipation(int $userId, int $trajetId): bool
+    {
+        $pdo = Database::getInstance();
 
-    $stmt = $pdo->prepare(
-        'SELECT 1 FROM participation
-         WHERE utilisateur_id = :uid
-           AND trajet_id = :tid
-           AND etat = "annule"
-         LIMIT 1'
-    );
+        $stmt = $pdo->prepare(
+            'SELECT 1 FROM participation
+            WHERE utilisateur_id = :uid
+            AND trajet_id = :tid
+            AND etat = "annule"
+            LIMIT 1'
+        );
 
-    $stmt->execute([
-        'uid' => $userId,
-        'tid' => $trajetId
-    ]);
+        $stmt->execute([
+            'uid' => $userId,
+            'tid' => $trajetId
+        ]);
 
-    return (bool) $stmt->fetchColumn();
-}
+        return (bool) $stmt->fetchColumn();
+    }
 
-
+    /**
+     * Réactive une participation précédemment annulée.
+     *
+     * Effets :
+     * - Change l’état de "annule" à "confirme"
+     * - Met à jour la date de confirmation
+     *
+     * Remarque :
+     * - Aucune vérification métier n’est effectuée ici
+     * - Les contrôles (places disponibles, ownership) doivent être faits
+     *   en amont par le contrôleur
+     *
+     * @param int $userId   Identifiant de l’utilisateur
+     * @param int $trajetId Identifiant du trajet
+     */
     public function reactivate(int $userId, int $trajetId): void
     {
         $pdo = Database::getInstance();

@@ -4,8 +4,8 @@
     <p><?= htmlspecialchars($error) ?></p>
 <?php endif; ?>
 
-<form method="post">
-    <!-- Champ CSRF : Token généré côté serveur,Lié à la session utilisateur, Obligatoire pour toute requête POST -->
+<form method="POST">
+    <!-- Champ CSRF : protège le formulaire contre les requêtes externes -->
     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
     <input type="email" name="email" required>
     <input type="password" name="password" required>

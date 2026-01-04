@@ -1,6 +1,6 @@
 <h1 class="mb-4">Créer un trajet</h1>
 
-<form method="post" class="card p-4 shadow-sm">
+<form method="POST" class="card p-4 shadow-sm">
     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
 
     <div class="mb-3">
