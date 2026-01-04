@@ -9,8 +9,9 @@ return [
     '/' => ['HomeController', 'index'],                                     //Accueil public
 
     // Authentification
-    '/login'  => ['AuthController', 'login'],
-    '/logout' => ['AuthController', 'logout'],
+    '/login'    => ['AuthController', 'login'],
+    '/logout'   => ['AuthController', 'logout'],
+    '/register' => ['AuthController', 'register'],
 
     // Trajets (public / utilisateur)
     '/trajets'              => ['TrajetController', 'index'],               //Liste

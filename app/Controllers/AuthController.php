@@ -66,6 +66,97 @@ class AuthController extends Controller
             'csrf_token' => $this->generateCsrfToken()
         ]);
     }
+    
+    /**
+     * Inscription d’un nouvel utilisateur.
+     *
+     * US : Inscription utilisateur
+     */
+    public function register(): void
+    {
+        // Si l'utilisateur est déjà connecté, retour à l'accueil
+        if (!empty($_SESSION['user_id'])) {
+            header('Location: /');
+            exit;
+        }
+
+        // Traitement du formulaire
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+            // Protection CSRF obligatoire
+            $this->verifyCsrfToken();
+
+            // Récupération et nettoyage des champs
+            $prenom  = trim($_POST['prenom'] ?? '');
+            $nom     = trim($_POST['nom'] ?? '');
+            $email   = trim($_POST['email'] ?? '');
+            $pwd     = $_POST['password'] ?? '';
+            $pwdConf = $_POST['password_confirm'] ?? '';
+
+            // Validation minimale serveur
+            if (
+                $prenom === '' ||
+                $nom === '' ||
+                $email === '' ||
+                $pwd === '' ||
+                $pwd !== $pwdConf
+            ) {
+                $this->render('auth/register', [
+                    'error' => 'Formulaire invalide',
+                    'csrf_token' => $this->generateCsrfToken()
+                ]);
+                return;
+            }
+
+            // Accès aux utilisateurs
+            $userRepo = new UserRepository();
+
+            // Vérifie l'unicité de l'email
+            if ($userRepo->findByEmail($email)) {
+                $this->render('auth/register', [
+                    'error' => 'Adresse e-mail déjà utilisée',
+                    'csrf_token' => $this->generateCsrfToken()
+                ]);
+                return;
+            }
+
+            // Récupération du rôle par défaut
+            $roleRepo = new RoleRepository();
+            $role = $roleRepo->findByLibelle('utilisateur');
+
+            if (!$role) {
+                // Incohérence base → erreur serveur
+                $this->error(500);
+            }
+
+            // Génération automatique d'un pseudo unique
+            $pseudoBase = strtolower($prenom . '.' . $nom);
+            $pseudo = $pseudoBase;
+            $i = 1;
+
+            while ($userRepo->findByPseudo($pseudo)) {
+                $pseudo = $pseudoBase . $i;
+                $i++;
+            }
+
+            // Création du compte utilisateur
+            $userRepo->create([
+                'pseudo'            => $pseudo,
+                'email'             => $email,
+                'mot_de_passe_hash' => password_hash($pwd, PASSWORD_DEFAULT),
+                'role_id'           => $role['id']
+            ]);
+
+            // Redirection vers la connexion
+            header('Location: /login');
+            exit;
+        }
+
+        // Affichage du formulaire (GET)
+        $this->render('auth/register', [
+            'csrf_token' => $this->generateCsrfToken()
+        ]);
+    }
 
     /**
      * Déconnecte l'utilisateur courant.

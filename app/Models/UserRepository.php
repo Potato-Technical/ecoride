@@ -34,6 +34,26 @@ class UserRepository
     }
 
     /**
+     * Récupère un utilisateur à partir de son pseudo.
+     */
+    public function findByPseudo(string $pseudo): ?array
+    {
+        $pdo = Database::getInstance();
+
+        $stmt = $pdo->prepare(
+            'SELECT * FROM utilisateur WHERE pseudo = :pseudo'
+        );
+
+        $stmt->execute([
+            'pseudo' => $pseudo
+        ]);
+
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $user ?: null;
+    }
+
+    /**
      * Recherche un utilisateur par identifiant
      */
     public function findById(int $id): ?array
@@ -56,5 +76,34 @@ class UserRepository
 
         // Retourne null si absent
         return $user ?: null;
+    }
+
+    /**
+     * Crée un nouvel utilisateur.
+     */
+    public function create(array $data): void
+    {
+        $pdo = Database::getInstance();
+
+        $stmt = $pdo->prepare(
+            'INSERT INTO utilisateur (
+                pseudo,
+                email,
+                mot_de_passe_hash,
+                role_id
+            ) VALUES (
+                :pseudo,
+                :email,
+                :mot_de_passe_hash,
+                :role_id
+            )'
+        );
+
+        $stmt->execute([
+            'pseudo'            => $data['pseudo'],
+            'email'             => $data['email'],
+            'mot_de_passe_hash' => $data['mot_de_passe_hash'],
+            'role_id'           => $data['role_id']
+        ]);
     }
 }

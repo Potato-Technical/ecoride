@@ -40,13 +40,6 @@
                                required>
                     </div>
 
-                    <div class="text-end mb-3">
-                        <a href="#"
-                           class="small text-muted">
-                            Mot de passe oublié ?
-                        </a>
-                    </div>
-
                     <div class="d-grid mb-2">
                         <button type="submit"
                                 class="btn btn-primary">
