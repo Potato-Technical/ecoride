@@ -1,38 +1,76 @@
-<h1>Mes réservations</h1>
+<h1 class="mb-4">Mes réservations</h1>
 
 <?php if (empty($reservations)): ?>
-  <p>Aucune réservation.</p>
+
+    <div class="alert alert-info">
+        Aucune réservation pour le moment.
+    </div>
+
 <?php else: ?>
-  <ul>
-    <?php foreach ($reservations as $r): ?>
-      <li data-reservation-id="<?= (int) $r['id'] ?>">
-        <strong><?= htmlspecialchars((string) $r['lieu_depart']) ?></strong>
-        →
-        <strong><?= htmlspecialchars((string) $r['lieu_arrivee']) ?></strong><br>
 
-        Départ :
-        <?= htmlspecialchars(date('d/m/Y H:i', strtotime($r['date_heure_depart']))) ?>
-        — Prix : <?= (int) $r['prix'] ?> crédits<br>
+    <div class="row">
+        <?php foreach ($reservations as $r): ?>
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm">
 
-        État : <strong><?= htmlspecialchars((string) $r['etat']) ?></strong>
+                    <div class="card-body d-flex flex-column">
 
-        <?php if ($r['etat'] === 'confirme'): ?>
-          <form method="POST"
-                action="/reservations/annuler"
-                class="d-inline js-cancel-form">
+                        <h2 class="h6 card-title mb-2">
+                            <?= htmlspecialchars((string) $r['lieu_depart']) ?>
+                            →
+                            <?= htmlspecialchars((string) $r['lieu_arrivee']) ?>
+                        </h2>
 
-              <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
-              <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
+                        <p class="text-muted mb-2">
+                            Départ :
+                            <?= htmlspecialchars(
+                                date('d/m/Y H:i', strtotime($r['date_heure_depart']))
+                            ) ?>
+                        </p>
 
-              <button type="submit" class="btn btn-danger btn-sm">
-                  Annuler
-              </button>
-          </form>
-        <?php else: ?>
-            <span class="text-muted">Annulation indisponible</span>
-        <?php endif; ?>
-      </li>
-      <hr>
-    <?php endforeach; ?>
-  </ul>
+                        <p class="mb-2">
+                            Prix :
+                            <strong><?= (int) $r['prix'] ?> crédits</strong>
+                        </p>
+
+                        <p class="mb-3">
+                            État :
+                            <strong><?= htmlspecialchars((string) $r['etat']) ?></strong>
+                        </p>
+
+                        <div class="mt-auto">
+
+                            <?php if ($r['etat'] === 'confirme'): ?>
+                                <form method="POST"
+                                      action="/reservations/annuler"
+                                      class="d-grid js-cancel-form">
+
+                                    <input type="hidden"
+                                           name="csrf_token"
+                                           value="<?= htmlspecialchars($csrf_token) ?>">
+
+                                    <input type="hidden"
+                                           name="id"
+                                           value="<?= (int) $r['id'] ?>">
+
+                                    <button type="submit"
+                                            class="btn btn-outline-danger btn-sm">
+                                        Annuler la réservation
+                                    </button>
+                                </form>
+                            <?php else: ?>
+                                <span class="text-muted small">
+                                    Annulation indisponible
+                                </span>
+                            <?php endif; ?>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+
 <?php endif; ?>
