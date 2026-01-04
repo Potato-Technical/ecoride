@@ -1,97 +1,61 @@
-// Sélectionne tous les formulaires d’annulation
+/**
+ * Gestion des annulations de réservation (AJAX)
+ */
 document.querySelectorAll('.js-cancel-form').forEach(form => {
-
-  // On écoute l’événement "submit" du formulaire
   form.addEventListener('submit', event => {
-
-    // Empêche le rechargement de page (comportement par défaut)
     event.preventDefault();
 
-    // Récupère toutes les données du formulaire (POST)
     const formData = new FormData(form);
 
-    // Envoi de la requête HTTP vers le contrôleur PHP
     fetch(form.action, {
       method: 'POST',
       body: formData
     })
+      .then(response => response.json())
+      .then(({ message, status }) => {
+        showToast(message, status);
 
-    // Transforme la réponse HTTP en JSON
-    .then(response => response.json())
-
-    // Exploite la réponse JSON renvoyée par le contrôleur
-    .then(({ message, status }) => {
-
-      // Affiche le toast utilisateur (succès / erreur)
-      showToast(message, status);
-
-      // Si l’annulation est un succès
-      if (status === 'success') {
-
-        // OPTION B (propre) :
-        // suppression visuelle de la réservation sans rechargement de page
-        const li = form.closest('li');
-
-        if (li) {
-          // Animation douce (fade-out)
-          li.style.transition = 'opacity 0.3s';
-          li.style.opacity = '0';
-
-          // Suppression réelle du DOM après l’animation
-          setTimeout(() => {
-            li.remove();
-          }, 300);
+        if (status === 'success') {
+          const card = form.closest('.card');
+          if (card) {
+            card.style.transition = 'opacity 0.3s';
+            card.style.opacity = '0';
+            setTimeout(() => card.remove(), 300);
+          }
         }
-      }
-    })
-
-    // Erreur réseau / serveur (timeout, 500, etc.)
-    .catch(() => {
-      showToast('Erreur réseau', 'error');
-    });
+      })
+      .catch(() => {
+        showToast('Erreur réseau', 'error');
+      });
   });
 });
 
 /**
- * Affiche un toast Bootstrap flottant (bas-droite)
- *
- * @param {string} message  Message à afficher
- * @param {string} status   success | error
+ * Prévention du double clic (réservation / confirmation)
+ */
+document.querySelectorAll('.js-reserve-form').forEach(form => {
+  form.addEventListener('submit', () => {
+    const btn = form.querySelector('button');
+    if (!btn) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Traitement...';
+  });
+});
+
+/**
+ * Affiche un toast Bootstrap global
  */
 function showToast(message, status) {
   const toastEl = document.getElementById('app-toast');
   const body = toastEl.querySelector('.toast-body');
 
-  // Injecte le message dans le toast
   body.textContent = message;
 
-  // Reset des classes de couleur
   toastEl.classList.remove('text-bg-success', 'text-bg-danger');
-
-  // Applique la couleur selon le statut
   toastEl.classList.add(
     status === 'success' ? 'text-bg-success' : 'text-bg-danger'
   );
 
-  // Initialise et affiche le toast Bootstrap
-  new bootstrap.Toast(toastEl, {
-    delay: 3000
-  }).show();
+  new bootstrap.Toast(toastEl, { delay: 3000 }).show();
 }
-
-// Prévention du double clic sur la réservation (POST classique)
-document.querySelectorAll('.js-reserve-form').forEach(form => {
-
-  form.addEventListener('submit', () => {
-    const btn = form.querySelector('button');
-
-    if (!btn) return;
-
-    // Désactivation immédiate pour éviter double soumission
-    btn.disabled = true;
-
-    // Feedback visuel simple (UX)
-    btn.textContent = 'Réservation en cours...';
-  });
-
-});
