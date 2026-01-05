@@ -17,11 +17,7 @@
     </div>
 </main>
 
-<footer class="bg-dark text-light mt-5">
-    <div class="container py-3 text-center small">
-        © EcoRide 2025 — Mentions légales · CGU · Accessibilité
-    </div>
-</footer>
+<?php require __DIR__ . '/footer.php'; ?>
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
     <div id="app-toast" class="toast align-items-center" role="alert">
