@@ -8,47 +8,8 @@
 </head>
 
 <body class="bg-light d-flex flex-column min-vh-100">
-<header>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
-        <div class="container">
-            <a class="navbar-brand" href="/">EcoRide</a>
 
-            <div class="collapse navbar-collapse justify-content-end">
-                <ul class="navbar-nav gap-2">
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="/trajets">Trajets</a>
-                    </li>
-
-                    <?php if (!empty($_SESSION['user_id'])): ?>
-
-                        <li class="nav-item">
-                            <a class="nav-link" href="/reservations">Mes réservations</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link" href="/logout">Déconnexion</a>
-                        </li>
-
-                        <?php if (!empty($_SESSION['role']) && $_SESSION['role'] === 'administrateur'): ?>
-                            <li class="nav-item">
-                                <a class="nav-link text-danger" href="/admin">Administration</a>
-                            </li>
-                        <?php endif; ?>
-
-                    <?php else: ?>
-
-                        <li class="nav-item">
-                            <a class="nav-link" href="/login">Connexion</a>
-                        </li>
-
-                    <?php endif; ?>
-
-                </ul>
-            </div>
-        </div>
-    </nav>
-</header>
+<?php require __DIR__ . '/header.php'; ?>
 
 <main class="flex-fill">
     <div class="container mt-4">
@@ -62,7 +23,6 @@
     </div>
 </footer>
 
-<!-- Toast global (PASSIF) -->
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
     <div id="app-toast" class="toast align-items-center" role="alert">
         <div class="d-flex">

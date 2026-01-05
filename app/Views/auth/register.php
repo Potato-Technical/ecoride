@@ -1,84 +1,78 @@
-<div class="row justify-content-center">
+<div class="row justify-content-center mt-4">
     <div class="col-12 col-sm-10 col-md-6 col-lg-4">
-
-        <h1 class="text-center mb-4">Inscription</h1>
-
-        <?php if (!empty($error)) : ?>
-            <div class="alert alert-danger">
-                <?= htmlspecialchars($error) ?>
-            </div>
-        <?php endif; ?>
 
         <div class="card shadow-sm">
             <div class="card-body">
 
+                <h1 class="h4 text-center mb-4">Inscription</h1>
+
+                <?php if (!empty($error)) : ?>
+                    <div class="alert alert-danger">
+                        <?= htmlspecialchars($error) ?>
+                    </div>
+                <?php endif; ?>
+
                 <form method="POST">
                     <input type="hidden"
                            name="csrf_token"
-                           value="<?= htmlspecialchars($csrf_token ?? '') ?>">
+                           value="<?= htmlspecialchars($csrf_token) ?>">
 
                     <div class="row mb-3">
                         <div class="col">
-                            <label for="prenom" class="form-label">Prénom</label>
                             <input type="text"
-                                   id="prenom"
                                    name="prenom"
                                    class="form-control"
+                                   placeholder="Prénom"
                                    required>
                         </div>
 
                         <div class="col">
-                            <label for="nom" class="form-label">Nom</label>
                             <input type="text"
-                                   id="nom"
                                    name="nom"
                                    class="form-control"
+                                   placeholder="Nom"
                                    required>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label for="email" class="form-label">E-mail</label>
                         <input type="email"
-                               id="email"
                                name="email"
                                class="form-control"
+                               placeholder="E-mail"
                                required>
                     </div>
 
                     <div class="mb-3">
-                        <label for="password" class="form-label">Mot de passe</label>
                         <input type="password"
-                               id="password"
                                name="password"
                                class="form-control"
+                               placeholder="Mot de passe"
                                required>
                     </div>
 
                     <div class="mb-4">
-                        <label for="password_confirm" class="form-label">
-                            Confirmation du mot de passe
-                        </label>
                         <input type="password"
-                               id="password_confirm"
                                name="password_confirm"
                                class="form-control"
+                               placeholder="Confirmation du mot de passe"
                                required>
                     </div>
 
                     <div class="d-grid mb-2">
                         <button type="submit"
-                                class="btn btn-primary">
+                                class="btn btn-success">
                             Inscription
                         </button>
                     </div>
 
                     <div class="d-grid">
-                        <a href="/login<?= isset($_GET['redirect']) ? '?redirect=' . urlencode($_GET['redirect']) : '' ?>"
+                        <a href="/login"
                            class="btn btn-outline-secondary">
                             Connexion
                         </a>
                     </div>
+
                 </form>
 
             </div>
