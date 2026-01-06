@@ -48,9 +48,20 @@ class AuthController extends Controller
                 // Stockage du libellé du rôle en session (Option B)
                 $_SESSION['role'] = $role['libelle'];
 
-                // Redirection post-login (retour à la page demandée si fournie)
-                $redirect = $_GET['redirect'] ?? '/';
-                header('Location: ' . $redirect);
+                // Redirection prioritaire vers la page demandée (si fournie)
+                if (!empty($_GET['redirect'])) {
+                    header('Location: ' . $_GET['redirect']);
+                    exit;
+                }
+
+                // Redirection spécifique selon le rôle
+                if ($_SESSION['role'] === 'administrateur') {
+                    header('Location: /admin');
+                    exit;
+                }
+
+                // Redirection par défaut
+                header('Location: /');
                 exit;
             }
 

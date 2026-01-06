@@ -1,0 +1,13 @@
+footer {
+  background-color: var(--bg-footer);
+  color: #FFFFFF;
+}
+
+footer a {
+  color: #FFFFFF;
+  opacity: 0.85;
+}
+
+footer a:hover {
+  opacity: 1;
+}

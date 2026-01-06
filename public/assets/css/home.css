@@ -1,0 +1,81 @@
+/* HERO */
+.hero {
+  background: var(--bg-header);
+}
+
+.hero-search {
+  background: #FFFFFF;
+  border-radius: 12px;
+}
+
+/* Values */
+.home-values h3 {
+  font-family: var(--font-primary);
+}
+
+/* Images */
+.home-image {
+  border-radius: 12px;
+}
+
+/* =========================
+   HOME – MOBILE FIRST
+   ========================= */
+
+/* HERO */
+.home-hero {
+    padding: 3rem 0;
+}
+
+.home-hero h1 {
+    font-size: 1.75rem; /* mobile */
+}
+
+.home-hero .lead {
+    font-size: 1rem;
+}
+
+/* Barre de recherche */
+.home-search-card {
+    border-radius: 12px;
+}
+
+.home-search-card .btn {
+    width: 100%;
+}
+
+/* Sections */
+section {
+    padding: 3rem 0;
+}
+
+/* Images */
+section img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* CTA conducteur */
+section.text-center h2 {
+    font-size: 1.25rem;
+}
+
+/* TABLET / DESKTOP */
+@media (min-width: 768px) {
+
+    .home-hero {
+        padding: 5rem 0;
+    }
+
+    .home-hero h1 {
+        font-size: 2.5rem;
+    }
+
+    .home-hero .lead {
+        font-size: 1.1rem;
+    }
+
+    .home-search-card .btn {
+        width: auto;
+    }
+}

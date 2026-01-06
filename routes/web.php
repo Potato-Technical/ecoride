@@ -7,6 +7,8 @@
 
 return [
     '/' => ['HomeController', 'index'],                                     //Accueil public
+    '/a-propos' => ['HomeController', 'about'],
+    '/contact'  => ['HomeController', 'contact'],
 
     // Authentification
     '/login'    => ['AuthController', 'login'],

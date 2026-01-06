@@ -1,0 +1,12 @@
+body {
+    min-height: 100vh;
+}
+
+main {
+    flex: 1;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
