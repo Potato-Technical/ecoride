@@ -16,9 +16,10 @@ return [
     '/register' => ['AuthController', 'register'],
 
     // Trajets (public / utilisateur)
-    '/trajets'              => ['TrajetController', 'index'],               //Liste
-    '/trajet'               => ['TrajetController', 'show'],                //Détail ?id=
-    '/trajets/create'       => ['TrajetController', 'create'],              //Créer un trajet
+    '/trajets'               => ['TrajetController', 'index'],     // Liste
+    '/trajets/load-more'     => ['TrajetController', 'loadMore'],  // AJAX load more (POST)
+    '/trajet'                => ['TrajetController', 'show'],      // Détail ?id=
+    '/trajets/create'        => ['TrajetController', 'create'],    // Créer
 
     // Réservations
     '/reservations' => ['ReservationController', 'index'],                  //Mes réservations
