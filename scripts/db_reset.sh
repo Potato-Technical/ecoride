@@ -9,11 +9,11 @@ else
   exit 1
 fi
 
-echo "[DB] Drop & recreate database"
+echo "[DB] Drop & recreate database (inside db container)"
 
-mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" <<EOF
-DROP DATABASE IF EXISTS \`$DB_NAME\`;
-CREATE DATABASE \`$DB_NAME\`
+docker compose exec -T db mysql -u"${DB_USER}" -p"${DB_PASS}" <<EOF
+DROP DATABASE IF EXISTS \`${DB_NAME}\`;
+CREATE DATABASE \`${DB_NAME}\`
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci;
 EOF
