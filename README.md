@@ -95,7 +95,9 @@ L’environnement Docker est destiné au développement et à la démonstration 
 ```bash
 git clone https://github.com/Potato-Technical/ecoride.git
 cd ecoride
-docker compose up -d
+make up
+make db-full
+make check
 
 ```
 Application accessible sur :
@@ -106,7 +108,7 @@ http://localhost:8080
 
 * MySQL 8
 
-* Initialisation automatique via Docker
+* Initialisation via make db-full (schema + seed)
 
 * Connexion configurée dans config/database.php
 
@@ -116,9 +118,8 @@ Les comptes suivants sont disponibles après initialisation de la base :
 
 | Rôle          | Email                | Mot de passe |
 |---------------|----------------------|--------------|
-| Administrateur| admin@ecoride.fr     | password     |
-| Utilisateur   | user@ecoride.fr      | password     |
-
+| Administrateur| admin@ecoride.fr     | Admin123!    |
+| Utilisateur   | user@ecoride.fr      | User123!     |
 
 ## Parcours utilisateur type
 

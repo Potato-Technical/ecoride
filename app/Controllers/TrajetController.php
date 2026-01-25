@@ -11,11 +11,6 @@ class TrajetController extends Controller
     /**
      * Liste des trajets avec filtres + première page (pagination).
      *
-     * Rôle :
-     * - Lire les filtres depuis l'URL (GET)
-     * - Charger la 1ère page de résultats (LIMIT/OFFSET)
-     * - Fournir à la vue : trajets + filtres (pour persistance dans le form)
-     *
      * US 3 : Consulter les covoiturages disponibles
      */
     public function index(): void
@@ -39,16 +34,12 @@ class TrajetController extends Controller
         // Requête SQL centralisée dans le repository
         $trajets = $repo->searchWithFiltersPaginated($filters, $limit, $offset);
 
-        // Token CSRF nécessaire pour l'appel AJAX "load more"
-        $csrfToken = $this->generateCsrfToken();
-
         $this->render('trajets/index', [
-            'trajets'     => $trajets,
-            'filters'     => $filters,
-            'csrf_token'  => $csrfToken,
-            'limit'       => $limit,
-            'title'       => 'Recherche de covoiturages',
-            'scripts'     => ['/assets/js/trajets.js'],
+            'trajets' => $trajets,
+            'filters' => $filters,
+            'limit'   => $limit,
+            'title'   => 'Recherche de covoiturages',
+            'scripts' => ['/assets/js/trajets.js'],
         ]);
     }
 
@@ -87,7 +78,6 @@ class TrajetController extends Controller
         $this->render('trajets/show', [
             'trajet'           => $trajet,
             'hasParticipation' => $hasParticipation,
-            'csrf_token'       => $this->generateCsrfToken(),
             'title'            => 'Détail du covoiturage',
             'scripts'          => ['/assets/js/reservations.js'],
         ]);
@@ -139,8 +129,7 @@ class TrajetController extends Controller
         }
 
         $this->render('trajets/create', [
-            'title'      => 'Créer un trajet',
-            'csrf_token' => $this->generateCsrfToken(),
+            'title' => 'Créer un trajet',
         ]);
     }
 
@@ -155,11 +144,13 @@ class TrajetController extends Controller
      */
     public function loadMore(): void
     {
+        // Action AJAX : POST uniquement
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
-            return;
+            exit;
         }
 
+        // CSRF obligatoire (action sensible côté app)
         $this->verifyCsrfToken();
 
         $repo = new TrajetRepository();

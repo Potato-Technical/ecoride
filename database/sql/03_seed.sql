@@ -40,6 +40,27 @@ WHERE r.libelle = 'administrateur'
   AND NOT EXISTS (
       SELECT 1 FROM utilisateur WHERE email = 'admin@ecoride.fr'
   );
+  
+-- Compte utilisateur standard
+-- IMPORTANT: remplace le hash par un hash généré par ton app (ou via php -r "echo password_hash('password', PASSWORD_BCRYPT);")
+INSERT INTO utilisateur (
+    pseudo,
+    email,
+    mot_de_passe_hash,
+    role_id,
+    created_at
+)
+SELECT
+    'user',
+    'user@ecoride.fr',
+    '$2y$10$ax/Q5gjnbLePxXi2uG4thehsjklMsdEwf9trkO4yFXb4XyiEFWJwm',
+    r.id,
+    NOW()
+FROM role r
+WHERE r.libelle = 'utilisateur'
+  AND NOT EXISTS (
+      SELECT 1 FROM utilisateur WHERE email = 'user@ecoride.fr'
+  );
 
 -- Véhicule de test associé au compte administrateur
 -- Nécessaire pour permettre la création de trajets (clé étrangère obligatoire)

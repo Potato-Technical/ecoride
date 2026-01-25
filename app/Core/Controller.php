@@ -17,6 +17,9 @@ class Controller
      */
     protected function render(string $view, array $data = []): void
     {
+        // Token CSRF disponible pour toutes les vues (utile pour forms)
+        $data['csrfToken'] = $data['csrfToken'] ?? $this->generateCsrfToken();
+        
         // Rend les clés du tableau accessibles comme variables
         extract($data);
 

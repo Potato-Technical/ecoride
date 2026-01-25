@@ -11,6 +11,9 @@ use App\Core\Controller; // Contrôleur parent (render, sécurité)
  * - Accueil
  * - À propos
  * - Contact
+ * - Mentions légales
+ * - Conditions générales d'utilisation
+ * - Accessibilité
  */
 class HomeController extends Controller
 {
@@ -22,7 +25,7 @@ class HomeController extends Controller
     {
         // Affichage de la page d’accueil
         $this->render('home/index', [
-            'title' => 'EcoRide – Covoiturage responsable'
+            'title' => 'EcoRide - Covoiturage responsable'
         ]);
     }
 
@@ -31,7 +34,7 @@ class HomeController extends Controller
     public function about(): void
     {
         $this->render('home/about', [
-            'title' => 'À propos – EcoRide'
+            'title' => 'À propos - EcoRide'
         ]);
     }
 
@@ -40,7 +43,35 @@ class HomeController extends Controller
     public function contact(): void
     {
         $this->render('home/contact', [
-            'title' => 'Contact – EcoRide'
+            'title' => 'Contact - EcoRide'
         ]);
     }
+
+    /**
+     * Mentions légales. Page statique. */
+    public function legalMentions(): void
+    {
+        $this->render('home/mentions-legales', [
+            'title' => 'Mentions légales - EcoRide'
+        ]);
+    }
+
+    /**
+     * Conditions générales d'utilisation. Page statique. */
+    public function cgu(): void
+    {
+        $this->render('home/cgu', [
+            'title' => 'CGU - EcoRide'
+        ]);
+    }
+
+    /**
+     * Accessibilité. Page statique. */
+    public function accessibilite(): void
+    {
+        $this->render('home/accessibilite', [
+            'title' => 'Accessibilité – EcoRide'
+        ]);
+    }
+
 }

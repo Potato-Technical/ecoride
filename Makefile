@@ -21,8 +21,11 @@ db-full:
 	./scripts/db_full_reset.sh
 
 # Vérifications applicatives rapides (sanity check PHP)
-check:
+check-host:
 	php scripts/sanity_check.php
+
+check:
+	docker compose exec -T web php scripts/sanity_check.php
 
 # Build et démarre les conteneurs Docker en arrière-plan
 up:
