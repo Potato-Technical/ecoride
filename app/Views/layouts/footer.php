@@ -18,7 +18,7 @@
     </div>
 </footer>
 
-<!-- Toast global (PASSIF) -->
+<!-- Toast global -->
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
     <div id="app-toast" class="toast align-items-center" role="alert">
         <div class="d-flex">

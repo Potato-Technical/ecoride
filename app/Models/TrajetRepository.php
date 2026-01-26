@@ -23,14 +23,24 @@ class TrajetRepository
     }
 
     /**
-     * Décrémente nb_places (à appeler en contexte transactionnel).
+     * Décrémente nb_places de façon atomique (anti surréservation).
+     *
+     * Retourne true si une place a été décrémentée, false sinon.
+     * À utiliser en transaction.
      */
-    public function decrementPlaces(int $trajetId): void
+    public function decrementPlaces(int $trajetId): bool
     {
         $pdo = Database::getInstance();
 
-        $stmt = $pdo->prepare('UPDATE trajet SET nb_places = nb_places - 1 WHERE id = :id');
+        $stmt = $pdo->prepare(
+            'UPDATE trajet
+            SET nb_places = nb_places - 1
+            WHERE id = :id AND nb_places > 0'
+        );
+
         $stmt->execute(['id' => $trajetId]);
+
+        return $stmt->rowCount() === 1;
     }
 
     /**

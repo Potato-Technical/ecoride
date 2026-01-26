@@ -12,13 +12,11 @@
 
 <section class="trajets-page">
 
-    <!-- =========================
-         BARRE DE RECHERCHE (GET)
-         ========================= -->
+    <!-- BARRE DE RECHERCHE (GET) -->
     <section class="trajets-search">
         <form method="GET" class="mb-4">
 
-            <!-- ===== MOBILE ===== -->
+            <!-- MOBILE  -->
             <div class="d-md-none">
 
                 <input type="text"
@@ -60,7 +58,7 @@
                 </button>
             </div>
 
-            <!-- ===== DESKTOP ===== -->
+            <!-- DESKTOP -->
             <aside class="d-none d-md-block col-md-3">
 
                 <h6>Trier par</h6>
@@ -95,12 +93,10 @@
         </form>
     </section>
 
-    <!-- =========================
-         FILTRES + RÉSULTATS
-         ========================= -->
+    <!--FILTRES + RÉSULTATS -->
     <div class="trajets-layout">
 
-        <!-- ===== FILTRES LATÉRAUX (UI) ===== -->
+        <!--  FILTRES LATÉRAUX (UI) -->
         <aside class="trajets-filters">
 
             <div class="filters-header d-flex justify-content-between align-items-center mb-3">
@@ -122,7 +118,7 @@
 
         </aside>
 
-        <!-- ===== RÉSULTATS ===== -->
+        <!-- RÉSULTATS -->
         <section class="trajets-results">
 
             <?php if (empty($trajets)): ?>
@@ -169,7 +165,7 @@
 
                 <?php endforeach; ?>
 
-                <!-- ===== LOAD MORE ===== -->
+                <!-- LOAD MORE -->
                 <div class="text-center mt-4">
                     <button class="btn btn-success px-4 load-more-btn"
                             data-offset="<?= count($trajets) ?>"
@@ -180,14 +176,10 @@
 
             <?php endif; ?>
 
+            <!-- CSRF pour AJAX (hors form GET pour ne pas finir dans l'URL) -->
+            <input type="hidden" id="csrf-token" value="<?= htmlspecialchars($csrf_token ?? '', ENT_QUOTES, 'UTF-8') ?>">
+
         </section>
     </div>
-
-    <!-- =========================
-         CSRF POUR AJAX
-         ========================= -->
-    <script>
-        window.CSRF_TOKEN = <?= json_encode($csrf_token ?? '') ?>;
-    </script>
 
 </section>

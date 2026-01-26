@@ -38,6 +38,9 @@ class AuthController extends Controller
                 $user &&
                 password_verify($_POST['password'], $user['mot_de_passe_hash'])
             ) {
+                // Sécurité : empêche la fixation de session après authentification
+                session_regenerate_id(true);
+
                 // Stocke l'identifiant utilisateur en session
                 $_SESSION['user_id'] = $user['id'];
 
@@ -45,7 +48,7 @@ class AuthController extends Controller
                 $roleRepo = new RoleRepository();
                 $role = $roleRepo->findById($user['role_id']);
 
-                // Stockage du libellé du rôle en session (Option B)
+                // Stockage du rôle en session
                 $_SESSION['role'] = $role['libelle'];
 
                 // Redirection prioritaire vers la page demandée (si fournie)
@@ -188,6 +191,10 @@ class AuthController extends Controller
 
         // Nettoyage session
         $_SESSION = [];
+        
+        // Sécurité : invalide l'identifiant de session courant
+        // (évite toute réutilisation post-déconnexion)
+        session_regenerate_id(true);
 
         // Supprime le cookie de session
         if (ini_get('session.use_cookies')) {

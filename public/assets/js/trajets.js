@@ -31,8 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
       formData.append('offset', String(offset));
       formData.append('limit', String(limit));
 
-      // IMPORTANT : le nom du champ doit matcher verifyCsrfToken()
-      formData.append('csrf_token', window.CSRF_TOKEN);
+      const csrfEl = document.getElementById('csrf-token');
+      const csrfToken = csrfEl ? csrfEl.value : '';
+      formData.append('csrf_token', csrfToken);
 
       const res = await fetch('/trajets/load-more', {
         method: 'POST',
@@ -40,7 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       if (!res.ok) {
-        // 403 = CSRF KO, 500 = erreur serveur
         console.error('Load more failed', res.status);
         return;
       }
@@ -53,7 +53,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       trajets.forEach(trajet => {
-        // HTML minimal (tu raffines après avec l’avatar etc.)
         container.insertAdjacentHTML('beforeend', `
           <article class="trajet-card card shadow-sm mb-4">
             <div class="card-body">

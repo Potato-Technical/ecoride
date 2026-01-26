@@ -74,6 +74,7 @@ class ReservationController extends Controller
         $this->render('reservations/confirm', [
             'trajet' => $trajet,
             'title'  => 'Confirmer la réservation',
+            'csrf_token'  => $this->generateCsrfToken(),
         ]);
     }
 
@@ -91,6 +92,7 @@ class ReservationController extends Controller
             'reservations' => $reservations,
             'title' => 'Mes réservations',
             'scripts' => ['/assets/js/reservations.js'],
+            'csrf_token'   => $this->generateCsrfToken(),
         ]);
     }
 
@@ -138,7 +140,12 @@ class ReservationController extends Controller
             $pdo->beginTransaction();
 
             $partRepo->reactivate((int) $_SESSION['user_id'], $trajetId);
-            $trajetRepo->decrementPlaces($trajetId);
+            if (!$trajetRepo->decrementPlaces($trajetId)) {
+                $pdo->rollBack();
+                $this->setFlash('error', 'Plus de place disponible');
+                header('Location: /trajets');
+                exit;
+            }
 
             $pdo->commit();
 
@@ -163,7 +170,12 @@ class ReservationController extends Controller
                 (int) $trajet['prix']
             );
 
-            $trajetRepo->decrementPlaces($trajetId);
+            if (!$trajetRepo->decrementPlaces($trajetId)) {
+                $pdo->rollBack();
+                $this->setFlash('error', 'Plus de place disponible');
+                header('Location: /trajets');
+                exit;
+            }
 
             $pdo->commit();
 
