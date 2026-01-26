@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-start mb-2">
                 <div><strong>${escapeHtml(trajet.lieu_depart)}</strong> → <strong>${escapeHtml(trajet.lieu_arrivee)}</strong></div>
-                <div class="trajet-price fw-semibold">${Number(trajet.prix).toFixed(2).replace('.', ',')} €</div>
+                <div class="trajet-price fw-semibold">${Number(trajet.prix).toFixed(2).replace('.', ',')} crédits</div>
               </div>
               <a href="/trajet?id=${parseInt(trajet.id, 10)}" class="btn btn-outline-success w-100">Voir le détail</a>
             </div>

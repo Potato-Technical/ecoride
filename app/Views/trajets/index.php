@@ -144,7 +144,7 @@
                                 </div>
 
                                 <div class="trajet-price fw-semibold">
-                                    <?= number_format((float) $trajet['prix'], 2, ',', ' ') ?> €
+                                    <?= number_format((float) $trajet['prix'], 2, ',', ' ') ?> crédits
                                 </div>
                             </div>
 

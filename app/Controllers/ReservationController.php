@@ -74,7 +74,6 @@ class ReservationController extends Controller
         $this->render('reservations/confirm', [
             'trajet' => $trajet,
             'title'  => 'Confirmer la réservation',
-            'csrf_token'  => $this->generateCsrfToken(),
         ]);
     }
 
@@ -92,7 +91,6 @@ class ReservationController extends Controller
             'reservations' => $reservations,
             'title' => 'Mes réservations',
             'scripts' => ['/assets/js/reservations.js'],
-            'csrf_token'   => $this->generateCsrfToken(),
         ]);
     }
 
@@ -135,35 +133,59 @@ class ReservationController extends Controller
             return;
         }
 
-        // 3) Réactivation si annulation précédente
-        if ($partRepo->hasCancelledParticipation((int) $_SESSION['user_id'], $trajetId)) {
-            $pdo->beginTransaction();
-
-            $partRepo->reactivate((int) $_SESSION['user_id'], $trajetId);
-            if (!$trajetRepo->decrementPlaces($trajetId)) {
-                $pdo->rollBack();
-                $this->setFlash('error', 'Plus de place disponible');
-                header('Location: /trajets');
-                exit;
-            }
-
-            $pdo->commit();
-
-            $this->setFlash('success', 'Réservation réactivée');
-            header('Location: /reservations');
-            exit;
-        }
-
-        // 4) Création normale
-        if ($partRepo->hasAnyParticipation((int) $_SESSION['user_id'], $trajetId)) {
-            $this->setFlash('error', 'Vous avez déjà réservé ce trajet');
-            header('Location: /reservations');
-            return;
-        }
+        // 3) Participation existante ?
+        $existing = $partRepo->findOne((int) $_SESSION['user_id'], $trajetId);
 
         try {
             $pdo->beginTransaction();
 
+            if ($existing) {
+
+                // Déjà confirmée → stop
+                if ($existing['etat'] === 'confirme') {
+                    $pdo->rollBack();
+                    $this->setFlash('error', 'Vous avez déjà réservé ce trajet');
+                    header('Location: /reservations');
+                    exit;
+                }
+
+                // Annulée → réactivation (Option B)
+                if ($existing['etat'] === 'annule') {
+
+                    $ok = $partRepo->reactivate(
+                        (int) $_SESSION['user_id'],
+                        $trajetId,
+                        (int) $trajet['prix']
+                    );
+
+                    // On vérifie le retour
+                    if (!$ok) {
+                        $pdo->rollBack();
+                        $this->setFlash('error', 'Réactivation impossible');
+                        header('Location: /reservations');
+                        exit;
+                    }
+
+                    if (!$trajetRepo->decrementPlaces($trajetId)) {
+                        $pdo->rollBack();
+                        $this->setFlash('error', 'Plus de place disponible');
+                        header('Location: /trajets');
+                        exit;
+                    }
+
+                    $pdo->commit();
+                    $this->setFlash('success', 'Réservation confirmée');
+                    header('Location: /reservations');
+                    exit;
+                }
+
+                $pdo->rollBack();
+                $this->setFlash('error', 'Réservation en cours de traitement');
+                header('Location: /reservations');
+                exit;
+            }
+
+            // 4) Création normale
             $partRepo->create(
                 (int) $_SESSION['user_id'],
                 $trajetId,
@@ -178,7 +200,6 @@ class ReservationController extends Controller
             }
 
             $pdo->commit();
-
             $this->setFlash('success', 'Réservation confirmée');
             header('Location: /reservations');
             exit;
@@ -186,6 +207,7 @@ class ReservationController extends Controller
         } catch (\Throwable $e) {
             $pdo->rollBack();
             $this->render('errors/500', ['title' => 'Erreur lors de la réservation']);
+            exit;
         }
     }
 
@@ -222,6 +244,8 @@ class ReservationController extends Controller
             ]);
             return;
         }
+        error_log('CANCEL uid=' . ($_SESSION['user_id'] ?? 'null') . ' pid=' . ($_POST['id'] ?? 'null'));
+
 
         $repo = new ParticipationRepository();
 

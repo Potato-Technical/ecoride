@@ -5,6 +5,13 @@ document.querySelectorAll('.js-cancel-form').forEach(form => {
   form.addEventListener('submit', event => {
     event.preventDefault();
 
+    const btn = form.querySelector('button');
+    if (btn) {
+      btn.disabled = true;
+      btn.dataset.originalText = btn.textContent;
+      btn.textContent = 'Annulation...';
+    }
+
     const formData = new FormData(form);
 
     fetch(form.action, {
@@ -22,13 +29,25 @@ document.querySelectorAll('.js-cancel-form').forEach(form => {
             card.style.opacity = '0';
             setTimeout(() => card.remove(), 300);
           }
+          return;
+        }
+
+        // erreur => réactive le bouton
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = btn.dataset.originalText || 'Annuler la réservation';
         }
       })
       .catch(() => {
         showToast('Erreur réseau', 'error');
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = btn.dataset.originalText || 'Annuler la réservation';
+        }
       });
   });
 });
+
 
 /**
  * Prévention du double clic (réservation / confirmation)
@@ -42,20 +61,3 @@ document.querySelectorAll('.js-reserve-form').forEach(form => {
     btn.textContent = 'Traitement...';
   });
 });
-
-/**
- * Affiche un toast Bootstrap global
- */
-function showToast(message, status) {
-  const toastEl = document.getElementById('app-toast');
-  const body = toastEl.querySelector('.toast-body');
-
-  body.textContent = message;
-
-  toastEl.classList.remove('text-bg-success', 'text-bg-danger');
-  toastEl.classList.add(
-    status === 'success' ? 'text-bg-success' : 'text-bg-danger'
-  );
-
-  new bootstrap.Toast(toastEl, { delay: 3000 }).show();
-}

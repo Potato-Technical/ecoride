@@ -3,10 +3,10 @@
 <div class="card shadow-sm">
     <div class="card-body">
 
-        <h2 class="h6 mb-3">
-            <?= htmlspecialchars($trajet['lieu_depart']) ?>
-            →
-            <?= htmlspecialchars($trajet['lieu_arrivee']) ?>
+        <h2 class="h6 card-title mb-2">
+            <?= htmlspecialchars($r['lieu_depart'], ENT_QUOTES, 'UTF-8') ?>
+             →
+            <?= htmlspecialchars($r['lieu_arrivee'], ENT_QUOTES, 'UTF-8') ?>
         </h2>
 
         <ul class="list-unstyled mb-4">
@@ -28,7 +28,7 @@
 
                 <input type="hidden"
                        name="csrf_token"
-                       value="<?= htmlspecialchars($csrf_token) ?>">
+                       value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
 
                 <input type="hidden"
                        name="trajet_id"

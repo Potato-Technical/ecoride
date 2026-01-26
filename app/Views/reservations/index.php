@@ -16,15 +16,17 @@
                     <div class="card-body d-flex flex-column">
 
                         <h2 class="h6 card-title mb-2">
-                            <?= htmlspecialchars((string) $r['lieu_depart']) ?>
+                            <?= htmlspecialchars($r['lieu_depart'], ENT_QUOTES, 'UTF-8') ?>
                             →
-                            <?= htmlspecialchars((string) $r['lieu_arrivee']) ?>
+                            <?= htmlspecialchars($r['lieu_arrivee'], ENT_QUOTES, 'UTF-8') ?>
                         </h2>
 
                         <p class="text-muted mb-2">
                             Départ :
                             <?= htmlspecialchars(
-                                date('d/m/Y H:i', strtotime($r['date_heure_depart']))
+                                date('d/m/Y H:i', strtotime($r['date_heure_depart'])),
+                                ENT_QUOTES,
+                                'UTF-8'
                             ) ?>
                         </p>
 
@@ -35,19 +37,20 @@
 
                         <p class="mb-3">
                             État :
-                            <strong><?= htmlspecialchars((string) $r['etat']) ?></strong>
+                            <strong><?= htmlspecialchars($r['etat'], ENT_QUOTES, 'UTF-8') ?></strong>
                         </p>
 
                         <div class="mt-auto">
 
                             <?php if ($r['etat'] === 'confirme'): ?>
+                                <!-- Annulation -->
                                 <form method="POST"
                                       action="/reservations/annuler"
                                       class="d-grid js-cancel-form">
 
                                     <input type="hidden"
                                            name="csrf_token"
-                                           value="<?= htmlspecialchars($csrf_token) ?>">
+                                           value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
 
                                     <input type="hidden"
                                            name="id"
@@ -58,9 +61,30 @@
                                         Annuler la réservation
                                     </button>
                                 </form>
+
+                            <?php elseif ($r['etat'] === 'annule'): ?>
+                                <!-- Réactivation -->
+                                <form method="POST"
+                                      action="/trajets/reserver/confirm"
+                                      class="d-grid js-reserve-form">
+
+                                    <input type="hidden"
+                                           name="csrf_token"
+                                           value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+
+                                    <input type="hidden"
+                                           name="trajet_id"
+                                           value="<?= (int) $r['trajet_id'] ?>">
+
+                                    <button type="submit"
+                                            class="btn btn-outline-success btn-sm">
+                                        Réactiver la réservation
+                                    </button>
+                                </form>
+
                             <?php else: ?>
                                 <span class="text-muted small">
-                                    Annulation indisponible
+                                    Action indisponible
                                 </span>
                             <?php endif; ?>
 

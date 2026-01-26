@@ -1,4 +1,4 @@
-#!/usr/bin/env php
+#!/usr/bin/env bash
 <?php
 
 if (file_exists(__DIR__ . '/../.env')) {
