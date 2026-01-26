@@ -33,5 +33,16 @@
     <?php endforeach; ?>
 <?php endif; ?>
 
+<?php if (!empty($_SESSION['flash'])): ?>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    showToast(
+      <?= json_encode($_SESSION['flash']['message']) ?>,
+      <?= json_encode($_SESSION['flash']['type']) ?>
+    );
+  });
+</script>
+<?php unset($_SESSION['flash']); endif; ?>
+
 </body>
 </html>
