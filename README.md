@@ -95,6 +95,10 @@ L’environnement Docker est destiné au développement et à la démonstration 
 ```bash
 git clone https://github.com/Potato-Technical/ecoride.git
 cd ecoride
+
+cp .env.example .env
+# Modifier DB_PASS et DB_ROOT_PASS si besoin
+
 make up
 make db-full
 make check
