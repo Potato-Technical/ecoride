@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 
-# Charger .env
 if [ -f .env ]; then
   export $(grep -v '^#' .env | xargs)
 else
@@ -9,12 +8,8 @@ else
   exit 1
 fi
 
-echo "[DB] Load schema"
+echo "[DB] Load schema (inside db container)"
 
-mysql \
-  -h "$DB_HOST" \
-  -u "$DB_USER" \
-  -p"$DB_PASS" \
-  "$DB_NAME" < database/sql/01_schema.sql
+docker compose exec -T db mysql -u"${DB_USER}" -p"${DB_PASS}" "${DB_NAME}" < database/sql/01_schema.sql
 
 echo "[OK] Schema loaded"

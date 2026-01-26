@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 
 if (file_exists(__DIR__ . '/../.env')) {
@@ -16,4 +17,4 @@ use App\Core\Database;
 $db = Database::getInstance();
 $stmt = $db->query('SELECT COUNT(*) FROM utilisateur');
 
-echo 'utilisateur count: ' . $stmt->fetchColumn() . PHP_EOL;
+echo "Nombre total d’utilisateurs: " . $stmt->fetchColumn() . PHP_EOL;

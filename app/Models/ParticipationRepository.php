@@ -9,17 +9,15 @@ use PDOException;
 class ParticipationRepository
 {
     /**
-     * Réserve un trajet pour un utilisateur.
-     * - Vérifie qu'il reste des places
-     * - Empêche une double réservation
-     * - Décrémente le nombre de places
-     * - Crée le mouvement de crédit (débit)
-     * @param int $trajetId
-     * @param int $userId
-     * @param int $prix
-     * @return bool
-     * @deprecated Utiliser une transaction explicite côté contrôleur
-     *            avec create(), debitCredits() et TrajetRepository::decrementPlaces().
+     * MÉTHODE OBSOLÈTE — NE PLUS UTILISER.
+     *
+     * Ancien flux “tout-en-un” : vérifs + transaction + écritures SQL.
+     * Conservée uniquement à titre de référence.
+     *
+     * @deprecated Utiliser une transaction explicite côté contrôleur avec :
+     *             - ParticipationRepository::create()
+     *             - TrajetRepository::decrementPlaces()
+     *             - (et la gestion crédit_mouvement dans le contrôleur / repo dédié)
      */
     public function reserve(int $trajetId, int $userId, int $prix): bool
     {
@@ -70,9 +68,16 @@ class ParticipationRepository
 
             // Décrémentation des places
             $stmt = $pdo->prepare(
-                'UPDATE trajet SET nb_places = nb_places - 1 WHERE id = :id'
+                'UPDATE trajet
+                SET nb_places = nb_places - 1
+                WHERE id = :id AND nb_places > 0'
             );
             $stmt->execute(['id' => $trajetId]);
+
+            if ($stmt->rowCount() !== 1) {
+                $pdo->rollBack();
+                return false;
+            }
 
             // Mouvement de crédit (débit)
             $stmt = $pdo->prepare(

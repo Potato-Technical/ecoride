@@ -6,31 +6,36 @@ use App\Core\Controller;
 use App\Core\Database;
 use App\Models\ParticipationRepository;
 use App\Models\TrajetRepository;
-    /**
-     * Contrôleur de réservation.
-     *
-     * Sécurité :
-     * - Toutes les actions sont réservées aux utilisateurs authentifiés
-     * - Les actions POST sont protégées par un token CSRF
-     * - Les vérifications métier (statut, places, ownership) sont faites côté serveur
-     * - Les opérations critiques sont exécutées dans des transactions SQL atomiques
-     */
 
+/**
+ * Contrôleur de réservation.
+ *
+ * Sécurité :
+ * - Toutes les actions sont réservées aux utilisateurs authentifiés
+ * - Les actions POST sont protégées par un token CSRF
+ * - Les vérifications métier (statut, places, ownership) sont faites côté serveur
+ * - Les opérations critiques sont exécutées dans des transactions SQL atomiques
+ */
 class ReservationController extends Controller
 {
     /**
      * Réserve un trajet pour l'utilisateur connecté.
      *
-     * L'identifiant du trajet est récupéré via l'URL (?id=).
+     * L'identifiant du trajet est récupéré via le POST (trajet_id).
      */
     public function reserve(): void
     {
+        // Action sensible : POST uniquement
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            exit;
+        }
+
         // Accès réservé aux utilisateurs connectés
         $this->requireAuth();
-        
+
         // Protection CSRF : empêche l'appel de l'action depuis une source externe
         $this->verifyCsrfToken();
-
 
         // Récupération et validation de l'identifiant du trajet
         $trajetId = isset($_POST['trajet_id']) ? (int) $_POST['trajet_id'] : 0;
@@ -60,7 +65,7 @@ class ReservationController extends Controller
         }
 
         // Plus de place
-        if ((int)$trajet['nb_places'] <= 0) {
+        if ((int) $trajet['nb_places'] <= 0) {
             http_response_code(400);
             $this->render('errors/400', ['title' => 'Plus de place disponible']);
             return;
@@ -69,7 +74,7 @@ class ReservationController extends Controller
         $this->render('reservations/confirm', [
             'trajet' => $trajet,
             'title'  => 'Confirmer la réservation',
-            'csrf_token' => $this->generateCsrfToken()
+            'csrf_token'  => $this->generateCsrfToken(),
         ]);
     }
 
@@ -87,7 +92,7 @@ class ReservationController extends Controller
             'reservations' => $reservations,
             'title' => 'Mes réservations',
             'scripts' => ['/assets/js/reservations.js'],
-            'csrf_token' => $this->generateCsrfToken()
+            'csrf_token'   => $this->generateCsrfToken(),
         ]);
     }
 
@@ -99,6 +104,12 @@ class ReservationController extends Controller
      */
     public function confirm(): void
     {
+        // Action sensible : POST uniquement
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            exit;
+        }
+
         $this->requireAuth();
         $this->verifyCsrfToken();
 
@@ -129,14 +140,18 @@ class ReservationController extends Controller
             $pdo->beginTransaction();
 
             $partRepo->reactivate((int) $_SESSION['user_id'], $trajetId);
-            $trajetRepo->decrementPlaces($trajetId);
+            if (!$trajetRepo->decrementPlaces($trajetId)) {
+                $pdo->rollBack();
+                $this->setFlash('error', 'Plus de place disponible');
+                header('Location: /trajets');
+                exit;
+            }
 
             $pdo->commit();
 
             $this->setFlash('success', 'Réservation réactivée');
             header('Location: /reservations');
             exit;
-
         }
 
         // 4) Création normale
@@ -155,7 +170,12 @@ class ReservationController extends Controller
                 (int) $trajet['prix']
             );
 
-            $trajetRepo->decrementPlaces($trajetId);
+            if (!$trajetRepo->decrementPlaces($trajetId)) {
+                $pdo->rollBack();
+                $this->setFlash('error', 'Plus de place disponible');
+                header('Location: /trajets');
+                exit;
+            }
 
             $pdo->commit();
 
@@ -172,10 +192,16 @@ class ReservationController extends Controller
     /**
      * Annule une réservation appartenant à l'utilisateur connecté.
      *
-     * L'identifiant de la participation est récupéré via l'URL (?id=).
+     * L'identifiant de la participation est récupéré via le POST (id).
      */
     public function cancel(): void
     {
+        // Action sensible : POST uniquement
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            exit;
+        }
+
         // Accès réservé aux utilisateurs connectés
         $this->requireAuth();
 

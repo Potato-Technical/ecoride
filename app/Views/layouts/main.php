@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?= $title ?? 'EcoRide' ?></title>
+    <title><?= htmlspecialchars($title ?? 'EcoRide', ENT_QUOTES, 'UTF-8') ?></title>
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"rel="stylesheet">
     <!-- Design system -->
@@ -24,17 +24,6 @@
 </main>
 
 <?php require __DIR__ . '/footer.php'; ?>
-
-<div class="toast-container position-fixed bottom-0 end-0 p-3">
-    <div id="app-toast" class="toast align-items-center" role="alert">
-        <div class="d-flex">
-            <div class="toast-body"></div>
-            <button type="button"
-                    class="btn-close me-2 m-auto"
-                    data-bs-dismiss="toast"></button>
-        </div>
-    </div>
-</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 

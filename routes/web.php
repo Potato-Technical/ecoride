@@ -1,31 +1,54 @@
 <?php
-/*
- Définition des routes de l'application
- clé   → URL
- valeur → [Contrôleur, méthode]
+/**
+ * Routes EcoRide
+ *
+ * - clé   : chemin URL (sans domaine)
+ * - valeur: [Controller, action]
+ *
+ * Notes :
+ * - Le contrôle d'accès (public/auth/admin) est géré côté controllers (requireAuth/requireRole).
+ * - La méthode HTTP (GET/POST) n'est pas encodée ici : elle est à faire respecter dans les actions.
  */
 
 return [
-    '/' => ['HomeController', 'index'],                                     //Accueil public
-    '/a-propos' => ['HomeController', 'about'],
-    '/contact'  => ['HomeController', 'contact'],
 
-    // Authentification
-    '/login'    => ['AuthController', 'login'],
-    '/logout'   => ['AuthController', 'logout'],
-    '/register' => ['AuthController', 'register'],
+    // PUBLIC (accessible sans connexion)
 
-    // Trajets (public / utilisateur)
-    '/trajets'              => ['TrajetController', 'index'],               //Liste
-    '/trajet'               => ['TrajetController', 'show'],                //Détail ?id=
-    '/trajets/create'       => ['TrajetController', 'create'],              //Créer un trajet
+    '/'          => ['HomeController', 'index'],    // GET : Accueil
+    '/a-propos'  => ['HomeController', 'about'],    // GET : À propos
+    '/contact'   => ['HomeController', 'contact'],  // GET : Contact
 
-    // Réservations
-    '/reservations' => ['ReservationController', 'index'],                  //Mes réservations
-    '/trajets/reserver'     => ['ReservationController', 'reserve'],        //POST réserver
-    '/trajets/reserver/confirm' => ['ReservationController', 'confirm'],    //POST confirmer
-    '/reservations/annuler' => ['ReservationController', 'cancel'],         //POST annuler
+    // AUTH (connexion/inscription)
 
-    // Administration
-    '/admin' => ['AdminController', 'index'],                               //dashboard admin
+    '/login'     => ['AuthController', 'login'],    // GET+POST : Connexion
+    '/register'  => ['AuthController', 'register'], // GET+POST : Inscription
+    '/logout'    => ['AuthController', 'logout'],   // POST recommandé (actuel: selon ton implémentation)
+
+    // TRAJETS
+
+    '/trajets'           => ['TrajetController', 'index'],    // GET : Liste + filtres
+    '/trajet'            => ['TrajetController', 'show'],     // GET : Détail (query ?id=)
+
+    // Pagination / chargement progressif
+    '/trajets/load-more' => ['TrajetController', 'loadMore'], // POST : AJAX "load more"
+
+    // Création (auth requise)
+    '/trajets/create'    => ['TrajetController', 'create'],   // GET+POST : Form + création
+
+    // RÉSERVATIONS (auth requise)
+
+    '/reservations'             => ['ReservationController', 'index'],    // GET : Mes réservations
+    '/trajets/reserver'         => ['ReservationController', 'reserve'],  // POST : Pré-confirmation
+    '/trajets/reserver/confirm' => ['ReservationController', 'confirm'],  // POST : Confirmation (transaction)
+    '/reservations/annuler'     => ['ReservationController', 'cancel'],   // POST : Annuler / réactiver (JSON)
+
+    // ADMIN (rôle administrateur)
+
+    '/admin' => ['AdminController', 'index'], // GET : Dashboard admin (peut rester minimal)
+
+    //LÉGAL (éviter les 404 du footer)
+
+    '/mentions-legales' => ['HomeController', 'legalMentions'], // GET : Mentions légales
+    '/cgu'              => ['HomeController', 'cgu'],           // GET : CGU
+    '/accessibilite'    => ['HomeController', 'accessibilite'], // GET : Accessibilité
 ];
