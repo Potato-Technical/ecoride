@@ -18,7 +18,7 @@ ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf && \
     sed -ri 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# (Optionnel mais recommandé) autoriser .htaccess
+# autoriser .htaccess
 RUN printf '%s\n' \
   '<Directory /var/www/html/public>' \
   '    AllowOverride All' \
@@ -27,6 +27,9 @@ RUN printf '%s\n' \
   > /etc/apache2/conf-available/ecoride.conf && a2enconf ecoride
 
 WORKDIR /var/www/html
+
+# Évite le warning "dubious ownership" si git est utilisé dans le conteneur
+RUN git config --global --add safe.directory /var/www/html
 
 # Installer vendor (cache Docker efficace)
 COPY composer.json composer.lock* ./

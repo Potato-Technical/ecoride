@@ -51,8 +51,12 @@ document.querySelectorAll('.js-cancel-form').forEach(form => {
 
 /**
  * Prévention du double clic (réservation / confirmation)
+ * (submit normal, on ne bloque pas l’événement)
  */
 document.querySelectorAll('.js-reserve-form').forEach(form => {
+  if (form.dataset.bound === '1') return;
+  form.dataset.bound = '1';
+
   form.addEventListener('submit', () => {
     const btn = form.querySelector('button');
     if (!btn) return;
@@ -61,3 +65,4 @@ document.querySelectorAll('.js-reserve-form').forEach(form => {
     btn.textContent = 'Traitement...';
   });
 });
+

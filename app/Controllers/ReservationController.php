@@ -73,6 +73,7 @@ class ReservationController extends Controller
 
         $this->render('reservations/confirm', [
             'trajet' => $trajet,
+            'csrf_token' => $this->generateCsrfToken(),
             'title'  => 'Confirmer la réservation',
         ]);
     }
@@ -90,6 +91,7 @@ class ReservationController extends Controller
         $this->render('reservations/index', [
             'reservations' => $reservations,
             'title' => 'Mes réservations',
+            'csrf_token' => $this->generateCsrfToken(),
             'scripts' => ['/assets/js/reservations.js'],
         ]);
     }

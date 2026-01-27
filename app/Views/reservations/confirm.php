@@ -4,15 +4,19 @@
     <div class="card-body">
 
         <h2 class="h6 card-title mb-2">
-            <?= htmlspecialchars($r['lieu_depart'], ENT_QUOTES, 'UTF-8') ?>
-             →
-            <?= htmlspecialchars($r['lieu_arrivee'], ENT_QUOTES, 'UTF-8') ?>
+            <?= htmlspecialchars($trajet['lieu_depart'], ENT_QUOTES, 'UTF-8') ?>
+            →
+            <?= htmlspecialchars($trajet['lieu_arrivee'], ENT_QUOTES, 'UTF-8') ?>
         </h2>
 
         <ul class="list-unstyled mb-4">
             <li class="mb-2">
                 <strong>Date :</strong>
-                <?= htmlspecialchars(date('d/m/Y H:i', strtotime($trajet['date_heure_depart']))) ?>
+                <?= htmlspecialchars(
+                    date('d/m/Y H:i', strtotime($trajet['date_heure_depart'])),
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>
             </li>
             <li>
                 <strong>Prix :</strong>
@@ -28,7 +32,7 @@
 
                 <input type="hidden"
                        name="csrf_token"
-                       value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+                       value="<?= htmlspecialchars($csrf_token ?? '', ENT_QUOTES, 'UTF-8') ?>">
 
                 <input type="hidden"
                        name="trajet_id"

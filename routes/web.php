@@ -39,8 +39,8 @@ return [
 
     '/reservations'             => ['ReservationController', 'index'],    // GET : Mes réservations
     '/trajets/reserver'         => ['ReservationController', 'reserve'],  // POST : Pré-confirmation
-    '/trajets/reserver/confirm' => ['ReservationController', 'confirm'],  // POST : Confirmation (transaction)
-    '/reservations/annuler'     => ['ReservationController', 'cancel'],   // POST : Annuler / réactiver (JSON)
+    '/trajets/reserver/confirm' => ['ReservationController', 'confirm'],  // POST : Confirm (POST, redirect)
+    '/reservations/annuler'     => ['ReservationController', 'cancel'],   // POST : Annuler (JSON)
 
     // ADMIN (rôle administrateur)
 
