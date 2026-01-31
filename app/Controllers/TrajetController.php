@@ -38,7 +38,6 @@ class TrajetController extends Controller
             'trajets'     => $trajets,
             'filters'     => $filters,
             'limit'       => $limit,
-            'csrf_token'  => $this->generateCsrfToken(),
             'title'       => 'Recherche de covoiturages',
             'scripts'     => ['/assets/js/trajets.js'],
         ]);
@@ -79,7 +78,6 @@ class TrajetController extends Controller
         $this->render('trajets/show', [
             'trajet'           => $trajet,
             'hasParticipation' => $hasParticipation,
-            'csrf_token'       => $this->generateCsrfToken(),
             'title'            => 'Détail du covoiturage',
             'scripts'          => ['/assets/js/reservations.js'],
         ]);
@@ -131,8 +129,7 @@ class TrajetController extends Controller
         }
 
         $this->render('trajets/create', [
-            'title' => 'Créer un trajet',
-            'csrf_token' => $this->generateCsrfToken(),
+            'title' => 'Créer un trajet'
         ]);
     }
 

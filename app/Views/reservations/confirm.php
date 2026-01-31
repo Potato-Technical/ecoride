@@ -31,8 +31,8 @@
                   class="js-reserve-form">
 
                 <input type="hidden"
-                       name="csrf_token"
-                       value="<?= htmlspecialchars($csrf_token ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                       name="csrfToken"
+                       value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
 
                 <input type="hidden"
                        name="trajet_id"

@@ -5,7 +5,7 @@
  * Données disponibles :
  * - $trajets (array)  : résultats SQL
  * - $filters (array)  : filtres issus de l’URL (GET)
- * - $csrf_token (string) : token CSRF pour AJAX
+ * - $csrfToken (string) : token CSRF pour AJAX
  * - $limit (int)      : nombre d’éléments chargés initialement
  */
 ?>
@@ -14,7 +14,7 @@
 
     <!-- BARRE DE RECHERCHE (GET) -->
     <section class="trajets-search">
-        <form method="GET" class="mb-4">
+        <form id="trajets-search-form" method="GET" class="mb-4">
 
             <!-- MOBILE  -->
             <div class="d-md-none">
@@ -177,7 +177,7 @@
             <?php endif; ?>
 
             <!-- CSRF pour AJAX (hors form GET pour ne pas finir dans l'URL) -->
-            <input type="hidden" id="csrf-token" value="<?= htmlspecialchars($csrf_token ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            <input type="hidden" id="csrf-token" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
 
         </section>
     </div>

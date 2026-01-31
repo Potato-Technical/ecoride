@@ -76,9 +76,7 @@ class AuthController extends Controller
         }
 
         // Affichage simple du formulaire de connexion (requête GET)
-        $this->render('auth/login', [
-            'csrf_token' => $this->generateCsrfToken()
-        ]);
+        $this->render('auth/login');
     }
     
     /**
@@ -116,8 +114,7 @@ class AuthController extends Controller
                 $pwd !== $pwdConf
             ) {
                 $this->render('auth/register', [
-                    'error' => 'Formulaire invalide',
-                    'csrf_token' => $this->generateCsrfToken()
+                    'error' => 'Formulaire invalide'
                 ]);
                 return;
             }
@@ -129,7 +126,6 @@ class AuthController extends Controller
             if ($userRepo->findByEmail($email)) {
                 $this->render('auth/register', [
                     'error' => 'Adresse e-mail déjà utilisée',
-                    'csrf_token' => $this->generateCsrfToken()
                 ]);
                 return;
             }
@@ -167,9 +163,7 @@ class AuthController extends Controller
         }
 
         // Affichage du formulaire (GET)
-        $this->render('auth/register', [
-            'csrf_token' => $this->generateCsrfToken()
-        ]);
+        $this->render('auth/register');
     }
 
     /**

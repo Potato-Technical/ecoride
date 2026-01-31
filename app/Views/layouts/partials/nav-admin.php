@@ -26,7 +26,7 @@
 
                 <li class="nav-item">
                     <form method="POST" action="/logout" class="nav-link text-danger">
-                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+                        <input type="hidden" name="csrfToken" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
                         <button type="submit" class="btn btn-link nav-link text-danger p-0">
                             Déconnexion
                         </button>

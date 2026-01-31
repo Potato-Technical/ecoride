@@ -73,7 +73,6 @@ class ReservationController extends Controller
 
         $this->render('reservations/confirm', [
             'trajet' => $trajet,
-            'csrf_token' => $this->generateCsrfToken(),
             'title'  => 'Confirmer la réservation',
         ]);
     }
@@ -91,7 +90,6 @@ class ReservationController extends Controller
         $this->render('reservations/index', [
             'reservations' => $reservations,
             'title' => 'Mes réservations',
-            'csrf_token' => $this->generateCsrfToken(),
             'scripts' => ['/assets/js/reservations.js'],
         ]);
     }
@@ -246,8 +244,6 @@ class ReservationController extends Controller
             ]);
             return;
         }
-        error_log('CANCEL uid=' . ($_SESSION['user_id'] ?? 'null') . ' pid=' . ($_POST['id'] ?? 'null'));
-
 
         $repo = new ParticipationRepository();
 

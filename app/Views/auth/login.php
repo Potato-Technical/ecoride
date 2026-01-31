@@ -17,7 +17,7 @@
 
                 <form method="POST">
                     <input type="hidden"
-                           name="csrf_token"
+                           name="csrfToken"
                            value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
 
                     <div class="mb-3">

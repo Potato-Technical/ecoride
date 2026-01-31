@@ -1,26 +1,35 @@
 <?php
-// Session
 session_start();
-// Configuration PHP (dev)
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 
 // Chargement manuel des variables d’environnement depuis .env
-$envPath = __DIR__ . '/../.env';
-
-if (file_exists($envPath)) {
-    $lines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-
-    foreach ($lines as $line) {
-        if (str_starts_with(trim($line), '#')) {
-            continue;
-        }
+$envFile = dirname(__DIR__) . '/.env';
+if (is_readable($envFile)) {
+    foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+        $line = trim($line);
+        if ($line === '' || str_starts_with($line, '#')) continue;
+        if (!str_contains($line, '=')) continue;
 
         [$key, $value] = explode('=', $line, 2);
+        $key = trim($key);
+        $value = trim($value);
+
+        if ((str_starts_with($value, '"') && str_ends_with($value, '"')) ||
+            (str_starts_with($value, "'") && str_ends_with($value, "'"))) {
+            $value = substr($value, 1, -1);
+        }
+
+        putenv("$key=$value");
         $_ENV[$key] = $value;
     }
 }
+
+// Configuration PHP selon env
+$appEnv = $_ENV['APP_ENV'] ?? getenv('APP_ENV') ?? 'prod';
+$debug = in_array($appEnv, ['local', 'dev'], true);
+
+ini_set('display_errors', $debug ? '1' : '0');
+ini_set('display_startup_errors', $debug ? '1' : '0');
+error_reporting($debug ? E_ALL : 0);
 
 // Autoload Composer (REMPLACE TOUS LES require_once)
 require_once __DIR__ . '/../vendor/autoload.php';

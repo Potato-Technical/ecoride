@@ -17,18 +17,21 @@ class Controller
      */
     protected function render(string $view, array $data = []): void
     {
-        // Token CSRF disponible pour toutes les vues (utile pour forms)
-        $data['csrfToken'] = $data['csrfToken'] ?? $this->generateCsrfToken();
-        
-        // Rend les clés du tableau accessibles comme variables
+        // Variables globales garanties pour layout + vues
+        $csrfToken = $data['csrfToken'] ?? $this->generateCsrfToken();
+        $title     = $data['title'] ?? 'EcoRide';
+        $pageCss   = $data['pageCss'] ?? [];
+        $scripts   = $data['scripts'] ?? [];
+
+        // Données spécifiques à la vue
         extract($data);
 
-        // Capture du contenu de la vue
+        // Vue -> $content | Capture du contenu de la vue
         ob_start();
         require dirname(__DIR__) . "/Views/{$view}.php";
         $content = ob_get_clean();
 
-        // Layout principal
+        // Layout -> utilise $content + $csrfToken + $title + etc.
         require dirname(__DIR__) . "/Views/layouts/main.php";
     }
 
@@ -119,10 +122,12 @@ class Controller
      */
     protected function verifyCsrfToken(): void
     {
+        $token = $_POST['csrfToken'] ?? '';
+
         if (
-            empty($_POST['csrf_token']) ||
+            $token === '' ||
             empty($_SESSION['csrf_token']) ||
-            !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])
+            !hash_equals($_SESSION['csrf_token'], $token)
         ) {
             $this->error(403);
         }

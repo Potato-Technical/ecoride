@@ -17,7 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const loadBtn = document.querySelector('.load-more-btn');
   if (!loadBtn) return;
 
-  const form = document.querySelector('form');
+  const form = document.querySelector('#trajets-search-form');
+  if (!form) return;
   const container = document.querySelector('.trajets-results');
 
   // Offset = nombre déjà affiché côté serveur (injecté via data-*)
@@ -33,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const csrfEl = document.getElementById('csrf-token');
       const csrfToken = csrfEl ? csrfEl.value : '';
-      formData.append('csrf_token', csrfToken);
+      formData.append('csrfToken', csrfToken);
 
       const res = await fetch('/trajets/load-more', {
         method: 'POST',

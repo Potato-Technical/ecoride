@@ -25,7 +25,8 @@ class HomeController extends Controller
     {
         // Affichage de la page d’accueil
         $this->render('home/index', [
-            'title' => 'EcoRide - Covoiturage responsable'
+            'title'   => 'EcoRide - Covoiturage responsable',
+            'pageCss' => ['home.css'],
         ]);
     }
 

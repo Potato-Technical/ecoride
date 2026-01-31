@@ -49,7 +49,7 @@
                                       class="d-grid js-cancel-form">
 
                                     <input type="hidden"
-                                           name="csrf_token"
+                                           name="csrfToken"
                                            value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
 
                                     <input type="hidden"
@@ -69,7 +69,7 @@
                                       class="d-grid js-reserve-form">
 
                                     <input type="hidden"
-                                           name="csrf_token"
+                                           name="csrfToken"
                                            value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
 
                                     <input type="hidden"
