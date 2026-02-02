@@ -120,4 +120,145 @@ class VehiculeController extends Controller
         header('Location: /trajets/create');
         exit;
     }
+
+    /**
+     * Affiche le formulaire d’édition d’un véhicule appartenant à l’utilisateur.
+     *
+     * Sécurité :
+     * - Authentification obligatoire
+     * - Vérification de l’ownership du véhicule (utilisateur connecté)
+     *
+     * Flux :
+     * - Récupère l’id du véhicule via GET
+     * - Vérifie que le véhicule existe et appartient à l’utilisateur
+     * - Affiche le formulaire pré-rempli
+     *
+     * Erreurs :
+     * - 400 si id invalide
+     * - 404 si véhicule inexistant ou non possédé
+     */
+    public function edit(): void
+    {
+        $this->requireAuth();
+
+        $id = (int)($_GET['id'] ?? 0);
+        if ($id <= 0) { $this->error(400); }
+
+        $repo = new VehiculeRepository();
+        $vehicule = $repo->findOwnedById($id, (int)$_SESSION['user_id']);
+
+        if (!$vehicule) { $this->error(404); }
+
+        $this->render('vehicules/edit', [
+            'title'    => 'Modifier un véhicule',
+            'vehicule' => $vehicule,
+        ]);
+    }
+
+    /**
+     * Met à jour un véhicule appartenant à l’utilisateur.
+     *
+     * Sécurité :
+     * - POST uniquement
+     * - Authentification obligatoire
+     * - Protection CSRF
+     * - Vérification stricte de l’ownership
+     *
+     * Flux :
+     * - Validation des champs essentiels
+     * - Mise à jour conditionnée à l’utilisateur propriétaire
+     * - Redirection avec message flash
+     *
+     * Erreurs :
+     * - 400 si données invalides
+     * - 404 si véhicule inexistant ou non possédé
+     */
+    public function update(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); exit; }
+
+        $this->requireAuth();
+        $this->verifyCsrfToken();
+
+        $id = (int)($_POST['id'] ?? 0);
+        if ($id <= 0) { $this->error(400); }
+
+        $repo = new VehiculeRepository();
+        $vehicule = $repo->findOwnedById($id, (int)$_SESSION['user_id']);
+        if (!$vehicule) { $this->error(404); }
+
+        $data = [
+            'immatriculation'               => trim($_POST['immatriculation'] ?? ''),
+            'date_premiere_immatriculation' => trim($_POST['date_premiere_immatriculation'] ?? ''),
+            'marque'                        => trim($_POST['marque'] ?? ''),
+            'modele'                        => trim($_POST['modele'] ?? ''),
+            'couleur'                       => trim($_POST['couleur'] ?? ''),
+            'energie'                       => trim($_POST['energie'] ?? ''),
+            'fumeur_accepte'                => !empty($_POST['fumeur_accepte']) ? 1 : 0,
+            'animaux_acceptes'              => !empty($_POST['animaux_acceptes']) ? 1 : 0,
+            'preferences_libres'            => trim($_POST['preferences_libres'] ?? ''),
+        ];
+
+        // Validation minimale côté serveur
+        if (
+            $data['immatriculation'] === '' ||
+            $data['date_premiere_immatriculation'] === '' ||
+            $data['marque'] === '' ||
+            $data['modele'] === '' ||
+            $data['couleur'] === '' ||
+            $data['energie'] === ''
+        ) {
+            http_response_code(400);
+            $this->render('errors/400', ['title' => 'Données invalides']);
+            return;
+        }
+
+        $repo->updateOwned($id, (int)$_SESSION['user_id'], $data);
+
+        $this->setFlash('success', 'Véhicule mis à jour');
+        header('Location: /vehicules');
+        exit;
+    }
+
+    /**
+     * Supprime un véhicule appartenant à l’utilisateur.
+     *
+     * Sécurité :
+     * - POST uniquement
+     * - Authentification obligatoire
+     * - Protection CSRF
+     * - Suppression limitée au propriétaire
+     *
+     * Règles métier :
+     * - La suppression peut échouer si le véhicule est lié à un trajet (clé étrangère)
+     *
+     * Effets :
+     * - Suppression logique via repository
+     * - Message flash explicite selon le résultat
+     */
+    public function delete(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); exit; }
+
+        $this->requireAuth();
+        $this->verifyCsrfToken();
+
+        $id = (int)($_POST['id'] ?? 0);
+        if ($id <= 0) { $this->error(400); }
+
+        $repo = new VehiculeRepository();
+
+        // Échec possible si le véhicule est utilisé par un trajet (contrainte FK)
+        $ok = $repo->deleteOwned($id, (int)$_SESSION['user_id']);
+
+        if (!$ok) {
+            $this->setFlash('error', 'Suppression impossible (véhicule utilisé par un trajet)');
+            header('Location: /vehicules');
+            exit;
+        }
+
+        $this->setFlash('success', 'Véhicule supprimé');
+        header('Location: /vehicules');
+        exit;
+    }
 }

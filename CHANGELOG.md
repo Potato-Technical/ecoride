@@ -1,7 +1,17 @@
 # Changelog
 
-Tous les changements notables de ce projet sont documentés ici.
+Tous les changements notables de ce projet sont documentés ici.  
 Ce projet suit le versioning sémantique (SemVer).
+
+## [0.3.1] – 2026-02-02
+
+### Added
+- CRUD véhicule minimal : édition, mise à jour et suppression sécurisées (ownership + CSRF)
+- Vue d’édition de véhicule + actions *Modifier* / *Supprimer* depuis la liste
+
+### Fixed
+- Suppression de véhicule sécurisée : gestion propre de l’échec lorsque le véhicule est référencé par un trajet (contrainte FK avec message flash)
+
 
 ## [0.3.0] – 2026-02-02
 
@@ -10,7 +20,10 @@ Ce projet suit le versioning sémantique (SemVer).
 - Repository `CreditMouvementRepository` (calcul du solde et ajout de mouvements)
 - Repository `VehiculeRepository` (gestion et résolution des véhicules)
 - Page chauffeur `/trajets/chauffeur` : liste des trajets créés par l’utilisateur
-- Sélection du véhicule lors de la création de trajet + vérification d’ownership
+- Page « Mes véhicules » (`/vehicules`) : route, contrôleur, repository et vue
+- Page « Mon compte » (`/profil`) avec affichage du solde de crédits
+- Sélection du véhicule lors de la création de trajet avec vérification d’ownership
+- Navigation authentifiée structurée par rôle (Chauffeur / Passager / Compte)
 - Seed crédits et seed véhicule utilisateur (idempotents, données de démo)
 
 ### Changed
@@ -24,6 +37,7 @@ Ce projet suit le versioning sémantique (SemVer).
 - Annulation : réincrémentation sécurisée du nombre de places
 - Réservation : blocage de l’auto-réservation (chauffeur ≠ passager)
 - Sécurisation de la transaction de confirmation (rollback conditionnel)
+- 404 uniformisées via `ErrorController` (layout appliqué systématiquement)
 
 
 ## [0.3.0] – 2026-01-27
@@ -31,86 +45,78 @@ Ce projet suit le versioning sémantique (SemVer).
 ### Added
 - Cycle **réservation → confirmation → annulation → réactivation**
 - Annulation **idempotente** côté serveur (annulation multiple = un seul effet métier)
-- Réactivation d’une participation annulée via la confirmation standard (réutilisation de la ligne existante)
-- Historique financier détaillé (`credit_mouvement`) avec :
-  - débit lors de la confirmation
-  - remboursement lors de l’annulation
-- Verrouillage SQL `FOR UPDATE` sur la participation lors des opérations critiques
-- Prévention du double submit côté client (désactivation bouton + garde-fou JS)
-- Annulation AJAX avec retour JSON + feedback utilisateur
-- Toast global Bootstrap (succès / erreur)
-- Healthcheck MySQL dans `docker-compose` + dépendance conditionnelle du service web
-- Volume Docker dédié pour `vendor/` afin d’éviter les conflits hôte / conteneur
-- Scripts shell unifiés pour reset complet de la base (`db_full_reset.sh`)
-- Script de vérification fonctionnelle (`sanity_check.php`)
-- Fichier `.env.example` documenté pour exécution Docker et hors Docker
+- Réactivation d’une participation annulée via la confirmation standard
+- Historique financier détaillé (`credit_mouvement`)
+- Verrouillage SQL `FOR UPDATE` sur la participation
+- Prévention du double submit côté client
+- Annulation AJAX avec feedback utilisateur
+- Toast global Bootstrap
+- Healthcheck MySQL Docker
+- Volume Docker dédié pour `vendor/`
+- Scripts de reset DB
+- Script de vérification fonctionnelle
+- `.env.example` documenté
 
 ### Changed
 - Centralisation de la logique métier dans `ParticipationRepository`
-- Séparation stricte :
-  - contrôleur = orchestration / sécurité
-  - repository = règles métier + SQL
-- Harmonisation des endpoints POST (réservation / confirmation / annulation)
-- Ajustements JS pour éviter doubles handlers/doubles requêtes
-- Mise à jour des vues liées à la confirmation (suppression variables incorrectes / warnings)
+- Séparation contrôleur / repository
+- Harmonisation des endpoints POST
+- Ajustements JS anti-doubles requêtes
 
 ### Fixed
-- Multiples écritures dans `credit_mouvement` lors d’annulations successives
-- Double annulation causée par submits multiples
-- Incohérence entre état `annule` et nombre de places du trajet
-- Warnings PHP liés à variables non définies dans les vues
-- Comportements incohérents après annulation puis nouvelle réservation
+- Multiples écritures `credit_mouvement`
+- Double annulation
+- Incohérences places / état
+- Warnings PHP vues
+- Bugs après annulation + re-réservation
 
 ### Security
-- Vérification stricte de l’ownership utilisateur sur les annulations
-- Transactions SQL atomiques sur les opérations critiques
-- Suppression des actions destructrices accessibles via GET
-- Protection contre doubles clics côté client **et** côté serveur
+- Vérification stricte de l’ownership
+- Transactions SQL atomiques
+- Suppression des actions destructrices en GET
+- Protection anti double-clic client et serveur
 
 
 ## [0.2.0] – 2026-01-03
 
 ### Added
-- Protection CSRF sur les actions POST sensibles (authentification, réservation, annulation)
-- Vérification centralisée des tokens CSRF côté serveur
-- Messages flash utilisateur (succès et erreur) après actions métier
-- Feedback utilisateur global via layout Bootstrap
+- Protection CSRF POST
+- Vérification centralisée CSRF
+- Messages flash
+- Feedback utilisateur global
 
 ### Changed
-- Annulation de réservation déplacée de GET vers POST
-- Harmonisation des parcours POST → Redirect → GET
-- Clarification des responsabilités contrôleur / vue
+- Annulation déplacée de GET vers POST
+- Parcours POST → Redirect → GET
 
 ### Security
-- Rejet systématique des requêtes POST sans token CSRF valide
-- Renforcement des contrôles d’ownership sur les réservations
-- Suppression des actions destructrices accessibles via GET
+- Rejet POST sans CSRF
+- Renforcement ownership
+- Suppression actions destructrices en GET
 
 
 ## [0.1.0] – 2026-01-02
 
 ### Added
-- Architecture MVC PHP complète (sans framework)
-- Environnement Docker (PHP / Apache / MySQL)
-- Orchestration Docker via docker-compose
-- Modèle de données relationnel (MySQL 8, InnoDB, utf8mb4)
-- Scripts SQL versionnés (schema + seed idempotents)
-- Authentification utilisateur et contrôle d’accès par rôles
-- Consultation et réservation de trajets
-- Annulation et réactivation des participations
+- Architecture MVC PHP
+- Docker PHP / Apache / MySQL
+- Modèle relationnel MySQL
+- Scripts SQL versionnés
+- Authentification et rôles
+- Consultation / réservation trajets
+- Annulation / réactivation
 - Espace « Mes réservations »
 
 ### Changed
-- Normalisation des statuts métier (ASCII, sans accents)
-- Gestion cohérente des états métier (planifie, confirme, annule)
+- Normalisation des statuts métier
 
 ### Fixed
-- Protection contre les doubles réservations
-- Sécurisation des opérations critiques via transactions SQL
+- Protection contre doubles réservations
+- Transactions SQL critiques
 
 ### Technical
-- Requêtes SQL préparées via PDO
-- Transactions SQL atomiques
-- Gestion centralisée des erreurs HTTP (400, 403, 404, 500)
-- Routing centralisé via fichier `routes`
-- Scripts shell déterministes pour réinitialisation de la base
+- PDO + requêtes préparées
+- Transactions SQL
+- Gestion erreurs HTTP centralisée
+- Routing centralisé
+- Scripts shell déterministes

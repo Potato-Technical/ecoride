@@ -27,13 +27,13 @@
                     </a>
                     <ul class="dropdown-menu">
                         <li>
-                            <a class="dropdown-item" href="/trajets/create">
-                                Créer un trajet
-                            </a>
-                        </li>
-                        <li>
                             <a class="dropdown-item" href="/trajets/chauffeur">
                                 Mes trajets
+                            </a>
+                        </li>                        
+                        <li>
+                            <a class="dropdown-item" href="/trajets/create">
+                                Créer un trajet
                             </a>
                         </li>
                     </ul>
@@ -50,13 +50,13 @@
                     </a>
                     <ul class="dropdown-menu">
                         <li>
-                            <a class="dropdown-item" href="/trajets">
-                                Trajets
-                            </a>
-                        </li>
-                        <li>
                             <a class="dropdown-item" href="/reservations">
                                 Mes réservations
+                            </a>
+                        </li>                        
+                        <li>
+                            <a class="dropdown-item" href="/trajets">
+                                Trajets
                             </a>
                         </li>
                     </ul>
@@ -73,13 +73,13 @@
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
-                            <a class="dropdown-item" href="/vehicules">
-                                Mes véhicules
-                            </a>
-                        </li>
-                        <li>
                             <a class="dropdown-item" href="/profil">
                                 Mon compte
+                            </a>
+                        </li>                        
+                        <li>
+                            <a class="dropdown-item" href="/vehicules">
+                                Mes véhicules
                             </a>
                         </li>
                         <li><hr class="dropdown-divider"></li>
