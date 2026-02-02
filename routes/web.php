@@ -23,16 +23,18 @@ return [
     '/login'     => ['AuthController', 'login'],    // GET+POST : Connexion
     '/register'  => ['AuthController', 'register'], // GET+POST : Inscription
     '/logout'    => ['AuthController', 'logout'],   // POST recommandé (actuel: selon ton implémentation)
+    '/profil'    => ['UserController', 'profile'],  // GET
 
     // TRAJETS
 
     '/trajets'           => ['TrajetController', 'index'],    // GET : Liste + filtres
     '/trajet'            => ['TrajetController', 'show'],     // GET : Détail (query ?id=)
     '/trajets/chauffeur' => ['TrajetController', 'myTrips'],  // GET
-    // VÉHICULES (auth requise)
 
+    // VÉHICULES (auth requise)
     '/vehicules/create' => ['VehiculeController', 'create'], // GET : Formulaire d’ajout
     '/vehicules/store'  => ['VehiculeController', 'store'],  // POST : Enregistrement
+    '/vehicules'        => ['VehiculeController', 'index'],  // GET
 
     // Pagination / chargement progressif
     '/trajets/load-more' => ['TrajetController', 'loadMore'], // POST : AJAX "load more"

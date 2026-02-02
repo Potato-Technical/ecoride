@@ -8,21 +8,21 @@ Ce projet suit le versioning sémantique (SemVer).
 ### Added
 - Crédit initial à l’inscription (mouvement `creation_compte`)
 - Repository `CreditMouvementRepository` (calcul du solde et ajout de mouvements)
-- Repository `VehiculeRepository` (récupération du véhicule du chauffeur)
+- Repository `VehiculeRepository` (gestion et résolution des véhicules)
+- Page chauffeur `/trajets/chauffeur` : liste des trajets créés par l’utilisateur
+- Sélection du véhicule lors de la création de trajet + vérification d’ownership
+- Seed crédits et seed véhicule utilisateur (idempotents, données de démo)
 
 ### Changed
 - Création de trajet : utilisation d’un véhicule existant du chauffeur (suppression du `vehicule_id = 1` codé en dur)
 - Réservation : contrôle du solde avant débit, exécuté dans une transaction
+- `requireAuth()` conserve l’URL demandée via paramètre `redirect`
 
 ### Fixed
 - Annulation : remise de `confirme_le` à `NULL`
 - Annulation : remboursement des crédits
 - Annulation : réincrémentation sécurisée du nombre de places
-
-### Notes
-- Ajout véhicule minimal + seed utilisateur
-- Sélection du véhicule lors de la création de trajet
-- Blocage de la réservation sur son propre trajet
+- Réservation : blocage de l’auto-réservation (chauffeur ≠ passager)
 - Sécurisation de la transaction de confirmation (rollback conditionnel)
 
 
