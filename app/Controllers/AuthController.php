@@ -3,8 +3,10 @@
 namespace App\Controllers; // Namespace des contrôleurs
 
 use App\Core\Controller;       // Contrôleur parent (render, sécurité, redirections)
+use App\Core\Database;
 use App\Models\UserRepository; // Accès aux utilisateurs en base
 use App\Models\RoleRepository;
+use App\Models\CreditMouvementRepository;
 
 class AuthController extends Controller
 {
@@ -149,17 +151,34 @@ class AuthController extends Controller
                 $i++;
             }
 
-            // Création du compte utilisateur
-            $userRepo->create([
-                'pseudo'            => $pseudo,
-                'email'             => $email,
-                'mot_de_passe_hash' => password_hash($pwd, PASSWORD_DEFAULT),
-                'role_id'           => $role['id']
-            ]);
+            $pdo = Database::getInstance();
 
-            // Redirection vers la connexion
-            header('Location: /login');
-            exit;
+            try {
+                $pdo->beginTransaction();
+
+                // Création du compte utilisateur
+                $userId = $userRepo->create([
+                    'pseudo'            => $pseudo,
+                    'email'             => $email,
+                    'mot_de_passe_hash' => password_hash($pwd, PASSWORD_DEFAULT),
+                    'role_id'           => $role['id'],
+                ]);
+
+                $creditRepo = new CreditMouvementRepository();
+                $creditRepo->add($userId, 'creation_compte', 20);
+
+                $pdo->commit();
+
+                // Redirection vers la connexion
+                header('Location: /login');
+                exit;
+
+            } catch (\Throwable $e) {
+                if ($pdo->inTransaction()) {
+                    $pdo->rollBack();
+                }
+                $this->error(500);
+            }
         }
 
         // Affichage du formulaire (GET)

@@ -79,9 +79,9 @@ class UserRepository
     }
 
     /**
-     * Crée un nouvel utilisateur.
+     * Crée un nouvel utilisateur et retourne son id.
      */
-    public function create(array $data): void
+    public function create(array $data): int
     {
         $pdo = Database::getInstance();
 
@@ -105,5 +105,7 @@ class UserRepository
             'mot_de_passe_hash' => $data['mot_de_passe_hash'],
             'role_id'           => $data['role_id']
         ]);
+
+        return (int)$pdo->lastInsertId();
     }
 }

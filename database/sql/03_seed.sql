@@ -122,3 +122,29 @@ WHERE u.email = 'admin@ecoride.fr'
       WHERE lieu_depart = 'Paris'
         AND lieu_arrivee = 'Lyon'
   );
+
+-- Crédit de test pour le compte utilisateur
+-- Nécessaire pour permettre la réservation de trajets (solde initial non nul)
+INSERT INTO credit_mouvement (type, montant, utilisateur_id)
+SELECT 'creation_compte', 20, u.id
+FROM utilisateur u
+WHERE u.email = 'user@ecoride.fr'
+  AND NOT EXISTS (
+      SELECT 1
+      FROM credit_mouvement cm
+      WHERE cm.utilisateur_id = u.id
+        AND cm.type = 'creation_compte'
+  );
+
+-- Crédit de test pour le compte administrateur
+-- Utile pour tester les réservations avec le compte admin
+INSERT INTO credit_mouvement (type, montant, utilisateur_id)
+SELECT 'creation_compte', 50, u.id
+FROM utilisateur u
+WHERE u.email = 'admin@ecoride.fr'
+  AND NOT EXISTS (
+      SELECT 1
+      FROM credit_mouvement cm
+      WHERE cm.utilisateur_id = u.id
+        AND cm.type = 'creation_compte'
+  );

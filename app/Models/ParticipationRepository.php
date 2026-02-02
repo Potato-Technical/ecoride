@@ -294,7 +294,8 @@ class ParticipationRepository
              */
             $stmt = $pdo->prepare(
                 "UPDATE participation
-                SET etat = 'annule'
+                SET etat = 'annule',
+                    confirme_le = NULL
                 WHERE id = :id
                 AND utilisateur_id = :uid
                 AND etat = 'confirme'"
@@ -311,16 +312,19 @@ class ParticipationRepository
             }
 
             /**
-             * 5) Réincrémentation des places du trajet
+             * 5) Réincrémentation des places du trajet + vérifie que la ligne existe
              */
             $stmt = $pdo->prepare(
                 'UPDATE trajet
                 SET nb_places = nb_places + 1
                 WHERE id = :tid'
             );
-            $stmt->execute([
-                'tid' => (int) $participation['trajet_id']
-            ]);
+            $stmt->execute(['tid' => (int)$participation['trajet_id']]);
+
+            if ($stmt->rowCount() !== 1) {
+                $pdo->rollBack();
+                return false;
+            }
 
             /**
              * 6) Mouvement de remboursement
@@ -345,9 +349,11 @@ class ParticipationRepository
             return true;
 
         } catch (\Throwable $e) {
-            // Log interne uniquement (pas d’exposition utilisateur)
             error_log('CANCEL FAIL: ' . $e->getMessage());
-            $pdo->rollBack();
+
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
             return false;
         }
     }

@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Core\Controller;
 use App\Models\TrajetRepository;
 use App\Models\ParticipationRepository;
+use App\Models\VehiculeRepository;
 
 class TrajetController extends Controller
 {
@@ -113,6 +114,16 @@ class TrajetController extends Controller
             }
 
             $repo = new TrajetRepository();
+
+            $vehRepo = new VehiculeRepository();
+            $veh = $vehRepo->findFirstByUserId((int)$_SESSION['user_id']);
+
+            if (!$veh) {
+                http_response_code(400);
+                $this->render('errors/400', ['title' => 'Aucun véhicule associé au compte']);
+                return;
+            }
+
             $repo->create([
                 'lieu_depart'       => $lieuDepart,
                 'lieu_arrivee'      => $lieuArrivee,
@@ -120,7 +131,7 @@ class TrajetController extends Controller
                 'prix'              => $prix,
                 'nb_places'         => $nbPlaces,
                 'chauffeur_id'      => $_SESSION['user_id'],
-                'vehicule_id'       => 1, // temporaire
+                'vehicule_id'       => (int)$veh['id'],
             ]);
 
             $this->setFlash('success', 'Trajet créé avec succès');

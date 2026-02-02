@@ -6,6 +6,7 @@ use App\Core\Controller;
 use App\Core\Database;
 use App\Models\ParticipationRepository;
 use App\Models\TrajetRepository;
+use App\Models\CreditMouvementRepository;
 
 /**
  * Contrôleur de réservation.
@@ -134,14 +135,26 @@ class ReservationController extends Controller
         }
 
         // 3) Participation existante ?
-        $existing = $partRepo->findOne((int) $_SESSION['user_id'], $trajetId);
-
         try {
             $pdo->beginTransaction();
 
+            $lock = $pdo->prepare('SELECT id FROM utilisateur WHERE id = :id FOR UPDATE');
+            $lock->execute(['id' => (int)$_SESSION['user_id']]);
+
+            $creditRepo = new CreditMouvementRepository();
+            $solde = $creditRepo->getSolde((int)$_SESSION['user_id']);
+
+            if ($solde < (int)$trajet['prix']) {
+                $pdo->rollBack();
+                $this->setFlash('error', 'Crédits insuffisants pour réserver ce trajet');
+                header('Location: /trajet?id=' . $trajetId);
+                exit;
+            }
+            
+            $existing = $partRepo->findOne((int) $_SESSION['user_id'], $trajetId);
+
             if ($existing) {
 
-                // Déjà confirmée → stop
                 if ($existing['etat'] === 'confirme') {
                     $pdo->rollBack();
                     $this->setFlash('error', 'Vous avez déjà réservé ce trajet');
