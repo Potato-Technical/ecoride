@@ -41,7 +41,7 @@ Ce projet suit le versioning sémantique (SemVer).
 - Sécurisation de la transaction de confirmation (rollback conditionnel)
 
 
-## [0.3.0] – 2026-01-27
+## [0.2.1] – 2026-01-27
 
 ### Added
 - Cycle **réservation → confirmation → annulation → réactivation**
