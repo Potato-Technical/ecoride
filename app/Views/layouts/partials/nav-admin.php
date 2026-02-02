@@ -15,6 +15,9 @@
 
         <div class="collapse navbar-collapse" id="mainNavbar">
             <ul class="navbar-nav ms-auto gap-lg-3">
+                <li class="nav-item">
+                <a href="/" class="nav-link">Voir le site</a>
+                </li>                
                 
                 <li class="nav-item">
                     <a href="/admin" class="nav-link">Dashboard</a>
