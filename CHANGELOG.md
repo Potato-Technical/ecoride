@@ -3,6 +3,23 @@
 Tous les changements notables de ce projet sont documentés ici.
 Ce projet suit le versioning sémantique (SemVer).
 
+## [0.3.0] – 2026-02-02
+
+### Added
+- Crédit initial à l’inscription (mouvement `creation_compte`)
+- Repository `CreditMouvementRepository` (calcul du solde et ajout de mouvements)
+- Repository `VehiculeRepository` (récupération du véhicule du chauffeur)
+
+### Changed
+- Création de trajet : utilisation d’un véhicule existant du chauffeur (suppression du `vehicule_id = 1` codé en dur)
+- Réservation : contrôle du solde avant débit, exécuté dans une transaction
+
+### Fixed
+- Annulation : remise de `confirme_le` à `NULL`
+- Annulation : remboursement des crédits
+- Annulation : réincrémentation sécurisée du nombre de places
+
+
 ## [0.3.0] – 2026-01-27
 
 ### Added
