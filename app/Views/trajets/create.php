@@ -44,6 +44,25 @@
                 </div>
 
                 <div class="mb-3">
+                    <label for="vehicule_id" class="form-label">Véhicule</label>
+                    <select id="vehicule_id" name="vehicule_id" class="form-select" required>
+                        <option value="">-- Choisir --</option>
+                        <?php foreach (($vehicules ?? []) as $v): ?>
+                            <option value="<?= (int)$v['id'] ?>">
+                                <?= htmlspecialchars(
+                                    ($v['immatriculation'] ?? '') . ' - ' .
+                                    ($v['marque'] ?? '') . ' ' .
+                                    ($v['modele'] ?? '') . ' (' .
+                                    ($v['energie'] ?? '') . ')',
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                ) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="mb-3">
                     <label for="prix" class="form-label">
                         Prix
                     </label>

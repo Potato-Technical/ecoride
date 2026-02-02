@@ -90,39 +90,69 @@ class TrajetController extends Controller
      * Sécurité :
      * - Auth obligatoire
      * - POST + CSRF obligatoire
-     * - Validation serveur des champs
+     * - Vérification d’ownership du véhicule
+     * - Normalisation de la date (datetime-local)
      *
      * US 4 : Proposer un covoiturage
      */
     public function create(): void
     {
+        // Durcissement minimal : refuser toute autre méthode HTTP
+        if (!in_array($_SERVER['REQUEST_METHOD'], ['GET', 'POST'], true)) {
+            http_response_code(405);
+            exit;
+        }
+        
         $this->requireAuth();
+
+        $vehRepo = new VehiculeRepository();
+        $vehicules = $vehRepo->findAllByUserId((int)$_SESSION['user_id']);
+
+        if (empty($vehicules)) {
+            $this->setFlash('error', 'Ajoutez un véhicule avant de créer un trajet');
+            header('Location: /vehicules/create');
+            exit;
+        }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->verifyCsrfToken();
 
             $lieuDepart  = trim($_POST['lieu_depart'] ?? '');
             $lieuArrivee = trim($_POST['lieu_arrivee'] ?? '');
-            $dateDepart  = $_POST['date_heure_depart'] ?? '';
+            $dateDepart  = trim($_POST['date_heure_depart'] ?? '');
             $prix        = (int) ($_POST['prix'] ?? 0);
             $nbPlaces    = (int) ($_POST['nb_places'] ?? 0);
 
-            if ($lieuDepart === '' || $lieuArrivee === '' || $dateDepart === '' || $prix <= 0 || $nbPlaces <= 0) {
+            // Normalisation minimale de date_heure_depart (datetime-local)
+            if ($dateDepart !== '') {
+                // "YYYY-MM-DDTHH:MM" -> "YYYY-MM-DD HH:MM:00"
+                $dateDepart = str_replace('T', ' ', $dateDepart);
+                if (strlen($dateDepart) === 16) {
+                    $dateDepart .= ':00';
+                }
+            }
+
+            // Lecture + validation du véhicule (ownership)
+            $vehiculeId = (int)($_POST['vehicule_id'] ?? 0);
+            if ($vehiculeId <= 0 || !$vehRepo->isOwnedByUser($vehiculeId, (int)$_SESSION['user_id'])) {
+                http_response_code(400);
+                $this->render('errors/400', ['title' => 'Requête invalide']);
+                return;
+            }
+
+            if (
+                $lieuDepart === '' ||
+                $lieuArrivee === '' ||
+                $dateDepart === '' ||
+                $prix <= 0 ||
+                $nbPlaces <= 0
+            ) {
                 http_response_code(400);
                 $this->render('errors/400', ['title' => 'Données invalides']);
                 return;
             }
 
             $repo = new TrajetRepository();
-
-            $vehRepo = new VehiculeRepository();
-            $veh = $vehRepo->findFirstByUserId((int)$_SESSION['user_id']);
-
-            if (!$veh) {
-                http_response_code(400);
-                $this->render('errors/400', ['title' => 'Aucun véhicule associé au compte']);
-                return;
-            }
 
             $repo->create([
                 'lieu_depart'       => $lieuDepart,
@@ -131,7 +161,7 @@ class TrajetController extends Controller
                 'prix'              => $prix,
                 'nb_places'         => $nbPlaces,
                 'chauffeur_id'      => $_SESSION['user_id'],
-                'vehicule_id'       => (int)$veh['id'],
+                'vehicule_id'       => $vehiculeId,
             ]);
 
             $this->setFlash('success', 'Trajet créé avec succès');
@@ -140,7 +170,8 @@ class TrajetController extends Controller
         }
 
         $this->render('trajets/create', [
-            'title' => 'Créer un trajet'
+            'title' => 'Créer un trajet',
+            'vehicules' => $vehicules,
         ]);
     }
 

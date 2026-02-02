@@ -29,6 +29,11 @@ return [
     '/trajets'           => ['TrajetController', 'index'],    // GET : Liste + filtres
     '/trajet'            => ['TrajetController', 'show'],     // GET : Détail (query ?id=)
 
+    // VÉHICULES (auth requise)
+
+    '/vehicules/create' => ['VehiculeController', 'create'], // GET : Formulaire d’ajout
+    '/vehicules/store'  => ['VehiculeController', 'store'],  // POST : Enregistrement
+
     // Pagination / chargement progressif
     '/trajets/load-more' => ['TrajetController', 'loadMore'], // POST : AJAX "load more"
 

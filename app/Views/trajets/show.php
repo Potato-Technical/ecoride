@@ -43,6 +43,12 @@
                     Se connecter pour réserver
                 </a>
 
+            <?php elseif ((int)$trajet['chauffeur_id'] === (int)$_SESSION['user_id']): ?>
+
+                <button class="btn btn-secondary" disabled>
+                    Votre trajet
+                </button>
+
             <?php elseif ($hasParticipation): ?>
 
                 <button class="btn btn-secondary" disabled>

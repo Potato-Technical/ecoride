@@ -19,6 +19,12 @@ Ce projet suit le versioning sémantique (SemVer).
 - Annulation : remboursement des crédits
 - Annulation : réincrémentation sécurisée du nombre de places
 
+### Notes
+- Ajout véhicule minimal + seed utilisateur
+- Sélection du véhicule lors de la création de trajet
+- Blocage de la réservation sur son propre trajet
+- Sécurisation de la transaction de confirmation (rollback conditionnel)
+
 
 ## [0.3.0] – 2026-01-27
 

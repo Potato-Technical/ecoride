@@ -91,6 +91,33 @@ WHERE u.email = 'admin@ecoride.fr'
       SELECT 1 FROM vehicule WHERE immatriculation = 'TEST-000-EC'
   );
 
+-- Véhicule de test associé au compte utilisateur (démo rapide)
+INSERT INTO vehicule (
+    immatriculation,
+    date_premiere_immatriculation,
+    modele,
+    marque,
+    couleur,
+    energie,
+    fumeur_accepte,
+    animaux_acceptes,
+    utilisateur_id
+)
+SELECT
+    'USER-000-EC',
+    '2022-01-01',
+    'Yaris',
+    'Toyota',
+    'Gris',
+    'hybride',
+    0,
+    0,
+    u.id
+FROM utilisateur u
+WHERE u.email = 'user@ecoride.fr'
+  AND NOT EXISTS (
+      SELECT 1 FROM vehicule WHERE immatriculation = 'USER-000-EC'
+  );
 
 -- Trajet de démonstration
 -- Permet d'afficher immédiatement un covoiturage disponible dans l'application

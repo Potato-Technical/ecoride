@@ -58,6 +58,13 @@ class ReservationController extends Controller
             return;
         }
 
+        // Interdit : réserver son propre trajet
+        if ((int)$trajet['chauffeur_id'] === (int)$_SESSION['user_id']) {
+            http_response_code(403);
+            $this->render('errors/403', ['title' => 'Action interdite']);
+            return;
+        }
+
         // Trajet non réservable
         if ($trajet['statut'] !== 'planifie') {
             http_response_code(403);
@@ -131,6 +138,13 @@ class ReservationController extends Controller
             (int) $trajet['nb_places'] <= 0
         ) {
             $this->render('errors/403', ['title' => 'Trajet non réservable']);
+            return;
+        }
+
+        // Interdit : réserver son propre trajet
+        if ((int)$trajet['chauffeur_id'] === (int)$_SESSION['user_id']) {
+            http_response_code(403);
+            $this->render('errors/403', ['title' => 'Action interdite']);
             return;
         }
 
@@ -218,7 +232,9 @@ class ReservationController extends Controller
             exit;
 
         } catch (\Throwable $e) {
-            $pdo->rollBack();
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
             $this->render('errors/500', ['title' => 'Erreur lors de la réservation']);
             exit;
         }
