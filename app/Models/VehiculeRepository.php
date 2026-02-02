@@ -134,4 +134,102 @@ class VehiculeRepository
 
         return (bool)$stmt->fetchColumn();
     }
+
+    /**
+     * Récupère un véhicule par id uniquement s’il appartient à l’utilisateur.
+     *
+     * Objectif :
+     * - Centraliser le contrôle d’ownership côté repository
+     * - Éviter qu’un utilisateur accède/modifie un véhicule d’un autre compte
+     *
+     * @param int $id     Identifiant du véhicule
+     * @param int $userId Identifiant de l’utilisateur propriétaire
+     * @return array|null Véhicule complet (ligne) ou null si inexistant / non possédé
+     */
+    public function findOwnedById(int $id, int $userId): ?array
+    {
+        $pdo = Database::getInstance();
+        $stmt = $pdo->prepare(
+            'SELECT * FROM vehicule WHERE id = :id AND utilisateur_id = :uid'
+        );
+        $stmt->execute(['id' => $id, 'uid' => $userId]);
+        $v = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $v ?: null;
+    }
+
+    /**
+     * Met à jour un véhicule uniquement si l’utilisateur en est propriétaire.
+     *
+     * Règles :
+     * - Filtrage strict sur (id, utilisateur_id)
+     * - La validation des champs (format, contraintes métier) est faite côté contrôleur
+     *
+     * Détail :
+     * - preferences_libres : stocke NULL si champ vide (évite les chaînes vides en base)
+     *
+     * @param int   $id     Identifiant du véhicule
+     * @param int   $userId Identifiant de l’utilisateur propriétaire
+     * @param array $data   Données du véhicule (champs éditables)
+     * @return void
+     */
+    public function updateOwned(int $id, int $userId, array $data): void
+    {
+        $pdo = Database::getInstance();
+        $stmt = $pdo->prepare(
+            'UPDATE vehicule
+            SET immatriculation = :immatriculation,
+                date_premiere_immatriculation = :date_premiere_immatriculation,
+                marque = :marque,
+                modele = :modele,
+                couleur = :couleur,
+                energie = :energie,
+                fumeur_accepte = :fumeur_accepte,
+                animaux_acceptes = :animaux_acceptes,
+                preferences_libres = :preferences_libres
+            WHERE id = :id AND utilisateur_id = :uid'
+        );
+
+        $prefs = $data['preferences_libres'] !== '' ? $data['preferences_libres'] : null;
+
+        $stmt->execute([
+            'immatriculation'               => $data['immatriculation'],
+            'date_premiere_immatriculation' => $data['date_premiere_immatriculation'],
+            'marque'                        => $data['marque'],
+            'modele'                        => $data['modele'],
+            'couleur'                       => $data['couleur'],
+            'energie'                       => $data['energie'],
+            'fumeur_accepte'                => (int)$data['fumeur_accepte'],
+            'animaux_acceptes'              => (int)$data['animaux_acceptes'],
+            'preferences_libres'            => $prefs,
+            'id'                            => $id,
+            'uid'                           => $userId,
+        ]);
+    }
+
+    /**
+     * Supprime un véhicule uniquement si l’utilisateur en est propriétaire.
+     *
+     * Règles :
+     * - Filtrage strict sur (id, utilisateur_id)
+     * - Retourne false si la suppression est impossible
+     *
+     * Cas d’échec typique :
+     * - Véhicule référencé par un trajet (trajet.vehicule_id) → contrainte FK
+     *
+     * @param int $id     Identifiant du véhicule
+     * @param int $userId Identifiant du propriétaire
+     * @return bool true si supprimé, false sinon (dont contrainte FK)
+     */
+    public function deleteOwned(int $id, int $userId): bool
+    {
+        $pdo = Database::getInstance();
+        try {
+            $stmt = $pdo->prepare('DELETE FROM vehicule WHERE id = :id AND utilisateur_id = :uid');
+            $stmt->execute(['id' => $id, 'uid' => $userId]);
+            return $stmt->rowCount() === 1;
+        } catch (\Throwable $e) {
+            // Échec probable : contrainte FK (trajet.vehicule_id)
+            return false;
+        }
+    }
 }

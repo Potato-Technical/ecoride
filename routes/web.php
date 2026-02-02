@@ -32,9 +32,13 @@ return [
     '/trajets/chauffeur' => ['TrajetController', 'myTrips'],  // GET
 
     // VÉHICULES (auth requise)
-    '/vehicules/create' => ['VehiculeController', 'create'], // GET : Formulaire d’ajout
-    '/vehicules/store'  => ['VehiculeController', 'store'],  // POST : Enregistrement
-    '/vehicules'        => ['VehiculeController', 'index'],  // GET
+    '/vehicules/create' => ['VehiculeController', 'create'],  // GET : Formulaire d’ajout
+    '/vehicules/store'  => ['VehiculeController', 'store'],   // POST : Enregistrement
+    '/vehicules'        => ['VehiculeController', 'index'],   // GET
+
+    '/vehicules/edit'    => ['VehiculeController', 'edit'],    // GET ?id=
+    '/vehicules/update'  => ['VehiculeController', 'update'],  // POST
+    '/vehicules/delete'  => ['VehiculeController', 'delete'],  // POST
 
     // Pagination / chargement progressif
     '/trajets/load-more' => ['TrajetController', 'loadMore'], // POST : AJAX "load more"
