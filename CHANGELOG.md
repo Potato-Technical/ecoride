@@ -6,11 +6,15 @@ Ce projet suit le versioning sémantique (SemVer).
 ## [0.3.1] – 2026-02-02
 
 ### Added
-- CRUD véhicule minimal : édition, mise à jour et suppression sécurisées (ownership + CSRF)
-- Vue d’édition de véhicule + actions *Modifier* / *Supprimer* depuis la liste
+- CRUD véhicules complet : liste, ajout, édition, suppression (ownership + CSRF)
+- Sélection d’un véhicule lors de la création d’un trajet avec contrôle d’ownership
+- Espace chauffeur : page **Mes trajets** (`/trajets/chauffeur`)
+- Gestion centralisée des erreurs 404 via `ErrorController` (layout appliqué)
 
 ### Fixed
-- Suppression de véhicule sécurisée : gestion propre de l’échec lorsque le véhicule est référencé par un trajet (contrainte FK avec message flash)
+- Suppression de véhicule sécurisée : gestion propre de l’échec lorsque le véhicule est référencé par un trajet (contrainte FK + message flash)
+- Flux réservation : débit crédits et décrément des places exécutés dans une transaction
+- Annulation de réservation : remboursement crédits et réincrémentation des places dans une transaction
 
 
 ## [0.3.0] – 2026-02-02
@@ -19,10 +23,8 @@ Ce projet suit le versioning sémantique (SemVer).
 - Crédit initial à l’inscription (mouvement `creation_compte`)
 - Repository `CreditMouvementRepository` (calcul du solde et ajout de mouvements)
 - Repository `VehiculeRepository` (gestion et résolution des véhicules)
-- Page chauffeur `/trajets/chauffeur` : liste des trajets créés par l’utilisateur
 - Page « Mes véhicules » (`/vehicules`) : route, contrôleur, repository et vue
 - Page « Mon compte » (`/profil`) avec affichage du solde de crédits
-- Sélection du véhicule lors de la création de trajet avec vérification d’ownership
 - Navigation authentifiée structurée par rôle (Chauffeur / Passager / Compte)
 - Seed crédits et seed véhicule utilisateur (idempotents, données de démo)
 
@@ -37,14 +39,13 @@ Ce projet suit le versioning sémantique (SemVer).
 - Annulation : réincrémentation sécurisée du nombre de places
 - Réservation : blocage de l’auto-réservation (chauffeur ≠ passager)
 - Sécurisation de la transaction de confirmation (rollback conditionnel)
-- 404 uniformisées via `ErrorController` (layout appliqué systématiquement)
 
 
 ## [0.3.0] – 2026-01-27
 
 ### Added
 - Cycle **réservation → confirmation → annulation → réactivation**
-- Annulation **idempotente** côté serveur (annulation multiple = un seul effet métier)
+- Annulation **idempotente** côté serveur
 - Réactivation d’une participation annulée via la confirmation standard
 - Historique financier détaillé (`credit_mouvement`)
 - Verrouillage SQL `FOR UPDATE` sur la participation
@@ -68,7 +69,7 @@ Ce projet suit le versioning sémantique (SemVer).
 - Double annulation
 - Incohérences places / état
 - Warnings PHP vues
-- Bugs après annulation + re-réservation
+- Bugs après annulation puis nouvelle réservation
 
 ### Security
 - Vérification stricte de l’ownership

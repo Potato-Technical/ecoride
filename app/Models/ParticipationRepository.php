@@ -358,4 +358,92 @@ class ParticipationRepository
         }
     }
 
+    /**
+     * Annule toutes les participations confirmées d’un trajet et rembourse les passagers.
+     *
+     * Objectif :
+     * - Ne rembourser que les participations réellement annulées
+     * - Éviter tout double remboursement en cas d’appel concurrent ou répété
+     *
+     * Règles métier :
+     * - Seules les participations à l’état "confirme" sont concernées
+     * - Une participation déjà annulée est ignorée
+     *
+     * Fonctionnement :
+     * - Sélectionne et verrouille (FOR UPDATE) les participations confirmées du trajet
+     * - Annule chaque participation individuellement
+     * - Crée un mouvement de remboursement uniquement si l’annulation a effectivement eu lieu
+     *
+     * Sécurité :
+     * - Doit être appelée à l’intérieur d’une transaction SQL
+     * - Verrouillage pessimiste pour éviter les courses critiques
+     *
+     * @param int $trajetId Identifiant du trajet à annuler
+     * @return int Nombre de participations effectivement annulées (et remboursées)
+     */
+    public function cancelAllConfirmedByTrajet(int $trajetId): int
+    {
+        $pdo = Database::getInstance();
+
+        /**
+         * 1) Sélection + verrouillage des participations confirmées
+         *    → empêche double annulation / double remboursement
+         */
+        $stmt = $pdo->prepare(
+            "SELECT id, utilisateur_id, credits_utilises
+             FROM participation
+             WHERE trajet_id = :tid
+               AND etat = 'confirme'
+             FOR UPDATE"
+        );
+        $stmt->execute(['tid' => $trajetId]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (!$rows) {
+            return 0;
+        }
+
+        /**
+         * 2) Préparation des requêtes
+         */
+        $upd = $pdo->prepare(
+            "UPDATE participation
+             SET etat = 'annule',
+                 confirme_le = NULL
+             WHERE id = :id
+               AND etat = 'confirme'"
+        );
+
+        $ins = $pdo->prepare(
+            "INSERT INTO credit_mouvement
+                (type, montant, utilisateur_id, participation_id)
+             VALUES
+                ('remboursement', :montant, :uid, :pid)"
+        );
+
+        $count = 0;
+
+        /**
+         * 3) Annulation + remboursement contrôlé
+         */
+        foreach ($rows as $p) {
+            $upd->execute(['id' => (int)$p['id']]);
+
+            // Sécurité : on rembourse uniquement si l’UPDATE a bien modifié la ligne
+            if ($upd->rowCount() === 1) {
+                $ins->execute([
+                    'montant' => (int)$p['credits_utilises'], // montant positif
+                    'uid'     => (int)$p['utilisateur_id'],
+                    'pid'     => (int)$p['id'],
+                ]);
+                $count++;
+            }
+        }
+
+        /**
+         * 4) Retourne le nombre de participations effectivement annulées
+         */
+        return $count;
+    }
+
 }

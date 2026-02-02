@@ -192,4 +192,84 @@ class TrajetRepository
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Verrouille et retourne un trajet appartenant à un chauffeur.
+     *
+     * Usage :
+     * - Annulation d’un trajet par le chauffeur
+     * - Opérations critiques nécessitant une cohérence forte
+     *
+     * Règles :
+     * - Le trajet doit appartenir au chauffeur connecté
+     * - La ligne est verrouillée (FOR UPDATE) dans le cadre d’une transaction
+     *
+     * @param int $trajetId    Identifiant du trajet
+     * @param int $chauffeurId Identifiant du chauffeur (utilisateur)
+     * @return array|null      Données du trajet si ownership valide, null sinon
+     */
+    public function findOwnedForUpdate(int $trajetId, int $chauffeurId): ?array
+    {
+        $pdo = Database::getInstance();
+        $stmt = $pdo->prepare(
+            'SELECT *
+            FROM trajet
+            WHERE id = :id AND chauffeur_id = :cid
+            FOR UPDATE'
+        );
+        $stmt->execute(['id' => $trajetId, 'cid' => $chauffeurId]);
+        $t = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $t ?: null;
+    }
+
+    /**
+     * Met à jour le statut d’un trajet.
+     *
+     * Usage :
+     * - Annulation logique d’un trajet
+     * - Évolution du cycle de vie (planifie → annule, etc.)
+     *
+     * Note :
+     * - Aucune validation métier n’est effectuée ici
+     * - Les contrôles doivent être faits côté contrôleur
+     *
+     * @param int    $trajetId Identifiant du trajet
+     * @param string $statut   Nouveau statut du trajet
+     */
+    public function setStatus(int $trajetId, string $statut): void
+    {
+        $pdo = Database::getInstance();
+        $stmt = $pdo->prepare('UPDATE trajet SET statut = :s WHERE id = :id');
+        $stmt->execute(['s' => $statut, 'id' => $trajetId]);
+    }
+
+    /**
+     * Réincrémente le nombre de places disponibles d’un trajet.
+     *
+     * Usage :
+     * - Annulation d’un trajet (restitution des places)
+     * - Annulation groupée des participations confirmées
+     *
+     * Sécurité :
+     * - Ignore les valeurs nulles ou négatives
+     * - À appeler dans une transaction si utilisé avec d’autres mises à jour
+     *
+     * @param int $trajetId Identifiant du trajet
+     * @param int $nb       Nombre de places à restituer
+     */
+    public function incrementPlaces(int $trajetId, int $nb): void
+    {
+        if ($nb <= 0) {
+            return;
+        }
+
+        $pdo = Database::getInstance();
+        $stmt = $pdo->prepare(
+            'UPDATE trajet
+            SET nb_places = nb_places + :nb
+            WHERE id = :id'
+        );
+        $stmt->execute(['nb' => $nb, 'id' => $trajetId]);
+    }
+    
 }

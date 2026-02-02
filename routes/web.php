@@ -18,6 +18,12 @@ return [
     '/a-propos'  => ['HomeController', 'about'],    // GET : À propos
     '/contact'   => ['HomeController', 'contact'],  // GET : Contact
 
+    //LÉGAL
+
+    '/mentions-legales' => ['HomeController', 'legalMentions'], // GET : Mentions légales
+    '/cgu'              => ['HomeController', 'cgu'],           // GET : CGU
+    '/accessibilite'    => ['HomeController', 'accessibilite'], // GET : Accessibilité
+
     // AUTH (connexion/inscription)
 
     '/login'     => ['AuthController', 'login'],    // GET+POST : Connexion
@@ -45,6 +51,7 @@ return [
 
     // Création (auth requise)
     '/trajets/create'    => ['TrajetController', 'create'],   // GET+POST : Form + création
+    '/trajets/annuler'   => ['TrajetController', 'cancel'],   // POST
 
     // RÉSERVATIONS (auth requise)
 
@@ -56,10 +63,4 @@ return [
     // ADMIN (rôle administrateur)
 
     '/admin' => ['AdminController', 'index'], // GET : Dashboard admin (peut rester minimal)
-
-    //LÉGAL (éviter les 404 du footer)
-
-    '/mentions-legales' => ['HomeController', 'legalMentions'], // GET : Mentions légales
-    '/cgu'              => ['HomeController', 'cgu'],           // GET : CGU
-    '/accessibilite'    => ['HomeController', 'accessibilite'], // GET : Accessibilité
 ];

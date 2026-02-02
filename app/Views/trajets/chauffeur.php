@@ -22,16 +22,45 @@
                         </div>
 
                         <div class="text-muted small">
-                            <?= htmlspecialchars(date('d/m/Y H:i', strtotime($t['date_heure_depart'])), ENT_QUOTES, 'UTF-8') ?>
+                            <?= htmlspecialchars(
+                                date('d/m/Y H:i', strtotime($t['date_heure_depart'])),
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>
                             · <?= (int)$t['prix'] ?> crédits
                             · <?= (int)$t['nb_places'] ?> place(s)
                             · <?= htmlspecialchars($t['statut'], ENT_QUOTES, 'UTF-8') ?>
                         </div>
                     </div>
 
-                    <a href="/trajet?id=<?= (int)$t['id'] ?>" class="btn btn-outline-primary btn-sm">
-                        Voir
-                    </a>
+                    <div class="text-nowrap">
+                        <a href="/trajet?id=<?= (int)$t['id'] ?>"
+                           class="btn btn-outline-primary btn-sm">
+                            Voir
+                        </a>
+
+                        <?php if (($t['statut'] ?? '') === 'planifie'): ?>
+                            <form method="POST"
+                                  action="/trajets/annuler"
+                                  class="d-inline ms-2">
+                                <input type="hidden"
+                                       name="csrfToken"
+                                       value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                                <input type="hidden"
+                                       name="trajet_id"
+                                       value="<?= (int)$t['id'] ?>">
+
+                                <button type="submit"
+                                        class="btn btn-outline-danger btn-sm">
+                                    Annuler
+                                </button>
+                            </form>
+                        <?php else: ?>
+                            <button class="btn btn-outline-secondary btn-sm ms-2" disabled>
+                                Annuler
+                            </button>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
         <?php endforeach; ?>

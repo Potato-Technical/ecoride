@@ -2,10 +2,13 @@
 
 namespace App\Controllers;
 
+use App\Core\Database;
 use App\Core\Controller;
 use App\Models\TrajetRepository;
 use App\Models\ParticipationRepository;
 use App\Models\VehiculeRepository;
+use App\Models\CreditMouvementRepository;
+
 
 class TrajetController extends Controller
 {
@@ -173,6 +176,103 @@ class TrajetController extends Controller
             'title' => 'Créer un trajet',
             'vehicules' => $vehicules,
         ]);
+    }
+
+    /**
+     * Annule un trajet créé par le chauffeur connecté.
+     *
+     * Règles métier :
+     * - Seul le chauffeur propriétaire du trajet peut l’annuler
+     * - Seuls les trajets à l’état "planifie" sont annulables
+     * - Tous les passagers confirmés sont automatiquement annulés et remboursés
+     *
+     * Effets :
+     * - Verrouille le trajet et ses participations (FOR UPDATE)
+     * - Passe chaque participation confirmée à l’état "annule"
+     * - Crée un mouvement de remboursement pour chaque passager
+     * - Réincrémente le nombre de places du trajet
+     * - Met le statut du trajet à "annule"
+     *
+     * Sécurité :
+     * - POST uniquement
+     * - Authentification obligatoire
+     * - Protection CSRF
+     * - Transaction SQL atomique avec rollback en cas d’erreur
+     *
+     * Redirection :
+     * - Retour vers la liste des trajets chauffeur avec message flash
+     */
+    public function cancel(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            exit;
+        }
+
+        $this->requireAuth();
+        $this->verifyCsrfToken();
+
+        $trajetId = (int)($_POST['trajet_id'] ?? 0);
+        if ($trajetId <= 0) {
+            $this->render('errors/400', ['title' => 'Requête invalide']);
+            return;
+        }
+
+        $trajetRepo  = new TrajetRepository();
+        $partRepo    = new ParticipationRepository();
+        $pdo         = Database::getInstance();
+        $userId      = (int)$_SESSION['user_id'];
+
+        try {
+            $pdo->beginTransaction();
+
+            // 1) Verrouillage du trajet + contrôle ownership + statut
+            $trajet = $trajetRepo->findOwnedForUpdate($trajetId, $userId);
+            if (!$trajet) {
+                $pdo->rollBack();
+                $this->render('errors/403', ['title' => 'Action interdite']);
+                return;
+            }
+
+            // Idempotence : déjà annulé
+            if (($trajet['statut'] ?? '') === 'annule') {
+                $pdo->commit();
+                $this->setFlash('info', 'Trajet déjà annulé');
+                header('Location: /trajets/chauffeur');
+                exit;
+            }
+
+            if (($trajet['statut'] ?? '') !== 'planifie') {
+                $pdo->rollBack();
+                $this->setFlash('error', 'Trajet non annulable');
+                header('Location: /trajets/chauffeur');
+                exit;
+            }
+
+            // 2) Verrouillage des participations confirmées
+            // 3) Annulation des participations + remboursements
+            $nbAnnulees = $partRepo->cancelAllConfirmedByTrajet($trajetId);
+
+            // 4) Réincrémentation des places (selon le nombre de participations annulées)
+            if ($nbAnnulees > 0) {
+                $trajetRepo->incrementPlaces($trajetId, $nbAnnulees);
+            }
+
+            // 5) Annulation logique du trajet
+            $trajetRepo->setStatus($trajetId, 'annule');
+
+            $pdo->commit();
+
+            $this->setFlash('success', 'Trajet annulé (passagers remboursés)');
+            header('Location: /trajets/chauffeur');
+            exit;
+
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            error_log('CANCEL TRIP FAIL: ' . $e->getMessage());
+            $this->render('errors/500', ['title' => 'Erreur lors de l’annulation']);
+            exit;
+        }
     }
 
     /**
