@@ -1,4 +1,9 @@
-<h1>404</h1>
-<p>La page demandée est introuvable.</p>
+<h1 class="mb-4">404 - Page introuvable</h1>
 
-<a href="/">Retour à l’accueil</a>
+<div class="alert alert-warning">
+    La page demandée n’existe pas ou a été déplacée.
+</div>
+
+<a href="/" class="btn btn-outline-primary">
+    Retour à l’accueil
+</a>

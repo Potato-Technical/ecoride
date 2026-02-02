@@ -1,11 +1,100 @@
-<h1>Créer un trajet</h1>
+<h1 class="mb-4 text-center">Créer un trajet</h1>
 
-<!-- Formulaire de création d’un trajet -->
-<form method="post">
-    <input type="text" name="lieu_depart" placeholder="Départ" required>
-    <input type="text" name="lieu_arrivee" placeholder="Arrivée" required>
-    <input type="datetime-local" name="date_heure_depart" required>
-    <input type="number" name="prix" required>
-    <input type="number" name="nb_places" required>
-    <button type="submit">Créer</button>
-</form>
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+
+        <form method="POST" class="card shadow-sm">
+            <div class="card-body">
+
+                <input type="hidden"
+                       name="csrfToken"
+                       value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
+
+                <div class="mb-3">
+                    <label for="lieu_depart" class="form-label">
+                        Lieu de départ
+                    </label>
+                    <input type="text"
+                           id="lieu_depart"
+                           name="lieu_depart"
+                           class="form-control"
+                           required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="lieu_arrivee" class="form-label">
+                        Lieu d’arrivée
+                    </label>
+                    <input type="text"
+                           id="lieu_arrivee"
+                           name="lieu_arrivee"
+                           class="form-control"
+                           required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="date_heure_depart" class="form-label">
+                        Date et heure de départ
+                    </label>
+                    <input type="datetime-local"
+                           id="date_heure_depart"
+                           name="date_heure_depart"
+                           class="form-control"
+                           required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="vehicule_id" class="form-label">Véhicule</label>
+                    <select id="vehicule_id" name="vehicule_id" class="form-select" required>
+                        <option value="">-- Choisir --</option>
+                        <?php foreach (($vehicules ?? []) as $v): ?>
+                            <option value="<?= (int)$v['id'] ?>">
+                                <?= htmlspecialchars(
+                                    ($v['immatriculation'] ?? '') . ' - ' .
+                                    ($v['marque'] ?? '') . ' ' .
+                                    ($v['modele'] ?? '') . ' (' .
+                                    ($v['energie'] ?? '') . ')',
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                ) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="prix" class="form-label">
+                        Prix
+                    </label>
+                    <input type="number"
+                           id="prix"
+                           name="prix"
+                           min="1"
+                           class="form-control"
+                           required>
+                </div>
+
+                <div class="mb-4">
+                    <label for="nb_places" class="form-label">
+                        Nombre de places
+                    </label>
+                    <input type="number"
+                           id="nb_places"
+                           name="nb_places"
+                           min="1"
+                           class="form-control"
+                           required>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Créer le trajet
+                    </button>
+                </div>
+
+            </div>
+        </form>
+
+    </div>
+</div>

@@ -8,106 +8,268 @@ use PDO;
 class TrajetRepository
 {
     /**
-     * Recherche des trajets disponibles selon les critères utilisateur.
-     * - Ville de départ
-     * - Ville d’arrivée
-     * - Date de départ
-     * - Trajets planifiés avec au moins une place disponible
-     *
-     * @param string $depart  Ville de départ
-     * @param string $arrivee Ville d’arrivée
-     * @param string $date    Date du trajet (YYYY-MM-DD)
-     * @return array Liste des trajets correspondants
+     * Récupère un trajet par ID.
+     * (Détail trajet)
      */
-    public function search(string $depart, string $arrivee, string $date): array
+    public function findById(int $id): ?array
     {
-        // Connexion à la base de données
         $pdo = Database::getInstance();
 
-        // Requête de recherche filtrée
-        $stmt = $pdo->prepare(
-            "
-            SELECT t.*, u.pseudo, v.energie
-            FROM trajet t
-            JOIN utilisateur u ON u.id = t.chauffeur_id
-            JOIN vehicule v ON v.id = t.vehicule_id
-            WHERE t.lieu_depart = :depart
-              AND t.lieu_arrivee = :arrivee
-              AND DATE(t.date_heure_depart) = :date
-              AND t.nb_places > 0
-              AND t.statut = 'planifie'
-            ORDER BY t.date_heure_depart ASC
-            "
-        );
+        $stmt = $pdo->prepare("SELECT * FROM trajet WHERE id = :id");
+        $stmt->execute(['id' => $id]);
 
-        // Exécution sécurisée avec paramètres liés
-        $stmt->execute([
-            'depart'  => $depart,
-            'arrivee' => $arrivee,
-            'date'    => $date,
-        ]);
-
-        // Retourne tous les trajets trouvés
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $trajet = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $trajet ?: null;
     }
 
     /**
-     * Récupère tous les trajets planifiés et disponibles.
-     * Utilisé pour l’affichage par défaut de /trajets.
+     * Retourne la liste des trajets publiés par un utilisateur en tant que chauffeur.
      *
-     * @return array Liste des trajets disponibles
+     * Règles :
+     * - Filtrage strict par chauffeur_id
+     * - Aucun contrôle d’accès ici (doit être assuré par le contrôleur)
+     *
+     * Usage :
+     * - Vue “mes trajets (chauffeur)”
+     * - Suivi et gestion des trajets publiés par l’utilisateur
+     *
+     * @param int $userId Identifiant du chauffeur
+     * @return array Liste des trajets (peut être vide)
      */
-    public function findAllAvailable(): array
+    public function findByChauffeurId(int $userId): array
     {
-        // Connexion à la base de données
         $pdo = Database::getInstance();
 
-        // Requête simple sans critères utilisateur
-        $stmt = $pdo->query(
-            "
+        $stmt = $pdo->prepare(
+            'SELECT
+                id,
+                lieu_depart,
+                lieu_arrivee,
+                date_heure_depart,
+                prix,
+                nb_places,
+                statut
+            FROM trajet
+            WHERE chauffeur_id = :uid
+            ORDER BY date_heure_depart DESC'
+        );
+
+        $stmt->execute(['uid' => $userId]);
+
+        return $stmt->fetchAll();
+    }
+    
+    /**
+     * Décrémente nb_places de façon atomique (anti surréservation).
+     *
+     * Retourne true si une place a été décrémentée, false sinon.
+     * À utiliser en transaction.
+     */
+    public function decrementPlaces(int $trajetId): bool
+    {
+        $pdo = Database::getInstance();
+
+        $stmt = $pdo->prepare(
+            'UPDATE trajet
+            SET nb_places = nb_places - 1
+            WHERE id = :id AND nb_places > 0'
+        );
+
+        $stmt->execute(['id' => $trajetId]);
+
+        return $stmt->rowCount() === 1;
+    }
+
+    /**
+     * Crée un trajet.
+     */
+    public function create(array $data): void
+    {
+        $pdo = Database::getInstance();
+
+        $stmt = $pdo->prepare(
+            '
+            INSERT INTO trajet (
+                lieu_depart, lieu_arrivee, date_heure_depart,
+                prix, nb_places, statut,
+                chauffeur_id, vehicule_id
+            ) VALUES (
+                :lieu_depart, :lieu_arrivee, :date_heure_depart,
+                :prix, :nb_places, "planifie",
+                :chauffeur_id, :vehicule_id
+            )
+            '
+        );
+
+        $stmt->execute([
+            'lieu_depart'       => $data['lieu_depart'],
+            'lieu_arrivee'      => $data['lieu_arrivee'],
+            'date_heure_depart' => $data['date_heure_depart'],
+            'prix'              => $data['prix'],
+            'nb_places'         => $data['nb_places'],
+            'chauffeur_id'      => $data['chauffeur_id'],
+            'vehicule_id'       => $data['vehicule_id'],
+        ]);
+    }
+
+    /**
+     * Recherche paginée des trajets avec filtres optionnels.
+     *
+     * Responsabilités :
+     * - Construire la requête SQL dynamiquement
+     * - Appliquer filtres (si fournis)
+     * - Appliquer tri
+     * - Appliquer LIMIT / OFFSET (pagination SQL)
+     *
+     * Note :
+     * - Ici, pas de CSRF (CSRF = couche HTTP/Controller, pas SQL).
+     */
+    public function searchWithFiltersPaginated(array $filters, int $limit, int $offset): array
+    {
+        $pdo = Database::getInstance();
+
+        $sql = "
             SELECT t.*, u.pseudo, v.energie
             FROM trajet t
             JOIN utilisateur u ON u.id = t.chauffeur_id
             JOIN vehicule v ON v.id = t.vehicule_id
             WHERE t.nb_places > 0
               AND t.statut = 'planifie'
-            ORDER BY t.date_heure_depart ASC
-            "
-        );
+        ";
 
+        $params = [];
+
+        // Filtres exacts (à adapter plus tard en LIKE si tu veux)
+        if (($filters['depart'] ?? '') !== '') {
+            $sql .= " AND t.lieu_depart = :depart";
+            $params['depart'] = $filters['depart'];
+        }
+
+        if (($filters['arrivee'] ?? '') !== '') {
+            $sql .= " AND t.lieu_arrivee = :arrivee";
+            $params['arrivee'] = $filters['arrivee'];
+        }
+
+        if (($filters['date'] ?? '') !== '') {
+            $sql .= " AND DATE(t.date_heure_depart) = :date";
+            $params['date'] = $filters['date'];
+        }
+
+        if (($filters['prix_max'] ?? '') !== '') {
+            $sql .= " AND t.prix <= :prix_max";
+            $params['prix_max'] = (int) $filters['prix_max'];
+        }
+
+        if (!empty($filters['eco'])) {
+            $sql .= " AND v.energie IN ('electrique', 'hybride')";
+        }
+
+        // Tri
+        switch ($filters['sort'] ?? null) {
+            case 'prix':
+                $sql .= " ORDER BY t.prix ASC";
+                break;
+            case 'date':
+            default:
+                $sql .= " ORDER BY t.date_heure_depart ASC";
+                break;
+        }
+
+        // Pagination
+        $sql .= " LIMIT :limit OFFSET :offset";
+
+        $stmt = $pdo->prepare($sql);
+
+        // Bind paramètres dynamiques
+        foreach ($params as $k => $v) {
+            $stmt->bindValue(':' . $k, $v);
+        }
+
+        // Bind LIMIT/OFFSET en int (obligatoire)
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
-     * Récupère un trajet à partir de son identifiant.
+     * Verrouille et retourne un trajet appartenant à un chauffeur.
      *
-     * @param int $id Identifiant du trajet
-     * @return array|null Données du trajet ou null si inexistant
+     * Usage :
+     * - Annulation d’un trajet par le chauffeur
+     * - Opérations critiques nécessitant une cohérence forte
+     *
+     * Règles :
+     * - Le trajet doit appartenir au chauffeur connecté
+     * - La ligne est verrouillée (FOR UPDATE) dans le cadre d’une transaction
+     *
+     * @param int $trajetId    Identifiant du trajet
+     * @param int $chauffeurId Identifiant du chauffeur (utilisateur)
+     * @return array|null      Données du trajet si ownership valide, null sinon
      */
-    public function findById(int $id): ?array
-    {
-        // Connexion à la base de données
-        $pdo = Database::getInstance();
-
-        // Requête de récupération d’un trajet précis
-        $stmt = $pdo->prepare(
-            "SELECT * FROM trajet WHERE id = :id"
-        );
-
-        $stmt->execute(['id' => $id]);
-
-        $trajet = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        // Retourne null si aucun résultat
-        return $trajet ?: null;
-    }
-
-    public function decrementPlaces(int $trajetId): void
+    public function findOwnedForUpdate(int $trajetId, int $chauffeurId): ?array
     {
         $pdo = Database::getInstance();
         $stmt = $pdo->prepare(
-            'UPDATE trajet SET nb_places = nb_places - 1 WHERE id = :id'
+            'SELECT *
+            FROM trajet
+            WHERE id = :id AND chauffeur_id = :cid
+            FOR UPDATE'
         );
-        $stmt->execute(['id' => $trajetId]);
+        $stmt->execute(['id' => $trajetId, 'cid' => $chauffeurId]);
+        $t = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $t ?: null;
     }
+
+    /**
+     * Met à jour le statut d’un trajet.
+     *
+     * Usage :
+     * - Annulation logique d’un trajet
+     * - Évolution du cycle de vie (planifie → annule, etc.)
+     *
+     * Note :
+     * - Aucune validation métier n’est effectuée ici
+     * - Les contrôles doivent être faits côté contrôleur
+     *
+     * @param int    $trajetId Identifiant du trajet
+     * @param string $statut   Nouveau statut du trajet
+     */
+    public function setStatus(int $trajetId, string $statut): void
+    {
+        $pdo = Database::getInstance();
+        $stmt = $pdo->prepare('UPDATE trajet SET statut = :s WHERE id = :id');
+        $stmt->execute(['s' => $statut, 'id' => $trajetId]);
+    }
+
+    /**
+     * Réincrémente le nombre de places disponibles d’un trajet.
+     *
+     * Usage :
+     * - Annulation d’un trajet (restitution des places)
+     * - Annulation groupée des participations confirmées
+     *
+     * Sécurité :
+     * - Ignore les valeurs nulles ou négatives
+     * - À appeler dans une transaction si utilisé avec d’autres mises à jour
+     *
+     * @param int $trajetId Identifiant du trajet
+     * @param int $nb       Nombre de places à restituer
+     */
+    public function incrementPlaces(int $trajetId, int $nb): void
+    {
+        if ($nb <= 0) {
+            return;
+        }
+
+        $pdo = Database::getInstance();
+        $stmt = $pdo->prepare(
+            'UPDATE trajet
+            SET nb_places = nb_places + :nb
+            WHERE id = :id'
+        );
+        $stmt->execute(['nb' => $nb, 'id' => $trajetId]);
+    }
+    
 }

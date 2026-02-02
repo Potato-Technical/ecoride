@@ -32,4 +32,25 @@ class RoleRepository
         // Retourne null si aucun rôle trouvé
         return $role ?: null;
     }
+    
+    /**
+     * Récupère un rôle à partir de son identifiant
+     * Retourne un tableau associatif ou null si absent
+     */
+    public function findById(int $id): ?array
+    {
+        $pdo = Database::getInstance();
+
+        $stmt = $pdo->prepare(
+            'SELECT * FROM role WHERE id = :id'
+        );
+
+        $stmt->execute([
+            'id' => $id
+        ]);
+
+        $role = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $role ?: null;
+    }
 }

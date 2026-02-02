@@ -1,0 +1,88 @@
+/* TRAJETS – MOBILE FIRST */
+
+.trajets-page {
+  padding: 1.5rem 0;
+}
+
+/* LAYOUT GLOBAL */
+
+.trajets-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+/* FILTRES */
+
+.trajets-filters {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid var(--divider);
+}
+
+.trajets-filters h2 {
+  font-family: var(--font-primary);
+  font-weight: 600;
+}
+
+.filters-body {
+  display: none;
+  margin-top: 1rem;
+}
+
+.trajets-filters.is-open .filters-body {
+  display: block;
+}
+
+/* RÉSULTATS */
+
+.trajets-results {
+  display: flex;
+  flex-direction: column;
+}
+
+.trajet-card {
+  border-radius: 12px;
+}
+
+.trajet-price {
+  font-weight: 600;
+  color: var(--color-cta);
+  font-size: 1.1rem;
+}
+
+/* BOUTONS */
+
+.trajets-page .btn-success {
+  background-color: var(--color-cta);
+  border-color: var(--color-cta);
+}
+
+.trajets-page .btn-success:hover {
+  background-color: var(--color-cta-hover);
+  border-color: var(--color-cta-hover);
+}
+
+/* DESKTOP */
+
+@media (min-width: 992px) {
+  .trajets-layout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .trajets-filters {
+    width: 260px;
+    flex-shrink: 0;
+  }
+
+  .filters-body {
+    display: block;
+  }
+
+  .trajets-results {
+    flex: 1;
+  }
+}

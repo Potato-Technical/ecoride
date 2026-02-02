@@ -40,6 +40,27 @@ WHERE r.libelle = 'administrateur'
   AND NOT EXISTS (
       SELECT 1 FROM utilisateur WHERE email = 'admin@ecoride.fr'
   );
+  
+-- Compte utilisateur standard
+-- IMPORTANT: remplace le hash par un hash généré par ton app (ou via php -r "echo password_hash('password', PASSWORD_BCRYPT);")
+INSERT INTO utilisateur (
+    pseudo,
+    email,
+    mot_de_passe_hash,
+    role_id,
+    created_at
+)
+SELECT
+    'user',
+    'user@ecoride.fr',
+    '$2y$10$ax/Q5gjnbLePxXi2uG4thehsjklMsdEwf9trkO4yFXb4XyiEFWJwm',
+    r.id,
+    NOW()
+FROM role r
+WHERE r.libelle = 'utilisateur'
+  AND NOT EXISTS (
+      SELECT 1 FROM utilisateur WHERE email = 'user@ecoride.fr'
+  );
 
 -- Véhicule de test associé au compte administrateur
 -- Nécessaire pour permettre la création de trajets (clé étrangère obligatoire)
@@ -70,6 +91,33 @@ WHERE u.email = 'admin@ecoride.fr'
       SELECT 1 FROM vehicule WHERE immatriculation = 'TEST-000-EC'
   );
 
+-- Véhicule de test associé au compte utilisateur (démo rapide)
+INSERT INTO vehicule (
+    immatriculation,
+    date_premiere_immatriculation,
+    modele,
+    marque,
+    couleur,
+    energie,
+    fumeur_accepte,
+    animaux_acceptes,
+    utilisateur_id
+)
+SELECT
+    'USER-000-EC',
+    '2022-01-01',
+    'Yaris',
+    'Toyota',
+    'Gris',
+    'hybride',
+    0,
+    0,
+    u.id
+FROM utilisateur u
+WHERE u.email = 'user@ecoride.fr'
+  AND NOT EXISTS (
+      SELECT 1 FROM vehicule WHERE immatriculation = 'USER-000-EC'
+  );
 
 -- Trajet de démonstration
 -- Permet d'afficher immédiatement un covoiturage disponible dans l'application
@@ -100,4 +148,30 @@ WHERE u.email = 'admin@ecoride.fr'
       FROM trajet
       WHERE lieu_depart = 'Paris'
         AND lieu_arrivee = 'Lyon'
+  );
+
+-- Crédit de test pour le compte utilisateur
+-- Nécessaire pour permettre la réservation de trajets (solde initial non nul)
+INSERT INTO credit_mouvement (type, montant, utilisateur_id)
+SELECT 'creation_compte', 50, u.id
+FROM utilisateur u
+WHERE u.email = 'user@ecoride.fr'
+  AND NOT EXISTS (
+      SELECT 1
+      FROM credit_mouvement cm
+      WHERE cm.utilisateur_id = u.id
+        AND cm.type = 'creation_compte'
+  );
+
+-- Crédit de test pour le compte administrateur
+-- Utile pour tester les réservations avec le compte admin
+INSERT INTO credit_mouvement (type, montant, utilisateur_id)
+SELECT 'creation_compte', 50, u.id
+FROM utilisateur u
+WHERE u.email = 'admin@ecoride.fr'
+  AND NOT EXISTS (
+      SELECT 1
+      FROM credit_mouvement cm
+      WHERE cm.utilisateur_id = u.id
+        AND cm.type = 'creation_compte'
   );

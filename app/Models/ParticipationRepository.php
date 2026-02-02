@@ -9,92 +9,21 @@ use PDOException;
 class ParticipationRepository
 {
     /**
-     * Réserve un trajet pour un utilisateur.
-     * - Vérifie qu'il reste des places
-     * - Empêche une double réservation
-     * - Décrémente le nombre de places
-     * - Crée le mouvement de crédit (débit)
-     * @param int $trajetId
-     * @param int $userId
-     * @param int $prix
-     * @return bool
-     * @deprecated Utiliser une transaction explicite côté contrôleur
-     *            avec create(), debitCredits() et TrajetRepository::decrementPlaces().
+     * Crée une participation confirmée pour un utilisateur sur un trajet donné.
+     *
+     * Rôle métier :
+     * - Insère une nouvelle participation à l’état "confirme"
+     * - Enregistre le montant de crédits utilisés
+     *
+     * Sécurité / cohérence :
+     * - Cette méthode n’effectue aucune vérification métier
+     * - Les contrôles (places, ownership, doublons) doivent être faits
+     *   impérativement côté contrôleur avant l’appel
+     *
+     * @param int $userId  Identifiant de l’utilisateur
+     * @param int $trajetId Identifiant du trajet
+     * @param int $prix    Nombre de crédits utilisés
      */
-    public function reserve(int $trajetId, int $userId, int $prix): bool
-    {
-        $pdo = Database::getInstance();
-
-        try {
-            // Démarre une transaction (opérations atomiques)
-            $pdo->beginTransaction();
-
-            // Vérifie s'il reste des places
-            $stmt = $pdo->prepare(
-                'SELECT nb_places FROM trajet WHERE id = :id FOR UPDATE'
-            );
-            $stmt->execute(['id' => $trajetId]);
-            $trajet = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if (!$trajet || (int)$trajet['nb_places'] <= 0) {
-                $pdo->rollBack();
-                return false;
-            }
-
-            // Empêche la double réservation
-            $stmt = $pdo->prepare(
-                'SELECT id FROM participation WHERE utilisateur_id = :uid AND trajet_id = :tid'
-            );
-            $stmt->execute([
-                'uid' => $userId,
-                'tid' => $trajetId
-            ]);
-
-            if ($stmt->fetch()) {
-                $pdo->rollBack();
-                return false;
-            }
-
-            // Création de la participation
-            $stmt = $pdo->prepare(
-                'INSERT INTO participation (etat, confirme_le, credits_utilises, utilisateur_id, trajet_id)
-                 VALUES ("confirme", NOW(), :credits, :uid, :tid)'
-            );
-            $stmt->execute([
-                'credits' => $prix,
-                'uid' => $userId,
-                'tid' => $trajetId
-            ]);
-            // ID réel de la participation
-            $participationId = (int) $pdo->lastInsertId();
-
-            // Décrémentation des places
-            $stmt = $pdo->prepare(
-                'UPDATE trajet SET nb_places = nb_places - 1 WHERE id = :id'
-            );
-            $stmt->execute(['id' => $trajetId]);
-
-            // Mouvement de crédit (débit)
-            $stmt = $pdo->prepare(
-                'INSERT INTO credit_mouvement (type, montant, utilisateur_id, participation_id)
-                 VALUES ("debit_reservation", :montant, :uid, :pid)'
-            );
-            $stmt->execute([
-                'montant' => -$prix,
-                'uid' => $userId,
-                'pid' => $participationId
-            ]);
-
-            // Valide la transaction
-            $pdo->commit();
-            return true;
-
-        } catch (PDOException $e) {
-            $pdo->rollBack();
-            return false;
-        }
-    }
-
     public function create(int $userId, int $trajetId, int $prix): void
     {
         $pdo = Database::getInstance();
@@ -107,6 +36,17 @@ class ParticipationRepository
             'uid'     => $userId,
             'tid'     => $trajetId
         ]);
+        $participationId = (int) $pdo->lastInsertId();
+
+        $stmt = $pdo->prepare(
+            "INSERT INTO credit_mouvement (type, montant, utilisateur_id, participation_id)
+            VALUES ('debit_reservation', :montant, :uid, :pid)"
+        );
+        $stmt->execute([
+            'montant' => -abs($prix),
+            'uid'     => $userId,
+            'pid'     => $participationId,
+        ]);
     }
 
     /**
@@ -118,7 +58,7 @@ class ParticipationRepository
 
         $stmt = $pdo->prepare(
             'SELECT
-                p.id            AS participation_id,
+                p.id            AS id,
                 p.etat          AS etat,
                 p.created_at    AS created_at,
                 t.id            AS trajet_id,
@@ -181,53 +121,124 @@ class ParticipationRepository
         return (bool) $stmt->fetchColumn();
     }
 
-public function hasCancelledParticipation(int $userId, int $trajetId): bool
-{
-    $pdo = Database::getInstance();
-
-    $stmt = $pdo->prepare(
-        'SELECT 1 FROM participation
-         WHERE utilisateur_id = :uid
-           AND trajet_id = :tid
-           AND etat = "annule"
-         LIMIT 1'
-    );
-
-    $stmt->execute([
-        'uid' => $userId,
-        'tid' => $trajetId
-    ]);
-
-    return (bool) $stmt->fetchColumn();
-}
-
-
-    public function reactivate(int $userId, int $trajetId): void
+    /**
+     * Récupère la participation d’un utilisateur sur un trajet (si elle existe).
+     *
+     * @return array|null  ['id','etat','credits_utilises','trajet_id'] ou null
+     */
+    public function findOne(int $userId, int $trajetId): ?array
     {
         $pdo = Database::getInstance();
 
         $stmt = $pdo->prepare(
-            'UPDATE participation
-            SET etat = "confirme", confirme_le = NOW()
-            WHERE utilisateur_id = :uid
-            AND trajet_id = :tid
-            AND etat = "annule"'
+            'SELECT id, etat, credits_utilises, trajet_id
+            FROM participation
+            WHERE utilisateur_id = :uid AND trajet_id = :tid
+            LIMIT 1'
         );
 
         $stmt->execute([
             'uid' => $userId,
             'tid' => $trajetId
         ]);
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ?: null;
     }
 
     /**
-     * Annule une réservation.
-     * - Réincrémente les places
-     * - Crée un mouvement de remboursement
+     * Réactive une réservation précédemment annulée (Option B).
      *
-     * @param int $participationId
-     * @param int $userId
-     * @return bool
+     * Règles métier :
+     * - Seul le propriétaire de la réservation peut réactiver
+     * - Seules les réservations à l’état "annule" sont réactivables
+     * - Une réservation déjà confirmée n’est pas modifiée
+     *
+     * Effets :
+     * - Passe l’état de la participation à "confirme"
+     * - Met à jour la date de confirmation
+     * - Met à jour le montant de crédits utilisés
+     * - Crée un mouvement de débit dans l’historique des crédits
+     *
+     * Sécurité :
+     * - Doit être appelée dans une transaction
+     * - Verrouillage FOR UPDATE pour éviter les doubles réactivations
+     *
+     * @param int $userId   Identifiant de l’utilisateur
+     * @param int $trajetId Identifiant du trajet
+     * @param int $prix     Montant des crédits à débiter
+     * @return bool         true si la réactivation est effectuée, false sinon
+     */
+    public function reactivate(int $userId, int $trajetId, int $prix): bool
+    {
+        $pdo = Database::getInstance();
+
+        // Verrouille la ligne participation (anti double-clic / concurrence)
+        $stmt = $pdo->prepare(
+            'SELECT id, etat
+            FROM participation
+            WHERE utilisateur_id = :uid AND trajet_id = :tid
+            FOR UPDATE'
+        );
+        $stmt->execute(['uid' => $userId, 'tid' => $trajetId]);
+        $p = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$p || $p['etat'] !== 'annule') {
+            return false;
+        }
+
+        // Réactivation atomique
+        $stmt = $pdo->prepare(
+            "UPDATE participation
+            SET etat = 'confirme',
+                confirme_le = NOW(),
+                credits_utilises = :prix
+            WHERE id = :id AND etat = 'annule'"
+        );
+        $stmt->execute([
+            'prix' => $prix,
+            'id'   => (int)$p['id'],
+        ]);
+
+        if ($stmt->rowCount() !== 1) {
+            return false;
+        }
+
+        // Historique crédits : débit (montant négatif recommandé)
+        $stmt = $pdo->prepare(
+            "INSERT INTO credit_mouvement (type, montant, utilisateur_id, participation_id)
+            VALUES ('debit_reservation', :montant, :uid, :pid)"
+        );
+        $stmt->execute([
+            'montant' => -abs($prix),
+            'uid'     => $userId,
+            'pid'     => (int)$p['id'],
+        ]);
+
+        return true;
+    }
+
+    /**
+     * Annule une réservation utilisateur.
+     *
+     * Règles métier :
+     * - Seul le propriétaire de la réservation peut annuler
+     * - Seules les réservations à l’état "confirme" sont annulables
+     * - Une réservation déjà annulée est traitée comme un succès (idempotence)
+     *
+     * Effets :
+     * - Passe l’état de la participation à "annule"
+     * - Réincrémente le nombre de places du trajet
+     * - Crée un mouvement de remboursement dans l’historique des crédits
+     *
+     * Sécurité :
+     * - Transaction SQL
+     * - Verrouillage FOR UPDATE pour éviter les doubles annulations
+     *
+     * @param int $participationId Identifiant de la participation
+     * @param int $userId          Identifiant de l’utilisateur courant
+     * @return bool                true si l’annulation est effective ou déjà faite, false sinon
      */
     public function cancel(int $participationId, int $userId): bool
     {
@@ -236,51 +247,203 @@ public function hasCancelledParticipation(int $userId, int $trajetId): bool
         try {
             $pdo->beginTransaction();
 
-            // Récupération de la participation
+            /**
+             * 1) Verrouille la participation
+             *    → empêche les doubles clics / requêtes concurrentes
+             */
             $stmt = $pdo->prepare(
-                'SELECT * FROM participation WHERE id = :id AND utilisateur_id = :uid'
+                'SELECT id, etat, credits_utilises, trajet_id
+                FROM participation
+                WHERE id = :id AND utilisateur_id = :uid
+                FOR UPDATE'
             );
             $stmt->execute([
-                'id' => $participationId,
+                'id'  => $participationId,
                 'uid' => $userId
             ]);
 
             $participation = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if (!$participation || $participation['etat'] !== 'confirme') {
+            // Participation inexistante ou ne принадissant pas à l’utilisateur
+            if (!$participation) {
                 $pdo->rollBack();
                 return false;
             }
 
-            // Annulation logique
-            $stmt = $pdo->prepare(
-                'UPDATE participation SET etat = "annule" WHERE id = :id'
-            );
-            $stmt->execute(['id' => $participationId]);
+            /**
+             * 2) Idempotence
+             *    → déjà annulée = OK (on ne refait pas les effets de bord)
+             */
+            if ($participation['etat'] === 'annule') {
+                $pdo->commit();
+                return true;
+            }
 
-            // Réincrémentation des places
-            $stmt = $pdo->prepare(
-                'UPDATE trajet SET nb_places = nb_places + 1 WHERE id = :id'
-            );
-            $stmt->execute(['id' => $participation['trajet_id']]);
+            /**
+             * 3) Règle métier
+             *    → seule une participation confirmée peut être annulée
+             */
+            if ($participation['etat'] !== 'confirme') {
+                $pdo->rollBack();
+                return false;
+            }
 
-            // Remboursement
+            /**
+             * 4) Annulation logique sécurisée
+             *    → vérifie encore l’état attendu au moment de l’UPDATE
+             */
             $stmt = $pdo->prepare(
-                'INSERT INTO credit_mouvement (type, montant, utilisateur_id, participation_id)
-                 VALUES ("remboursement", :montant, :uid, :pid)'
+                "UPDATE participation
+                SET etat = 'annule',
+                    confirme_le = NULL
+                WHERE id = :id
+                AND utilisateur_id = :uid
+                AND etat = 'confirme'"
             );
             $stmt->execute([
-                'montant' => abs((int)$participation['credits_utilises']),
-                'uid' => $userId,
-                'pid' => $participation['id']
+                'id'  => $participationId,
+                'uid' => $userId
             ]);
 
+            // Sécurité : une seule ligne doit être impactée
+            if ($stmt->rowCount() !== 1) {
+                $pdo->rollBack();
+                return false;
+            }
+
+            /**
+             * 5) Réincrémentation des places du trajet + vérifie que la ligne existe
+             */
+            $stmt = $pdo->prepare(
+                'UPDATE trajet
+                SET nb_places = nb_places + 1
+                WHERE id = :tid'
+            );
+            $stmt->execute(['tid' => (int)$participation['trajet_id']]);
+
+            if ($stmt->rowCount() !== 1) {
+                $pdo->rollBack();
+                return false;
+            }
+
+            /**
+             * 6) Mouvement de remboursement
+             *    → montant positif (historique financier)
+             */
+            $stmt = $pdo->prepare(
+                "INSERT INTO credit_mouvement
+                    (type, montant, utilisateur_id, participation_id)
+                VALUES
+                    ('remboursement', :montant, :uid, :pid)"
+            );
+            $stmt->execute([
+                'montant' => (int) $participation['credits_utilises'],
+                'uid'     => $userId,
+                'pid'     => (int) $participation['id'],
+            ]);
+
+            /**
+             * 7) Validation définitive
+             */
             $pdo->commit();
             return true;
 
-        } catch (PDOException $e) {
-            $pdo->rollBack();
+        } catch (\Throwable $e) {
+            error_log('CANCEL FAIL: ' . $e->getMessage());
+
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
             return false;
         }
     }
+
+    /**
+     * Annule toutes les participations confirmées d’un trajet et rembourse les passagers.
+     *
+     * Objectif :
+     * - Ne rembourser que les participations réellement annulées
+     * - Éviter tout double remboursement en cas d’appel concurrent ou répété
+     *
+     * Règles métier :
+     * - Seules les participations à l’état "confirme" sont concernées
+     * - Une participation déjà annulée est ignorée
+     *
+     * Fonctionnement :
+     * - Sélectionne et verrouille (FOR UPDATE) les participations confirmées du trajet
+     * - Annule chaque participation individuellement
+     * - Crée un mouvement de remboursement uniquement si l’annulation a effectivement eu lieu
+     *
+     * Sécurité :
+     * - Doit être appelée à l’intérieur d’une transaction SQL
+     * - Verrouillage pessimiste pour éviter les courses critiques
+     *
+     * @param int $trajetId Identifiant du trajet à annuler
+     * @return int Nombre de participations effectivement annulées (et remboursées)
+     */
+    public function cancelAllConfirmedByTrajet(int $trajetId): int
+    {
+        $pdo = Database::getInstance();
+
+        /**
+         * 1) Sélection + verrouillage des participations confirmées
+         *    → empêche double annulation / double remboursement
+         */
+        $stmt = $pdo->prepare(
+            "SELECT id, utilisateur_id, credits_utilises
+             FROM participation
+             WHERE trajet_id = :tid
+               AND etat = 'confirme'
+             FOR UPDATE"
+        );
+        $stmt->execute(['tid' => $trajetId]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (!$rows) {
+            return 0;
+        }
+
+        /**
+         * 2) Préparation des requêtes
+         */
+        $upd = $pdo->prepare(
+            "UPDATE participation
+             SET etat = 'annule',
+                 confirme_le = NULL
+             WHERE id = :id
+               AND etat = 'confirme'"
+        );
+
+        $ins = $pdo->prepare(
+            "INSERT INTO credit_mouvement
+                (type, montant, utilisateur_id, participation_id)
+             VALUES
+                ('remboursement', :montant, :uid, :pid)"
+        );
+
+        $count = 0;
+
+        /**
+         * 3) Annulation + remboursement contrôlé
+         */
+        foreach ($rows as $p) {
+            $upd->execute(['id' => (int)$p['id']]);
+
+            // Sécurité : on rembourse uniquement si l’UPDATE a bien modifié la ligne
+            if ($upd->rowCount() === 1) {
+                $ins->execute([
+                    'montant' => (int)$p['credits_utilises'], // montant positif
+                    'uid'     => (int)$p['utilisateur_id'],
+                    'pid'     => (int)$p['id'],
+                ]);
+                $count++;
+            }
+        }
+
+        /**
+         * 4) Retourne le nombre de participations effectivement annulées
+         */
+        return $count;
+    }
+
 }

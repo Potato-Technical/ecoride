@@ -1,4 +1,14 @@
-# EcoRide
+<h1 align="center">EcoRide</h1>
+
+###
+
+<p align="center">
+  <img src="https://img.shields.io/badge/PHP-8.x-777BB4" />
+  <img src="https://img.shields.io/badge/Docker-enabled-2496ED" />
+  <img src="https://img.shields.io/badge/version-0.2.0-brightgreen" />
+</p>
+
+###
 
 EcoRide est une application web de covoiturage. Elle permet la consultation et la réservation de trajets, ainsi que la gestion des participations utilisateurs, avec une logique métier sécurisée et transactionnelle.
 Le projet s’appuie sur une architecture MVC en PHP et un environnement Dockerisé pour assurer la cohérence du développement.
@@ -85,7 +95,13 @@ L’environnement Docker est destiné au développement et à la démonstration 
 ```bash
 git clone https://github.com/Potato-Technical/ecoride.git
 cd ecoride
-docker compose up -d
+
+cp .env.example .env
+# Modifier DB_PASS et DB_ROOT_PASS si besoin
+
+make up
+make db-full
+make check
 
 ```
 Application accessible sur :
@@ -96,7 +112,7 @@ http://localhost:8080
 
 * MySQL 8
 
-* Initialisation automatique via Docker
+* Initialisation via make db-full (schema + seed)
 
 * Connexion configurée dans config/database.php
 
@@ -106,9 +122,8 @@ Les comptes suivants sont disponibles après initialisation de la base :
 
 | Rôle          | Email                | Mot de passe |
 |---------------|----------------------|--------------|
-| Administrateur| admin@ecoride.fr     | password     |
-| Utilisateur   | user@ecoride.fr      | password     |
-
+| Administrateur| admin@ecoride.fr     | Admin123!    |
+| Utilisateur   | user@ecoride.fr      | User123!     |
 
 ## Parcours utilisateur type
 
@@ -121,7 +136,7 @@ Les comptes suivants sont disponibles après initialisation de la base :
 ## Sécurité & fiabilité
 
 - Vérification des accès (authentification requise)
-- Validation systématique des entrées utilisateur
+- Protection CSRF sur toutes les actions POST sensibles
 - Requêtes SQL préparées (PDO)
 - Transactions SQL atomiques
 - Protection contre les doubles réservations

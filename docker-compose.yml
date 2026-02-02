@@ -1,32 +1,47 @@
 services:
   web:
-    build: .
+    build: .                         # Image PHP/Apache définie dans le Dockerfile
     container_name: ecoride_web
+    command: >
+      bash -lc "composer install --no-interaction --no-dev --prefer-dist
+      && apache2-foreground"         # Installe vendor puis lance Apache
     ports:
-      - "8080:80"              # port local 8080 → Apache du conteneur
+      - "8080:80"                    # Port local 8080 → Apache du conteneur
     volumes:
-      - ./:/var/www/html       # partage du code source avec le conteneur
-    depends_on:
-      - db                     # le service web dépend de la base de données
+      - ./:/var/www/html             # Partage du code source avec le conteneur
+      - vendor_data:/var/www/html/vendor
+                                     # Volume dédié aux dépendances Composer
     env_file:
-      - .env                   # variables d’environnement pour PHP
+      - .env                         # Variables d’environnement PHP / DB
+    depends_on:
+      db:
+        condition: service_healthy   # Attend que MySQL soit prêt avant Apache
 
   db:
-    image: mysql:8.0           # version stable de MySQL
+    image: mysql:8.0                 # Version stable de MySQL
     container_name: ecoride_db
     command:
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_unicode_ci
-                              # force l'encodage UTF-8 complet
+                                     # Force l’encodage UTF-8 complet
     environment:
-      MYSQL_DATABASE: ${DB_NAME}       # nom de la base
-      MYSQL_USER: ${DB_USER}           # utilisateur MySQL
-      MYSQL_PASSWORD: ${DB_PASS}       # mot de passe utilisateur
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS} # mot de passe root
+      MYSQL_DATABASE: ${DB_NAME}     # Nom de la base
+      MYSQL_USER: ${DB_USER}         # Utilisateur MySQL applicatif
+      MYSQL_PASSWORD: ${DB_PASS}     # Mot de passe utilisateur
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}
+                                     # Mot de passe root (Docker uniquement)
     ports:
-      - "3307:3306"            # port local 3307 → MySQL du conteneur
+      - "3307:3306"                  # Port local 3307 → MySQL du conteneur
     volumes:
-      - db_data:/var/lib/mysql # stockage persistant des données MySQL
+      - db_data:/var/lib/mysql       # Stockage persistant des données MySQL
+    healthcheck:
+      test:
+        ["CMD", "mysqladmin", "ping", "-h", "localhost",
+         "-u", "root", "-p${DB_ROOT_PASS}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20                    # MySQL considéré prêt après ping OK
 
 volumes:
-  db_data:                     # volume Docker pour la base
+  db_data:                           # Volume Docker pour la base de données
+  vendor_data:                       # Volume Docker pour les dépendances Composer

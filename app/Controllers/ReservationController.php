@@ -6,19 +6,37 @@ use App\Core\Controller;
 use App\Core\Database;
 use App\Models\ParticipationRepository;
 use App\Models\TrajetRepository;
+use App\Models\CreditMouvementRepository;
 
-
+/**
+ * Contrôleur de réservation.
+ *
+ * Sécurité :
+ * - Toutes les actions sont réservées aux utilisateurs authentifiés
+ * - Les actions POST sont protégées par un token CSRF
+ * - Les vérifications métier (statut, places, ownership) sont faites côté serveur
+ * - Les opérations critiques sont exécutées dans des transactions SQL atomiques
+ */
 class ReservationController extends Controller
 {
     /**
      * Réserve un trajet pour l'utilisateur connecté.
      *
-     * L'identifiant du trajet est récupéré via l'URL (?id=).
+     * L'identifiant du trajet est récupéré via le POST (trajet_id).
      */
     public function reserve(): void
     {
+        // Action sensible : POST uniquement
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            exit;
+        }
+
         // Accès réservé aux utilisateurs connectés
         $this->requireAuth();
+
+        // Protection CSRF : empêche l'appel de l'action depuis une source externe
+        $this->verifyCsrfToken();
 
         // Récupération et validation de l'identifiant du trajet
         $trajetId = isset($_POST['trajet_id']) ? (int) $_POST['trajet_id'] : 0;
@@ -40,6 +58,13 @@ class ReservationController extends Controller
             return;
         }
 
+        // Interdit : réserver son propre trajet
+        if ((int)$trajet['chauffeur_id'] === (int)$_SESSION['user_id']) {
+            http_response_code(403);
+            $this->render('errors/403', ['title' => 'Action interdite']);
+            return;
+        }
+
         // Trajet non réservable
         if ($trajet['statut'] !== 'planifie') {
             http_response_code(403);
@@ -48,7 +73,7 @@ class ReservationController extends Controller
         }
 
         // Plus de place
-        if ((int)$trajet['nb_places'] <= 0) {
+        if ((int) $trajet['nb_places'] <= 0) {
             http_response_code(400);
             $this->render('errors/400', ['title' => 'Plus de place disponible']);
             return;
@@ -56,7 +81,7 @@ class ReservationController extends Controller
 
         $this->render('reservations/confirm', [
             'trajet' => $trajet,
-            'title'  => 'Confirmer la réservation'
+            'title'  => 'Confirmer la réservation',
         ]);
     }
 
@@ -72,7 +97,8 @@ class ReservationController extends Controller
 
         $this->render('reservations/index', [
             'reservations' => $reservations,
-            'title' => 'Mes réservations'
+            'title' => 'Mes réservations',
+            'scripts' => ['/assets/js/reservations.js'],
         ]);
     }
 
@@ -84,7 +110,14 @@ class ReservationController extends Controller
      */
     public function confirm(): void
     {
+        // Action sensible : POST uniquement
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            exit;
+        }
+
         $this->requireAuth();
+        $this->verifyCsrfToken();
 
         // 1) Récupération et validation
         $trajetId = isset($_POST['trajet_id']) ? (int) $_POST['trajet_id'] : 0;
@@ -108,64 +141,135 @@ class ReservationController extends Controller
             return;
         }
 
-        // 3) Réactivation si annulation précédente
-        if ($partRepo->hasCancelledParticipation((int) $_SESSION['user_id'], $trajetId)) {
-            $pdo->beginTransaction();
-
-            $partRepo->reactivate((int) $_SESSION['user_id'], $trajetId);
-            $trajetRepo->decrementPlaces($trajetId);
-
-            $pdo->commit();
-
-            header('Location: /reservations');
-            exit;
-        }
-
-        // 4) Création normale
-        if ($partRepo->hasAnyParticipation((int) $_SESSION['user_id'], $trajetId)) {
-            $this->render('errors/400', ['title' => 'Réservation déjà existante']);
+        // Interdit : réserver son propre trajet
+        if ((int)$trajet['chauffeur_id'] === (int)$_SESSION['user_id']) {
+            http_response_code(403);
+            $this->render('errors/403', ['title' => 'Action interdite']);
             return;
         }
 
+        // 3) Participation existante ?
         try {
             $pdo->beginTransaction();
 
+            $lock = $pdo->prepare('SELECT id FROM utilisateur WHERE id = :id FOR UPDATE');
+            $lock->execute(['id' => (int)$_SESSION['user_id']]);
+
+            $creditRepo = new CreditMouvementRepository();
+            $solde = $creditRepo->getSolde((int)$_SESSION['user_id']);
+
+            if ($solde < (int)$trajet['prix']) {
+                $pdo->rollBack();
+                $this->setFlash('error', 'Crédits insuffisants pour réserver ce trajet');
+                header('Location: /trajet?id=' . $trajetId);
+                exit;
+            }
+            
+            $existing = $partRepo->findOne((int) $_SESSION['user_id'], $trajetId);
+
+            if ($existing) {
+
+                if ($existing['etat'] === 'confirme') {
+                    $pdo->rollBack();
+                    $this->setFlash('error', 'Vous avez déjà réservé ce trajet');
+                    header('Location: /reservations');
+                    exit;
+                }
+
+                // Annulée → réactivation (Option B)
+                if ($existing['etat'] === 'annule') {
+
+                    $ok = $partRepo->reactivate(
+                        (int) $_SESSION['user_id'],
+                        $trajetId,
+                        (int) $trajet['prix']
+                    );
+
+                    // On vérifie le retour
+                    if (!$ok) {
+                        $pdo->rollBack();
+                        $this->setFlash('error', 'Réactivation impossible');
+                        header('Location: /reservations');
+                        exit;
+                    }
+
+                    if (!$trajetRepo->decrementPlaces($trajetId)) {
+                        $pdo->rollBack();
+                        $this->setFlash('error', 'Plus de place disponible');
+                        header('Location: /trajets');
+                        exit;
+                    }
+
+                    $pdo->commit();
+                    $this->setFlash('success', 'Réservation confirmée');
+                    header('Location: /reservations');
+                    exit;
+                }
+
+                $pdo->rollBack();
+                $this->setFlash('error', 'Réservation en cours de traitement');
+                header('Location: /reservations');
+                exit;
+            }
+
+            // 4) Création normale
             $partRepo->create(
                 (int) $_SESSION['user_id'],
                 $trajetId,
                 (int) $trajet['prix']
             );
 
-            $trajetRepo->decrementPlaces($trajetId);
+            if (!$trajetRepo->decrementPlaces($trajetId)) {
+                $pdo->rollBack();
+                $this->setFlash('error', 'Plus de place disponible');
+                header('Location: /trajets');
+                exit;
+            }
 
             $pdo->commit();
-
+            $this->setFlash('success', 'Réservation confirmée');
             header('Location: /reservations');
             exit;
 
         } catch (\Throwable $e) {
-            $pdo->rollBack();
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
             $this->render('errors/500', ['title' => 'Erreur lors de la réservation']);
+            exit;
         }
     }
 
     /**
      * Annule une réservation appartenant à l'utilisateur connecté.
      *
-     * L'identifiant de la participation est récupéré via l'URL (?id=).
+     * L'identifiant de la participation est récupéré via le POST (id).
      */
     public function cancel(): void
     {
+        // Action sensible : POST uniquement
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            exit;
+        }
+
         // Accès réservé aux utilisateurs connectés
         $this->requireAuth();
 
+        // Sécurité CSRF
+        $this->verifyCsrfToken();
+
+        // Réponse JSON
+        header('Content-Type: application/json');
+
         // Récupération et validation de l'identifiant de la participation
-        $participationId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+        $participationId = isset($_POST['id']) ? (int) $_POST['id'] : 0;
 
         if ($participationId <= 0) {
             http_response_code(400);
-            $this->render('errors/400', [
-                'title' => 'Requête invalide'
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'Requête invalide'
             ]);
             return;
         }
@@ -174,17 +278,19 @@ class ReservationController extends Controller
 
         $ok = $repo->cancel($participationId, $_SESSION['user_id']);
 
-        // Échec métier de l’annulation (déjà annulée, pas propriétaire, etc.)
+        // Échec métier de l’annulation
         if (!$ok) {
-            http_response_code(400);
-            $this->render('errors/400', [
-                'title' => 'Annulation impossible'
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'Annulation impossible'
             ]);
             return;
         }
 
-        // Redirection après annulation réussie
-        header('Location: /trajets');
-        exit;
+        // Succès
+        echo json_encode([
+            'status'  => 'success',
+            'message' => 'Réservation annulée'
+        ]);
     }
 }

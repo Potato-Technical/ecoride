@@ -1,4 +1,5 @@
-<h1>500</h1>
-<p>Une erreur interne est survenue sur le serveur.</p>
+<h1 class="mb-4">500 - Erreur serveur</h1>
 
-<a href="/">Retour à l’accueil</a>
+<div class="alert alert-danger">
+    Une erreur interne est survenue.
+</div>

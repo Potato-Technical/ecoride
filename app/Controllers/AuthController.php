@@ -3,7 +3,10 @@
 namespace App\Controllers; // Namespace des contrôleurs
 
 use App\Core\Controller;       // Contrôleur parent (render, sécurité, redirections)
+use App\Core\Database;
 use App\Models\UserRepository; // Accès aux utilisateurs en base
+use App\Models\RoleRepository;
+use App\Models\CreditMouvementRepository;
 
 class AuthController extends Controller
 {
@@ -23,6 +26,10 @@ class AuthController extends Controller
         // Traitement du formulaire de connexion
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
+            // Vérification CSRF obligatoire avant tout traitement métier
+            // Empêche l'envoi du formulaire depuis une source externe non autorisée
+            $this->verifyCsrfToken();
+
             // Accès à la table utilisateur via le repository
             $repo = new UserRepository();
             $user = $repo->findByEmail($_POST['email']);
@@ -33,12 +40,33 @@ class AuthController extends Controller
                 $user &&
                 password_verify($_POST['password'], $user['mot_de_passe_hash'])
             ) {
+                // Sécurité : empêche la fixation de session après authentification
+                session_regenerate_id(true);
+
                 // Stocke l'identifiant utilisateur en session
                 $_SESSION['user_id'] = $user['id'];
 
-                // Redirection post-login (retour à la page demandée si fournie)
-                $redirect = $_GET['redirect'] ?? '/';
-                header('Location: ' . $redirect);
+                // Récupération du rôle associé à l'utilisateur
+                $roleRepo = new RoleRepository();
+                $role = $roleRepo->findById($user['role_id']);
+
+                // Stockage du rôle en session
+                $_SESSION['role'] = $role['libelle'];
+
+                // Redirection prioritaire vers la page demandée (si fournie)
+                if (!empty($_GET['redirect'])) {
+                    header('Location: ' . $_GET['redirect']);
+                    exit;
+                }
+
+                // Redirection spécifique selon le rôle
+                if ($_SESSION['role'] === 'administrateur') {
+                    header('Location: /admin');
+                    exit;
+                }
+
+                // Redirection par défaut
+                header('Location: /');
                 exit;
             }
 
@@ -52,6 +80,110 @@ class AuthController extends Controller
         // Affichage simple du formulaire de connexion (requête GET)
         $this->render('auth/login');
     }
+    
+    /**
+     * Inscription d’un nouvel utilisateur.
+     *
+     * US : Inscription utilisateur
+     */
+    public function register(): void
+    {
+        // Si l'utilisateur est déjà connecté, retour à l'accueil
+        if (!empty($_SESSION['user_id'])) {
+            header('Location: /');
+            exit;
+        }
+
+        // Traitement du formulaire
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+            // Protection CSRF obligatoire
+            $this->verifyCsrfToken();
+
+            // Récupération et nettoyage des champs
+            $prenom  = trim($_POST['prenom'] ?? '');
+            $nom     = trim($_POST['nom'] ?? '');
+            $email   = trim($_POST['email'] ?? '');
+            $pwd     = $_POST['password'] ?? '';
+            $pwdConf = $_POST['password_confirm'] ?? '';
+
+            // Validation minimale serveur
+            if (
+                $prenom === '' ||
+                $nom === '' ||
+                $email === '' ||
+                $pwd === '' ||
+                $pwd !== $pwdConf
+            ) {
+                $this->render('auth/register', [
+                    'error' => 'Formulaire invalide'
+                ]);
+                return;
+            }
+
+            // Accès aux utilisateurs
+            $userRepo = new UserRepository();
+
+            // Vérifie l'unicité de l'email
+            if ($userRepo->findByEmail($email)) {
+                $this->render('auth/register', [
+                    'error' => 'Adresse e-mail déjà utilisée',
+                ]);
+                return;
+            }
+
+            // Récupération du rôle par défaut
+            $roleRepo = new RoleRepository();
+            $role = $roleRepo->findByLibelle('utilisateur');
+
+            if (!$role) {
+                // Incohérence base → erreur serveur
+                $this->error(500);
+            }
+
+            // Génération automatique d'un pseudo unique
+            $pseudoBase = strtolower($prenom . '.' . $nom);
+            $pseudo = $pseudoBase;
+            $i = 1;
+
+            while ($userRepo->findByPseudo($pseudo)) {
+                $pseudo = $pseudoBase . $i;
+                $i++;
+            }
+
+            $pdo = Database::getInstance();
+
+            try {
+                $pdo->beginTransaction();
+
+                // Création du compte utilisateur
+                $userId = $userRepo->create([
+                    'pseudo'            => $pseudo,
+                    'email'             => $email,
+                    'mot_de_passe_hash' => password_hash($pwd, PASSWORD_DEFAULT),
+                    'role_id'           => $role['id'],
+                ]);
+
+                $creditRepo = new CreditMouvementRepository();
+                $creditRepo->add($userId, 'creation_compte', 20);
+
+                $pdo->commit();
+
+                // Redirection vers la connexion
+                header('Location: /login');
+                exit;
+
+            } catch (\Throwable $e) {
+                if ($pdo->inTransaction()) {
+                    $pdo->rollBack();
+                }
+                $this->error(500);
+            }
+        }
+
+        // Affichage du formulaire (GET)
+        $this->render('auth/register');
+    }
 
     /**
      * Déconnecte l'utilisateur courant.
@@ -60,6 +192,36 @@ class AuthController extends Controller
      */
     public function logout(): void
     {
+        // Logout en POST uniquement
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            header('Location: /');
+            exit;
+        }
+
+        // CSRF
+        $this->verifyCsrfToken();
+
+        // Nettoyage session
+        $_SESSION = [];
+        
+        // Sécurité : invalide l'identifiant de session courant
+        // (évite toute réutilisation post-déconnexion)
+        session_regenerate_id(true);
+
+        // Supprime le cookie de session
+        if (ini_get('session.use_cookies')) {
+            $params = session_get_cookie_params();
+            setcookie(
+                session_name(),
+                '',
+                time() - 42000,
+                $params['path'],
+                $params['domain'],
+                $params['secure'],
+                $params['httponly']
+            );
+        }
         // Destruction de la session active
         session_destroy();
 

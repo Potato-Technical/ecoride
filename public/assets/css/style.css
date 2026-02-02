@@ -1,0 +1,48 @@
+/* Design tokens – EcoRide */
+
+:root {
+  /* Typography */
+  --font-primary: 'Poppins', sans-serif;
+  --font-secondary: 'Inter', sans-serif;
+
+  /* Text */
+  --text-primary: #2F3E3F;
+  --text-secondary: #8E9CA0;
+  --text-disabled: #C4C4C4;
+
+  /* Brand */
+  --color-primary: #B4D093;
+  --color-cta: #2E5942;
+  --color-cta-hover: #264E3A;
+  --color-focus: #437A5B;
+  --color-driver: #FFD966;
+
+  /* Feedback */
+  --success: #4CAF50;
+  --error: #C64848;
+  --warning: #F9B233;
+  --info: #5A7480;
+
+  /* Structure */
+  --bg-header: #FBF5B7;
+  --bg-main: #F9F9F9;
+  --bg-footer: #1B1C20;
+  --divider: #EAEAEA;
+}
+
+/* Base */
+body {
+  font-family: var(--font-secondary);
+  color: var(--text-primary);
+  background: var(--bg-main);
+}
+
+h1, h2, h3 {
+  font-family: var(--font-primary);
+  font-weight: 600;
+}
+
+h4, h5, h6 {
+  font-family: var(--font-primary);
+  font-weight: 500;
+}

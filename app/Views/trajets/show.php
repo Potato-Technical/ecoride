@@ -1,30 +1,90 @@
-<h1>Détail du trajet</h1>
+<h1 class="mb-4">Détail du trajet</h1>
 
-<p><strong>Départ :</strong> <?= htmlspecialchars($trajet['lieu_depart']) ?></p>
-<p><strong>Arrivée :</strong> <?= htmlspecialchars($trajet['lieu_arrivee']) ?></p>
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
 
-<p><strong>Date :</strong> <?= htmlspecialchars(date('d/m/Y', strtotime($trajet['date_heure_depart']))) ?></p>
-<p><strong>Heure :</strong> <?= htmlspecialchars(date('H:i', strtotime($trajet['date_heure_depart']))) ?></p>
+        <h2 class="h5 mb-3">
+            <?= htmlspecialchars($trajet['lieu_depart']) ?>
+            →
+            <?= htmlspecialchars($trajet['lieu_arrivee']) ?>
+        </h2>
 
-<p><strong>Prix :</strong> <?= (int)$trajet['prix'] ?> crédits</p>
-<p><strong>Places restantes :</strong> <?= (int)$trajet['nb_places'] ?></p>
-<p><strong>Statut :</strong> <?= htmlspecialchars($trajet['statut']) ?></p>
+        <ul class="list-unstyled mb-4">
+            <li class="mb-2">
+                <strong>Date :</strong>
+                <?= htmlspecialchars(date('d/m/Y', strtotime($trajet['date_heure_depart']))) ?>
+            </li>
+            <li class="mb-2">
+                <strong>Heure :</strong>
+                <?= htmlspecialchars(date('H:i', strtotime($trajet['date_heure_depart']))) ?>
+            </li>
+            <li class="mb-2">
+                <strong>Prix :</strong>
+                <?= (int) $trajet['prix'] ?> crédits
+            </li>
+            <li class="mb-2">
+                <strong>Places restantes :</strong>
+                <?= (int) $trajet['nb_places'] ?>
+            </li>
+            <li>
+                <strong>Statut :</strong>
+                <?= htmlspecialchars($trajet['statut']) ?>
+            </li>
+        </ul>
 
-<?php if (!empty($_SESSION['user_id'])): ?>
-  <?php if ($hasParticipation): ?>
-    <p><em>Vous avez déjà participé à ce trajet.</em></p>
-  <?php elseif ((int)$trajet['nb_places'] > 0): ?>
-      <form method="POST" action="/trajets/reserver">
-          <input type="hidden" name="trajet_id" value="<?= (int)$trajet['id'] ?>">
-          <button type="submit">Réserver</button>
-      </form>
-  <?php else: ?>
-    <p>Aucune place disponible.</p>
-  <?php endif; ?>
-<?php else: ?>
-  <p>
-    <a href="/login?redirect=<?= urlencode($_SERVER['REQUEST_URI']) ?>">
-      Se connecter pour réserver
-    </a>
-  </p>
-<?php endif; ?>
+        <hr>
+
+        <div class="mt-3">
+
+            <?php if (empty($_SESSION['user_id'])): ?>
+
+                <a href="/login?redirect=<?= urlencode($_SERVER['REQUEST_URI']) ?>"
+                   class="btn btn-outline-primary">
+                    Se connecter pour réserver
+                </a>
+
+            <?php elseif ((int)$trajet['chauffeur_id'] === (int)$_SESSION['user_id']): ?>
+
+                <button class="btn btn-secondary" disabled>
+                    Votre trajet
+                </button>
+
+            <?php elseif ($hasParticipation): ?>
+
+                <button class="btn btn-secondary" disabled>
+                    Déjà réservé
+                </button>
+
+            <?php elseif ((int) $trajet['nb_places'] <= 0): ?>
+
+                <button class="btn btn-secondary" disabled>
+                    Trajet complet
+                </button>
+
+            <?php else: ?>
+
+                <form method="POST"
+                      action="/trajets/reserver"
+                      class="d-inline js-reserve-form">
+
+                    <input type="hidden"
+                           name="csrfToken"
+                           value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
+
+                    <input type="hidden"
+                           name="trajet_id"
+                           value="<?= (int) $trajet['id'] ?>">
+
+                    <button type="submit"
+                            class="btn btn-primary"
+                            data-original-text="Réserver">
+                        Réserver
+                    </button>
+                </form>
+
+            <?php endif; ?>
+
+        </div>
+
+    </div>
+</div>
