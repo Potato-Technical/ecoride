@@ -1,148 +1,87 @@
 <h1 align="center">EcoRide</h1>
 
-###
-
 <p align="center">
   <img src="https://img.shields.io/badge/PHP-8.x-777BB4" />
-  <img src="https://img.shields.io/badge/Docker-enabled-2496ED" />
-  <img src="https://img.shields.io/badge/version-0.2.0-brightgreen" />
+  <img src="https://img.shields.io/badge/Bootstrap-5-7952B3" />
+  <img src="https://img.shields.io/badge/version-0.3.1-brightgreen" />
 </p>
 
-###
+EcoRide est une application web de covoiturage éco-responsable.
+Elle permet la consultation et la réservation de trajets, la gestion des véhicules et un espace chauffeur/passager, avec une logique métier sécurisée (CSRF, ownership) et transactionnelle.
 
-EcoRide est une application web de covoiturage. Elle permet la consultation et la réservation de trajets, ainsi que la gestion des participations utilisateurs, avec une logique métier sécurisée et transactionnelle.
-Le projet s’appuie sur une architecture MVC en PHP et un environnement Dockerisé pour assurer la cohérence du développement.
+## Démo (production)
+- URL : https://ecoride-dwwm.alwaysdata.net/
 
-## Fonctionnalités principales
+## Fonctionnalités (MVP)
 
-- Authentification utilisateur
+### Visiteur
 - Consultation des trajets disponibles
-- Réservation d’un trajet
-- Annulation / réactivation de réservation
-- Gestion automatique des places disponibles
-- Espace « Mes réservations »
+- Filtre/recherche de trajets (départ, arrivée, date, prix max, “éco”)
+- Pages publiques (à propos, contact, mentions, CGU, accessibilité)
+
+### Passager (connecté)
+- Réserver un trajet (débit crédits + décrément places en transaction)
+- Voir “Mes réservations”
+- Annuler une réservation (remboursement + réincrément places en transaction)
+
+### Chauffeur (connecté)
+- CRUD véhicules (ownership + CSRF)
+- Créer un trajet en sélectionnant un véhicule possédé
+- “Mes trajets” (/trajets/chauffeur) : démarrer / terminer / annuler
 
 ## Stack technique
+- PHP 8 (MVC personnalisé, Composer autoload PSR-4)
+- MySQL/MariaDB (PDO, requêtes préparées, transactions)
+- Bootstrap 5, JS vanilla
+- Docker Compose (dev uniquement)
 
-**Back-end**
+## Architecture
 
-* **PHP 8**
-* **Architecture MVC personnalisée**
-* **PDO** (requêtes préparées, transactions SQL)
-* **Apache**
-* **Composer** (autoload PSR-4)
-
-**Base de données**
-
-* **MySQL 8**
-* Schéma SQL versionné
-* Données de test via scripts de seed
-
-**Front-end**
-
-* **HTML / CSS**
-* **Bootstrap 5**
-* **JavaScript vanilla** (aucune dépendance externe)
-
-**Environnement**
-
-* **Docker**
-* **Docker Compose**
-* Scripts utilitaires (reset DB, seed, sanity check)
-
-**Gestion de versions**
-
-* **Git**
-* **GitHub**
-* Branches de fonctionnalités
-
-## Architecture du projet
-
-```bash
 .
-├── app/                # Cœur de l’application (MVC)
+├── app/
 │   ├── Controllers/
-│   ├── Models/
+│   ├── Models/          # Repositories (PDO)
 │   ├── Views/
 │   └── Core/
-├── public/             # Point d’entrée (index.php)
-├── routes/             # Définition des routes
-├── config/             # Configuration (DB)
-├── database/           # Schéma + seeds SQL
-├── scripts/            # Scripts utilitaires (DB, sanity check)
-├── docker-compose.yml  # Environnement Docker (dev)
-├── Dockerfile
+├── public/              # index.php + .htaccess
+├── routes/
+├── config/
+├── database/            # 01_schema.sql + 03_seed.sql
 └── README.md
 
-```
-- MVC strict
-- Accès base via PDO
+Principes :
+- MVC strict, routing centralisé
 - Logique métier centralisée dans les repositories
-- Transactions SQL pour les opérations critiques
-- Routing centralisé via fichier routes
+- Transactions SQL sur opérations critiques (réservation/annulation/fin trajet)
+- Sécurisation : CSRF sur POST + ownership sur ressources
+- Statuts : trajet(statut) / participation(etat) séparés
 
-## Installation (Docker)
-L’environnement Docker est destiné au développement et à la démonstration du projet.
+## Lancer en local (Docker - dev)
+Prérequis : Docker + Docker Compose
 
-**Prérequis**
-
-* Docker
-
-* Docker Compose
-
-**Étapes**
-
-```bash
 git clone https://github.com/Potato-Technical/ecoride.git
 cd ecoride
-
 cp .env.example .env
-# Modifier DB_PASS et DB_ROOT_PASS si besoin
-
 make up
 make db-full
 make check
 
-```
-Application accessible sur :
-
-http://localhost:8080
+URL locale : http://localhost:8080
 
 ## Base de données
-
-* MySQL 8
-
-* Initialisation via make db-full (schema + seed)
-
-* Connexion configurée dans config/database.php
+- Schéma : database/sql/01_schema.sql
+- Données de démo : database/sql/03_seed.sql
 
 ## Comptes de test
-
-Les comptes suivants sont disponibles après initialisation de la base :
-
-| Rôle          | Email                | Mot de passe |
-|---------------|----------------------|--------------|
-| Administrateur| admin@ecoride.fr     | Admin123!    |
-| Utilisateur   | user@ecoride.fr      | User123!     |
-
-## Parcours utilisateur type
-
-- Connexion
-- Consultation des trajets
-- Réservation -> confirmation
-- Visualisation dans « Mes réservations »
-- Annulation / réactivation possible
+Les comptes dépendent du 03_seed.sql.
+Si tu affiches des identifiants ici, ils doivent correspondre exactement au seed.
 
 ## Sécurité & fiabilité
-
-- Vérification des accès (authentification requise)
-- Protection CSRF sur toutes les actions POST sensibles
-- Requêtes SQL préparées (PDO)
-- Transactions SQL atomiques
-- Protection contre les doubles réservations
-- États métier normalisés (planifie, confirme, annule)
-- Séparation stricte contrôleur / logique métier
-- Gestion des erreurs HTTP (400 / 403 / 404 / 500)
+- Auth obligatoire sur actions privées
+- CSRF sur toutes les actions POST sensibles
+- Ownership : trajets/vehicules/réservations
+- PDO préparé + transactions SQL atomiques
+- Gestion erreurs HTTP (400/403/404/500) via contrôleur d’erreurs
 
 ## Auteur
-[Potato-Technical](https://github.com/Potato-Technical)
+https://github.com/Potato-Technical
