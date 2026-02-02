@@ -176,6 +176,30 @@ class TrajetController extends Controller
     }
 
     /**
+     * Liste des trajets publiés par l'utilisateur connecté en tant que chauffeur.
+     *
+     * Règles :
+     * - Accès réservé aux utilisateurs authentifiés
+     * - Ne retourne que les trajets dont l'utilisateur est le chauffeur
+     *
+     * Usage :
+     * - Vue “mode chauffeur”
+     * - Accès rapide à ses annonces de covoiturage
+     */
+    public function myTrips(): void
+    {
+        $this->requireAuth();
+
+        $repo = new TrajetRepository();
+        $trajets = $repo->findByChauffeurId((int)$_SESSION['user_id']);
+
+        $this->render('trajets/chauffeur', [
+            'trajets' => $trajets,
+            'title'   => 'Mes trajets (chauffeur)',
+        ]);
+    }
+        
+    /**
      * Endpoint AJAX : pagination "Charger plus".
      *
      * Rôle :

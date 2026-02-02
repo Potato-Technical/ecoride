@@ -23,6 +23,43 @@ class TrajetRepository
     }
 
     /**
+     * Retourne la liste des trajets publiés par un utilisateur en tant que chauffeur.
+     *
+     * Règles :
+     * - Filtrage strict par chauffeur_id
+     * - Aucun contrôle d’accès ici (doit être assuré par le contrôleur)
+     *
+     * Usage :
+     * - Vue “mes trajets (chauffeur)”
+     * - Suivi et gestion des trajets publiés par l’utilisateur
+     *
+     * @param int $userId Identifiant du chauffeur
+     * @return array Liste des trajets (peut être vide)
+     */
+    public function findByChauffeurId(int $userId): array
+    {
+        $pdo = Database::getInstance();
+
+        $stmt = $pdo->prepare(
+            'SELECT
+                id,
+                lieu_depart,
+                lieu_arrivee,
+                date_heure_depart,
+                prix,
+                nb_places,
+                statut
+            FROM trajet
+            WHERE chauffeur_id = :uid
+            ORDER BY date_heure_depart DESC'
+        );
+
+        $stmt->execute(['uid' => $userId]);
+
+        return $stmt->fetchAll();
+    }
+    
+    /**
      * Décrémente nb_places de façon atomique (anti surréservation).
      *
      * Retourne true si une place a été décrémentée, false sinon.

@@ -28,7 +28,7 @@ return [
 
     '/trajets'           => ['TrajetController', 'index'],    // GET : Liste + filtres
     '/trajet'            => ['TrajetController', 'show'],     // GET : Détail (query ?id=)
-
+    '/trajets/chauffeur' => ['TrajetController', 'myTrips'],  // GET
     // VÉHICULES (auth requise)
 
     '/vehicules/create' => ['VehiculeController', 'create'], // GET : Formulaire d’ajout

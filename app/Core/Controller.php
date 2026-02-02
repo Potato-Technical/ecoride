@@ -55,10 +55,13 @@ class Controller
      */
     protected function requireAuth(): void
     {
-        if (empty($_SESSION['user_id'])) {
-            header('Location: /login');
-            exit;
+        if (!empty($_SESSION['user_id'])) {
+            return;
         }
+
+        $redirect = $_SERVER['REQUEST_URI'] ?? '/';
+        header('Location: /login?redirect=' . urlencode($redirect));
+        exit;
     }
 
     /**
