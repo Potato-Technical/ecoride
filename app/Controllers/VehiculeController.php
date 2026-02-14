@@ -75,8 +75,6 @@ class VehiculeController extends Controller
             exit;
         }
 
-        $this->verifyCsrfToken();
-
         $immatriculation = strtoupper(trim($_POST['immatriculation'] ?? ''));
         $datePremiere    = trim($_POST['date_premiere_immatriculation'] ?? '');
         $marque          = trim($_POST['marque'] ?? '');
@@ -178,7 +176,6 @@ class VehiculeController extends Controller
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); exit; }
 
         $this->requireAuth();
-        $this->verifyCsrfToken();
 
         $id = (int)($_POST['id'] ?? 0);
         if ($id <= 0) { $this->error(400); }
@@ -241,7 +238,6 @@ class VehiculeController extends Controller
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); exit; }
 
         $this->requireAuth();
-        $this->verifyCsrfToken();
 
         $id = (int)($_POST['id'] ?? 0);
         if ($id <= 0) { $this->error(400); }

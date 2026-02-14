@@ -13,26 +13,15 @@
                 <?php endif; ?>
 
                 <form method="POST">
-                    <input type="hidden"
-                           name="csrfToken"
-                           value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                    <?= csrf_field() ?>
 
-                    <div class="row mb-3">
-                        <div class="col">
-                            <input type="text"
-                                   name="prenom"
-                                   class="form-control"
-                                   placeholder="Prénom"
-                                   required>
-                        </div>
-
-                        <div class="col">
-                            <input type="text"
-                                   name="nom"
-                                   class="form-control"
-                                   placeholder="Nom"
-                                   required>
-                        </div>
+                    <!-- Pseudo unique -->
+                    <div class="mb-3">
+                        <input type="text"
+                               name="pseudo"
+                               class="form-control"
+                               placeholder="Pseudo"
+                               required>
                     </div>
 
                     <div class="mb-3">

@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
-set -e
-
+set -euo pipefail
 if [ -f .env ]; then
-  export $(grep -v '^#' .env | xargs)
+  set -a; source .env; set +a
 else
-  echo ".env manquant"
-  exit 1
+  echo ".env manquant"; exit 1
 fi
 
 echo "[DB] Load schema (inside db container)"

@@ -85,9 +85,7 @@
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <form method="POST" action="/logout" class="px-3">
-                                <input type="hidden"
-                                       name="csrfToken"
-                                       value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+                                <?= csrf_field() ?>
                                 <button type="submit"
                                         class="btn btn-link text-danger p-0">
                                     Déconnexion

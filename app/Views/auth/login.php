@@ -16,9 +16,7 @@
                 <?php endif; ?>
 
                 <form method="POST">
-                    <input type="hidden"
-                           name="csrfToken"
-                           value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                    <?= csrf_field() ?>
 
                     <div class="mb-3">
                         <input type="email"

@@ -44,6 +44,7 @@ class TrajetController extends Controller
             'limit'       => $limit,
             'title'       => 'Recherche de covoiturages',
             'scripts'     => ['/assets/js/trajets.js'],
+            'csrfToken' => csrf_token(),
         ]);
     }
 
@@ -119,7 +120,6 @@ class TrajetController extends Controller
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->verifyCsrfToken();
 
             $lieuDepart  = trim($_POST['lieu_depart'] ?? '');
             $lieuArrivee = trim($_POST['lieu_arrivee'] ?? '');
@@ -211,7 +211,6 @@ class TrajetController extends Controller
         }
 
         $this->requireAuth();
-        $this->verifyCsrfToken();
 
         $trajetId = (int)($_POST['trajet_id'] ?? 0);
         if ($trajetId <= 0) {
@@ -316,9 +315,6 @@ class TrajetController extends Controller
             http_response_code(405);
             exit;
         }
-
-        // CSRF obligatoire (action sensible côté app)
-        $this->verifyCsrfToken();
 
         $repo = new TrajetRepository();
 

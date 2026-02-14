@@ -20,7 +20,7 @@ WHERE NOT EXISTS (SELECT 1 FROM role WHERE libelle = 'administrateur');
 -- Admin
 INSERT INTO utilisateur (pseudo, email, mot_de_passe_hash, photo, est_suspendu, credits, role_id, created_at)
 SELECT 'admin','admin@ecoride.fr',
-  '$2y$10$djETK0325.uPYqFaEaBqru5/BvyECYXnZA0xmMIAkXIlBYUwHjrsi',
+  '$2y$10$gBOjTMa40zl82O.VVye1y.tWx1xJZusE7vUmmtgB/hN5p1npA7W7K',
   NULL,0,200,r.id,NOW()
 FROM role r
 WHERE r.libelle='administrateur'
@@ -29,7 +29,7 @@ WHERE r.libelle='administrateur'
 -- Employé
 INSERT INTO utilisateur (pseudo, email, mot_de_passe_hash, photo, est_suspendu, credits, role_id, created_at)
 SELECT 'employe','employe@ecoride.fr',
-  '$2y$10$sYXtxdkUIO1CUEvDa.dpnuBCyhs/46tmf2zm24uHX1Pa7q18cZiVS',
+  '$2y$10$FMXHLyLOWx9J9b7wTWuPUOplV7LZWodHNdGeV9svPYOaooZSHOeQy',
   NULL,0,20,r.id,NOW()
 FROM role r
 WHERE r.libelle='employe'
@@ -38,7 +38,7 @@ WHERE r.libelle='employe'
 -- Chauffeur (80 - 2 commission = 78)
 INSERT INTO utilisateur (pseudo, email, mot_de_passe_hash, photo, est_suspendu, credits, role_id, created_at)
 SELECT 'chauffeur','chauffeur@ecoride.fr',
-  '$2y$10$jbrZk0JSgi.t83jXer5x.OVo8wCGXbxTuLVojWQJxLhwfTh3jk6PG',
+  '$2y$10$snTA1hsyAbcbCtEIAgP5LeFIP9nLTfIF4Dlj7vdpXFWmVJ8b3dz0u',
   NULL,0,78,r.id,NOW()
 FROM role r
 WHERE r.libelle='utilisateur'
@@ -47,7 +47,7 @@ WHERE r.libelle='utilisateur'
 -- Passager (80 - 25 réservation = 55)
 INSERT INTO utilisateur (pseudo, email, mot_de_passe_hash, photo, est_suspendu, credits, role_id, created_at)
 SELECT 'passager','passager@ecoride.fr',
-  '$2y$10$l0fqoRMLFZUcrJpeTGSDreWuD5A.yc1xIPxADvDdP2Vjc6bBxQ4v6',
+  '$2y$10$CR2nmsjgvzPxvGM.1OcZluEIMu/FsTz6WGTGhYaQi5Jdv9XGRcUaG',
   NULL,0,55,r.id,NOW()
 FROM role r
 WHERE r.libelle='utilisateur'

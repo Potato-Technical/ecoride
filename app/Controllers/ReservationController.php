@@ -35,9 +35,6 @@ class ReservationController extends Controller
         // Accès réservé aux utilisateurs connectés
         $this->requireAuth();
 
-        // Protection CSRF : empêche l'appel de l'action depuis une source externe
-        $this->verifyCsrfToken();
-
         // Récupération et validation de l'identifiant du trajet
         $trajetId = isset($_POST['trajet_id']) ? (int) $_POST['trajet_id'] : 0;
 
@@ -115,9 +112,6 @@ class ReservationController extends Controller
             http_response_code(405);
             exit;
         }
-
-        $this->requireAuth();
-        $this->verifyCsrfToken();
 
         // 1) Récupération et validation
         $trajetId = isset($_POST['trajet_id']) ? (int) $_POST['trajet_id'] : 0;
@@ -255,9 +249,6 @@ class ReservationController extends Controller
 
         // Accès réservé aux utilisateurs connectés
         $this->requireAuth();
-
-        // Sécurité CSRF
-        $this->verifyCsrfToken();
 
         // Réponse JSON
         header('Content-Type: application/json');

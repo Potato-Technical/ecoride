@@ -31,8 +31,10 @@ ini_set('display_errors', $debug ? '1' : '0');
 ini_set('display_startup_errors', $debug ? '1' : '0');
 error_reporting($debug ? E_ALL : 0);
 
-// Autoload Composer (REMPLACE TOUS LES require_once)
+// Autoload Composer
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../app/Helpers/csrf.php';
+require_once __DIR__ . '/../app/Helpers/flash.php';
 
 // Démarrage de l’application
 use App\Core\Router; // Import du routeur principal de l’application

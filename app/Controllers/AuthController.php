@@ -26,37 +26,48 @@ class AuthController extends Controller
         // Traitement du formulaire de connexion
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-            // Vérification CSRF obligatoire avant tout traitement métier
-            // Empêche l'envoi du formulaire depuis une source externe non autorisée
-            $this->verifyCsrfToken();
+            // Normalisation des entrées : évite les espaces parasites et les index manquants
+            $email = trim($_POST['email'] ?? '');
+            $pwd   = $_POST['password'] ?? '';
 
             // Accès à la table utilisateur via le repository
             $repo = new UserRepository();
-            $user = $repo->findByEmail($_POST['email']);
+            $user = $repo->findByEmail($email);
 
             // Vérifie l'existence de l'utilisateur
             // et la correspondance du mot de passe avec le hash stocké
-            if (
-                $user &&
-                password_verify($_POST['password'], $user['mot_de_passe_hash'])
-            ) {
+            if ($user && password_verify($pwd, $user['mot_de_passe_hash'])) {
+
+                // Refuse la connexion si le compte est suspendu
+                if ((int)($user['est_suspendu'] ?? 0) === 1) {
+                    $this->render('auth/login', ['error' => 'Compte suspendu']);
+                    return;
+                }
+
                 // Sécurité : empêche la fixation de session après authentification
                 session_regenerate_id(true);
 
                 // Stocke l'identifiant utilisateur en session
-                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['user_id'] = (int)$user['id'];
+
+                // Stocke l'état de suspension en session (utile pour contrôles transverses)
+                $_SESSION['est_suspendu'] = (bool)($user['est_suspendu'] ?? false);
 
                 // Récupération du rôle associé à l'utilisateur
                 $roleRepo = new RoleRepository();
-                $role = $roleRepo->findById($user['role_id']);
+                $role = $roleRepo->findById((int)$user['role_id']);
 
-                // Stockage du rôle en session
-                $_SESSION['role'] = $role['libelle'];
+                // Stockage du rôle en session (fallback si rôle introuvable)
+                $_SESSION['role'] = $role['libelle'] ?? 'utilisateur';
 
                 // Redirection prioritaire vers la page demandée (si fournie)
-                if (!empty($_GET['redirect'])) {
-                    header('Location: ' . $_GET['redirect']);
-                    exit;
+                // Sécurisation : n'accepte qu'un chemin interne (évite URL externe / open redirect)
+                $redirect = $_GET['redirect'] ?? '';
+                if (is_string($redirect) && $redirect !== '' && str_starts_with($redirect, '/')) {
+                    if ($redirect !== '/logout' && $redirect !== '/login' && $redirect !== '/register') {
+                        header('Location: ' . $redirect);
+                        exit;
+                    }
                 }
 
                 // Redirection spécifique selon le rôle
@@ -71,9 +82,7 @@ class AuthController extends Controller
             }
 
             // Échec d'authentification : affichage du formulaire avec message d'erreur
-            $this->render('auth/login', [
-                'error' => 'Identifiants invalides'
-            ]);
+            $this->render('auth/login', ['error' => 'Identifiants invalides']);
             return;
         }
 
@@ -84,7 +93,7 @@ class AuthController extends Controller
     /**
      * Inscription d’un nouvel utilisateur.
      *
-     * US : Inscription utilisateur
+     * US 7: Inscription utilisateur
      */
     public function register(): void
     {
@@ -97,20 +106,15 @@ class AuthController extends Controller
         // Traitement du formulaire
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-            // Protection CSRF obligatoire
-            $this->verifyCsrfToken();
-
             // Récupération et nettoyage des champs
-            $prenom  = trim($_POST['prenom'] ?? '');
-            $nom     = trim($_POST['nom'] ?? '');
+            $pseudo  = trim($_POST['pseudo'] ?? '');
             $email   = trim($_POST['email'] ?? '');
             $pwd     = $_POST['password'] ?? '';
             $pwdConf = $_POST['password_confirm'] ?? '';
 
             // Validation minimale serveur
             if (
-                $prenom === '' ||
-                $nom === '' ||
+                $pseudo === '' ||
                 $email === '' ||
                 $pwd === '' ||
                 $pwd !== $pwdConf
@@ -123,6 +127,14 @@ class AuthController extends Controller
 
             // Accès aux utilisateurs
             $userRepo = new UserRepository();
+
+            // Vérifie l'unicité du pseudo
+            if ($userRepo->findByPseudo($pseudo)) {
+                $this->render('auth/register', [
+                    'error' => 'Pseudo déjà utilisé',
+                ]);
+                return;
+            }
 
             // Vérifie l'unicité de l'email
             if ($userRepo->findByEmail($email)) {
@@ -141,16 +153,6 @@ class AuthController extends Controller
                 $this->error(500);
             }
 
-            // Génération automatique d'un pseudo unique
-            $pseudoBase = strtolower($prenom . '.' . $nom);
-            $pseudo = $pseudoBase;
-            $i = 1;
-
-            while ($userRepo->findByPseudo($pseudo)) {
-                $pseudo = $pseudoBase . $i;
-                $i++;
-            }
-
             $pdo = Database::getInstance();
 
             try {
@@ -164,6 +166,7 @@ class AuthController extends Controller
                     'role_id'           => $role['id'],
                 ]);
 
+                // Crédit initial : 20 (DEFAULT / seed attendu)
                 $creditRepo = new CreditMouvementRepository();
                 $creditRepo->add($userId, 'creation_compte', 20);
 
@@ -198,9 +201,6 @@ class AuthController extends Controller
             header('Location: /');
             exit;
         }
-
-        // CSRF
-        $this->verifyCsrfToken();
 
         // Nettoyage session
         $_SESSION = [];

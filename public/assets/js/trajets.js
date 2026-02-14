@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const form = document.querySelector('#trajets-search-form');
   if (!form) return;
+
   const container = document.querySelector('.trajets-results');
 
   // Offset = nombre déjà affiché côté serveur (injecté via data-*)
@@ -34,10 +35,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const csrfEl = document.getElementById('csrf-token');
       const csrfToken = csrfEl ? csrfEl.value : '';
-      formData.append('csrfToken', csrfToken);
 
       const res = await fetch('/trajets/load-more', {
         method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': csrfToken
+        },
         body: formData
       });
 
@@ -58,10 +61,18 @@ document.addEventListener('DOMContentLoaded', () => {
           <article class="trajet-card card shadow-sm mb-4">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-start mb-2">
-                <div><strong>${escapeHtml(trajet.lieu_depart)}</strong> → <strong>${escapeHtml(trajet.lieu_arrivee)}</strong></div>
-                <div class="trajet-price fw-semibold">${Number(trajet.prix).toFixed(2).replace('.', ',')} crédits</div>
+                <div>
+                  <strong>${escapeHtml(trajet.lieu_depart)}</strong> →
+                  <strong>${escapeHtml(trajet.lieu_arrivee)}</strong>
+                </div>
+                <div class="trajet-price fw-semibold">
+                  ${Number(trajet.prix).toFixed(2).replace('.', ',')} crédits
+                </div>
               </div>
-              <a href="/trajet?id=${parseInt(trajet.id, 10)}" class="btn btn-outline-success w-100">Voir le détail</a>
+              <a href="/trajet?id=${parseInt(trajet.id, 10)}"
+                 class="btn btn-outline-success w-100">
+                Voir le détail
+              </a>
             </div>
           </article>
         `);
