@@ -17,7 +17,7 @@
             <ul class="navbar-nav ms-auto gap-lg-3">
 
                 <li class="nav-item">
-                    <a href="/trajets" class="nav-link">Trajets</a>
+                    <a href="/trajets" class="nav-link">Covoiturages</a>
                 </li>
 
                 <li class="nav-item">

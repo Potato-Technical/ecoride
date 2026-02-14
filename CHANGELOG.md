@@ -3,6 +3,26 @@
 Tous les changements notables de ce projet sont documentés ici.  
 Ce projet suit le versioning sémantique (SemVer).
 
+---
+
+## [0.3.2] – 2026-02-14
+
+### Changed
+- Routes paramétrées sécurisées avec contraintes regex (`/trajets/{id:\d+}`)
+- Alignement REST progressif (suppression de la dépendance principale au query `?id=`)
+- Validation stricte des identifiants via `FILTER_VALIDATE_INT` dans `TrajetController::show()`
+
+### Fixed
+- Risque de collision entre routes statiques et paramétrées
+- Gestion HTTP 405 confirmée pour méthodes non autorisées
+
+### Technical
+- Extension du routeur : support des contraintes regex dans les paramètres
+- Script `db_reset.sh` robuste (`set -euo pipefail`, application automatique schema + seed)
+- Reset base déterministe via Docker
+
+---
+
 ## [0.3.1] – 2026-02-02
 
 ### Added
@@ -16,6 +36,7 @@ Ce projet suit le versioning sémantique (SemVer).
 - Flux réservation : débit crédits et décrément des places exécutés dans une transaction
 - Annulation de réservation : remboursement crédits et réincrémentation des places dans une transaction
 
+---
 
 ## [0.3.0] – 2026-02-02
 
@@ -40,6 +61,7 @@ Ce projet suit le versioning sémantique (SemVer).
 - Réservation : blocage de l’auto-réservation (chauffeur ≠ passager)
 - Sécurisation de la transaction de confirmation (rollback conditionnel)
 
+---
 
 ## [0.2.1] – 2026-01-27
 
@@ -77,6 +99,7 @@ Ce projet suit le versioning sémantique (SemVer).
 - Suppression des actions destructrices en GET
 - Protection anti double-clic client et serveur
 
+---
 
 ## [0.2.0] – 2026-01-03
 
@@ -95,6 +118,7 @@ Ce projet suit le versioning sémantique (SemVer).
 - Renforcement ownership
 - Suppression actions destructrices en GET
 
+---
 
 ## [0.1.0] – 2026-01-02
 

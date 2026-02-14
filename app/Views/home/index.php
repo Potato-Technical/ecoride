@@ -8,46 +8,55 @@
         </p>
 
         <!-- BARRE DE RECHERCHE (UI ONLY) -->
-        <div class="card shadow-sm p-3 mb-5 home-search-card">
+        <form class="card shadow-sm p-3 mb-5 home-search-card"
+            method="GET"
+            action="/trajets">
             <div class="row g-2 align-items-center">
 
                 <div class="col-12 col-md">
                     <input
                         type="text"
                         class="form-control"
-                        placeholder="Lieu de départ">
+                        name="depart"
+                        placeholder="Lieu de départ"
+                        value="<?= htmlspecialchars($_GET['depart'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                 </div>
 
                 <div class="col-12 col-md">
                     <input
                         type="text"
                         class="form-control"
-                        placeholder="Destination">
+                        name="arrivee"
+                        placeholder="Destination"
+                        value="<?= htmlspecialchars($_GET['arrivee'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                 </div>
 
                 <div class="col-6 col-md">
                     <input
                         type="date"
-                        class="form-control">
+                        class="form-control"
+                        name="date"
+                        value="<?= htmlspecialchars($_GET['date'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                 </div>
 
                 <div class="col-6 col-md">
                     <input
                         type="number"
                         class="form-control"
+                        name="passagers"
                         placeholder="Passagers"
-                        min="1">
+                        min="1"
+                        value="<?= htmlspecialchars($_GET['passagers'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                 </div>
 
                 <div class="col-12 col-md-auto">
-                    <a href="/trajets"
-                       class="btn btn-success px-4">
-                        Voir les trajets
-                    </a>
+                    <button type="submit" class="btn btn-success px-4 w-100">
+                        Rechercher
+                    </button>
                 </div>
 
             </div>
-        </div>
+        </form>
 
     </div>
 </section>
