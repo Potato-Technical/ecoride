@@ -51,13 +51,14 @@ class TrajetController extends Controller
      * Détail d’un trajet.
      *
      * US 5 : Consulter le détail d’un covoiturage
-     * L’identifiant du trajet est récupéré via l’URL (?id=).
+     * L’identifiant du trajet est récupéré via l’URL (/trajets/{id}) ou en legacy (?id=).
      */
     public function show(): void
     {
-        $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+        $rawId = $_SERVER['_route_params']['id'] ?? ($_GET['id'] ?? null);
+        $id = filter_var($rawId, FILTER_VALIDATE_INT);
 
-        if ($id <= 0) {
+        if ($id === false || $id <= 0) {
             http_response_code(400);
             $this->render('errors/400', ['title' => 'Requête invalide']);
             return;
