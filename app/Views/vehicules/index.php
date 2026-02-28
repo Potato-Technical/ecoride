@@ -26,7 +26,8 @@
                     <div class="text-muted small">
                         <?= htmlspecialchars($v['immatriculation'], ENT_QUOTES, 'UTF-8') ?>
                         · <?= htmlspecialchars($v['energie'], ENT_QUOTES, 'UTF-8') ?>
-                        · <?= htmlspecialchars($v['date_premiere_immatriculation'], ENT_QUOTES, 'UTF-8') ?>
+                        · <?= htmlspecialchars($v['date_premiere_immatriculation'] ?? '', ENT_QUOTES, 'UTF-8')
+ ?>
                     </div>
                 </div>
 

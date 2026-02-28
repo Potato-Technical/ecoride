@@ -70,7 +70,7 @@ class ReservationController extends Controller
         }
 
         // Plus de place
-        if ((int) $trajet['nb_places'] <= 0) {
+        if ((int) $trajet['places_restantes'] <= 0) {
             http_response_code(400);
             $this->render('errors/400', ['title' => 'Plus de place disponible']);
             return;

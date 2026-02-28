@@ -9,7 +9,7 @@ return [
     // PUBLIC
     ['GET',  '/',                 ['HomeController', 'index']],
     ['GET',  '/a-propos',         ['HomeController', 'about']],
-    ['GET',  '/contact',          ['HomeController', 'contact']],
+    ['GET', '/contact',           ['ContactController', 'index']],
     ['GET',  '/mentions-legales', ['HomeController', 'legalMentions']],
     ['GET',  '/cgu',              ['HomeController', 'cgu']],
     ['GET',  '/accessibilite',    ['HomeController', 'accessibilite']],

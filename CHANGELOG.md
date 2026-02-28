@@ -5,6 +5,24 @@ Ce projet suit le versioning sémantique (SemVer).
 
 ---
 
+## [0.3.3] – 2026-02-14
+
+### Changed
+- Refactorisation complète de la protection CSRF vers un middleware unique (`CsrfMiddleware`)
+- Suppression de `verifyCsrfToken()` dans les contrôleurs
+- Stabilisation de `AuthMiddleware` (responsabilité clarifiée, flux homogénéisé)
+- Nettoyage de `public/index.php` (bootstrap allégé, suppression de logique transverse)
+- Ajustement structurel des navbars (cohérence rôle / état authentifié)
+- Ajustements des requêtes AJAX liées aux trajets (uniformisation endpoints et gestion erreurs)
+
+### Technical
+- Centralisation des préoccupations sécurité dans la couche middleware
+- Réduction du couplage contrôleurs ↔ sécurité
+- Refonte des scripts base de données (structure clarifiée, exécution déterministe)
+- Simplification du point d’entrée HTTP
+
+---
+
 ## [0.3.2] – 2026-02-14
 
 ### Changed

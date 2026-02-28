@@ -71,8 +71,8 @@ class TrajetRepository
 
         $stmt = $pdo->prepare(
             'UPDATE trajet
-            SET nb_places = nb_places - 1
-            WHERE id = :id AND nb_places > 0'
+            SET places_restantes = places_restantes - 1
+            WHERE id = :id AND places_restantes > 0'
         );
 
         $stmt->execute(['id' => $trajetId]);
@@ -88,18 +88,18 @@ class TrajetRepository
         $pdo = Database::getInstance();
 
         $stmt = $pdo->prepare(
-            '
-            INSERT INTO trajet (
+            'INSERT INTO trajet (
                 lieu_depart, lieu_arrivee, date_heure_depart,
-                prix, nb_places, statut,
+                prix, nb_places, places_restantes, statut,
                 chauffeur_id, vehicule_id
             ) VALUES (
                 :lieu_depart, :lieu_arrivee, :date_heure_depart,
-                :prix, :nb_places, "planifie",
+                :prix, :nb_places, :places_restantes, "planifie",
                 :chauffeur_id, :vehicule_id
-            )
-            '
+            )'
         );
+var_dump($data);
+exit;
 
         $stmt->execute([
             'lieu_depart'       => $data['lieu_depart'],
@@ -107,6 +107,7 @@ class TrajetRepository
             'date_heure_depart' => $data['date_heure_depart'],
             'prix'              => $data['prix'],
             'nb_places'         => $data['nb_places'],
+            'places_restantes'  => $data['nb_places'], // point clé
             'chauffeur_id'      => $data['chauffeur_id'],
             'vehicule_id'       => $data['vehicule_id'],
         ]);
@@ -133,21 +134,21 @@ class TrajetRepository
             FROM trajet t
             JOIN utilisateur u ON u.id = t.chauffeur_id
             JOIN vehicule v ON v.id = t.vehicule_id
-            WHERE t.nb_places > 0
-              AND t.statut = 'planifie'
+            WHERE t.places_restantes > 0
+            AND t.statut = 'planifie'
         ";
 
         $params = [];
 
         // Filtres exacts (à adapter plus tard en LIKE si tu veux)
         if (($filters['depart'] ?? '') !== '') {
-            $sql .= " AND t.lieu_depart = :depart";
-            $params['depart'] = $filters['depart'];
+            $sql .= " AND t.lieu_depart LIKE :depart";
+            $params['depart'] = '%' . $filters['depart'] . '%';
         }
 
         if (($filters['arrivee'] ?? '') !== '') {
-            $sql .= " AND t.lieu_arrivee = :arrivee";
-            $params['arrivee'] = $filters['arrivee'];
+            $sql .= " AND t.lieu_arrivee LIKE :arrivee";
+            $params['arrivee'] = '%' . $filters['arrivee'] . '%';
         }
 
         if (($filters['date'] ?? '') !== '') {
@@ -259,14 +260,12 @@ class TrajetRepository
      */
     public function incrementPlaces(int $trajetId, int $nb): void
     {
-        if ($nb <= 0) {
-            return;
-        }
+        if ($nb <= 0) return;
 
         $pdo = Database::getInstance();
         $stmt = $pdo->prepare(
             'UPDATE trajet
-            SET nb_places = nb_places + :nb
+            SET places_restantes = places_restantes + :nb
             WHERE id = :id'
         );
         $stmt->execute(['nb' => $nb, 'id' => $trajetId]);

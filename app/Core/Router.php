@@ -59,7 +59,8 @@ class Router
             });
         } catch (\Throwable $e) {
             // En Socle 0 on ne log pas encore finement, on rend 500 propre.
-            (new ErrorController())->serverError();
+            var_dump($e->getMessage());
+    exit;
         }
     }
 

@@ -24,7 +24,7 @@
             </li>
             <li class="mb-2">
                 <strong>Places restantes :</strong>
-                <?= (int) $trajet['nb_places'] ?>
+                <?= (int)($trajet['places_restantes'] ?? 0) ?>
             </li>
             <li>
                 <strong>Statut :</strong>
@@ -55,7 +55,7 @@
                     Déjà réservé
                 </button>
 
-            <?php elseif ((int) $trajet['nb_places'] <= 0): ?>
+            <?php elseif ((int)($trajet['places_restantes'] ?? 0) <= 0): ?>
 
                 <button class="btn btn-secondary" disabled>
                     Trajet complet

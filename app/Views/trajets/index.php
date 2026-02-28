@@ -155,8 +155,13 @@
                                 <?= date('d/m/Y', strtotime($trajet['date_heure_depart'])) ?>
                             </div>
 
+                            <!-- Places restantes (affichage minimal) -->
+                            <div class="text-muted small">
+                                Places restantes : <?= (int)($trajet['places_restantes'] ?? 0) ?>
+                            </div>
+
                             <a href="/trajet?id=<?= (int) $trajet['id'] ?>"
-                               class="btn btn-outline-success w-100">
+                            class="btn btn-outline-success w-100">
                                 Voir le détail
                             </a>
 
