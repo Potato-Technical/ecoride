@@ -43,9 +43,7 @@
                             <form method="POST"
                                   action="/trajets/annuler"
                                   class="d-inline ms-2">
-                                <input type="hidden"
-                                       name="csrfToken"
-                                       value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                                <?= csrf_field() ?>
                                 <input type="hidden"
                                        name="trajet_id"
                                        value="<?= (int)$t['id'] ?>">

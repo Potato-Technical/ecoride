@@ -48,6 +48,7 @@ class TrajetRepository
                 date_heure_depart,
                 prix,
                 nb_places,
+                places_restantes,
                 statut
             FROM trajet
             WHERE chauffeur_id = :uid
@@ -83,7 +84,7 @@ class TrajetRepository
     /**
      * Crée un trajet.
      */
-    public function create(array $data): void
+    public function create(array $data): int
     {
         $pdo = Database::getInstance();
 
@@ -98,8 +99,6 @@ class TrajetRepository
                 :chauffeur_id, :vehicule_id
             )'
         );
-var_dump($data);
-exit;
 
         $stmt->execute([
             'lieu_depart'       => $data['lieu_depart'],
@@ -107,10 +106,12 @@ exit;
             'date_heure_depart' => $data['date_heure_depart'],
             'prix'              => $data['prix'],
             'nb_places'         => $data['nb_places'],
-            'places_restantes'  => $data['nb_places'], // point clé
+            'places_restantes'  => $data['nb_places'],
             'chauffeur_id'      => $data['chauffeur_id'],
             'vehicule_id'       => $data['vehicule_id'],
         ]);
+
+        return (int)$pdo->lastInsertId();
     }
 
     /**
@@ -140,7 +141,6 @@ exit;
 
         $params = [];
 
-        // Filtres exacts (à adapter plus tard en LIKE si tu veux)
         if (($filters['depart'] ?? '') !== '') {
             $sql .= " AND t.lieu_depart LIKE :depart";
             $params['depart'] = '%' . $filters['depart'] . '%';
@@ -181,9 +181,16 @@ exit;
 
         $stmt = $pdo->prepare($sql);
 
-        // Bind paramètres dynamiques
+        // Bind paramètres dynamiques (typage explicite + normalisation du nom)
         foreach ($params as $k => $v) {
-            $stmt->bindValue(':' . $k, $v);
+            $key  = ltrim((string) $k, ':');
+            $name = ':' . $key;
+
+            if ($key === 'prix_max') {
+                $stmt->bindValue($name, (int) $v, PDO::PARAM_INT);
+            } else {
+                $stmt->bindValue($name, (string) $v, PDO::PARAM_STR);
+            }
         }
 
         // Bind LIMIT/OFFSET en int (obligatoire)

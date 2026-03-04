@@ -2,7 +2,7 @@
     <h1 class="h4 mb-3">Ajouter un véhicule</h1>
 
     <form method="POST" action="/vehicules/store" class="d-grid gap-3">
-        <input type="hidden" name="csrfToken" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
+        <?= csrf_field() ?>
 
         <div>
             <label class="form-label">Immatriculation</label>
@@ -32,21 +32,20 @@
         <div>
             <label class="form-label">Énergie</label>
             <select class="form-select" name="energie" required>
-                <option value="">-- Choisir --</option>
-                <option value="essence">Essence</option>
-                <option value="diesel">Diesel</option>
-                <option value="hybride">Hybride</option>
-                <option value="electrique">Électrique</option>
+            <option value="">-- Choisir --</option>
+            <option value="thermique">Thermique</option>
+            <option value="hybride">Hybride</option>
+            <option value="electrique">Électrique</option>
             </select>
-        </div>
+        <div>
 
         <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="fumeur_accepte" id="fumeur">
+            <input class="form-check-input" type="checkbox" name="fumeur" id="fumeur">
             <label class="form-check-label" for="fumeur">Fumeur accepté</label>
         </div>
 
         <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="animaux_acceptes" id="animaux">
+            <input class="form-check-input" type="checkbox" name="animaux" id="animaux">
             <label class="form-check-label" for="animaux">Animaux acceptés</label>
         </div>
 

@@ -81,8 +81,8 @@ class VehiculeController extends Controller
         $modele          = trim($_POST['modele'] ?? '');
         $couleur         = trim($_POST['couleur'] ?? '');
         $energie         = trim($_POST['energie'] ?? '');
-        $fumeur          = isset($_POST['fumeur_accepte']) ? 1 : 0;
-        $animaux         = isset($_POST['animaux_acceptes']) ? 1 : 0;
+        $fumeur          = isset($_POST['fumeur']) ? 1 : 0;
+        $animaux         = isset($_POST['animaux']) ? 1 : 0;
 
         /**
          * Validation minimale serveur
@@ -109,8 +109,8 @@ class VehiculeController extends Controller
             'marque'                        => $marque,
             'couleur'                       => $couleur,
             'energie'                       => $energie,
-            'fumeur_accepte'                => $fumeur,
-            'animaux_acceptes'              => $animaux,
+            'fumeur'                        => $fumeur,
+            'animaux'                      => $animaux,
             'utilisateur_id'                => (int)$_SESSION['user_id'],
         ]);
 
@@ -191,8 +191,8 @@ class VehiculeController extends Controller
             'modele'                        => trim($_POST['modele'] ?? ''),
             'couleur'                       => trim($_POST['couleur'] ?? ''),
             'energie'                       => trim($_POST['energie'] ?? ''),
-            'fumeur_accepte'                => !empty($_POST['fumeur_accepte']) ? 1 : 0,
-            'animaux_acceptes'              => !empty($_POST['animaux_acceptes']) ? 1 : 0,
+            'fumeur'                        => !empty($_POST['fumeur']) ? 1 : 0,
+            'animaux'                      => !empty($_POST['animaux']) ? 1 : 0,
             'preferences_libres'            => trim($_POST['preferences_libres'] ?? ''),
         ];
 

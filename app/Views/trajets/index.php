@@ -5,7 +5,6 @@
  * Données disponibles :
  * - $trajets (array)  : résultats SQL
  * - $filters (array)  : filtres issus de l’URL (GET)
- * - $csrfToken (string) : token CSRF pour AJAX
  * - $limit (int)      : nombre d’éléments chargés initialement
  */
 ?>
@@ -61,7 +60,41 @@
             <!-- DESKTOP -->
             <aside class="d-none d-md-block col-md-3">
 
-                <h6>Trier par</h6>
+                <input type="text"
+                       name="depart"
+                       class="form-control mb-2"
+                       placeholder="Départ"
+                       value="<?= htmlspecialchars($filters['depart'] ?? '') ?>">
+
+                <input type="text"
+                       name="arrivee"
+                       class="form-control mb-2"
+                       placeholder="Arrivée"
+                       value="<?= htmlspecialchars($filters['arrivee'] ?? '') ?>">
+
+                <input type="date"
+                       name="date"
+                       class="form-control mb-2"
+                       value="<?= htmlspecialchars($filters['date'] ?? '') ?>">
+
+                <input type="number"
+                       name="prix_max"
+                       class="form-control mb-2"
+                       placeholder="Prix max"
+                       value="<?= htmlspecialchars($filters['prix_max'] ?? '') ?>">
+
+                <div class="form-check mb-2">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           name="eco"
+                           id="eco-desktop"
+                           <?= !empty($filters['eco']) ? 'checked' : '' ?>>
+                    <label class="form-check-label" for="eco-desktop">
+                        Voyage écologique
+                    </label>
+                </div>
+
+                <h6 class="mt-3">Trier par</h6>
 
                 <div class="form-check">
                     <input class="form-check-input"
@@ -102,7 +135,6 @@
             <div class="filters-header d-flex justify-content-between align-items-center mb-3">
                 <h2 class="h6 mb-0">Trier par</h2>
 
-                <!-- Toggle mobile -->
                 <button type="button"
                         class="btn btn-sm btn-outline-secondary d-lg-none"
                         data-toggle-filters>
@@ -135,7 +167,6 @@
 
                         <div class="card-body">
 
-                            <!-- Ligne lieux + prix -->
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <div>
                                     <strong><?= htmlspecialchars($trajet['lieu_depart']) ?></strong>
@@ -148,20 +179,18 @@
                                 </div>
                             </div>
 
-                            <!-- Date / heure -->
                             <div class="text-muted mb-3">
                                 <?= date('H:i', strtotime($trajet['date_heure_depart'])) ?>
                                 •
                                 <?= date('d/m/Y', strtotime($trajet['date_heure_depart'])) ?>
                             </div>
 
-                            <!-- Places restantes (affichage minimal) -->
                             <div class="text-muted small">
                                 Places restantes : <?= (int)($trajet['places_restantes'] ?? 0) ?>
                             </div>
 
                             <a href="/trajet?id=<?= (int) $trajet['id'] ?>"
-                            class="btn btn-outline-success w-100">
+                               class="btn btn-outline-success w-100">
                                 Voir le détail
                             </a>
 
@@ -170,7 +199,6 @@
 
                 <?php endforeach; ?>
 
-                <!-- LOAD MORE -->
                 <div class="text-center mt-4">
                     <button class="btn btn-success px-4 load-more-btn"
                             data-offset="<?= count($trajets) ?>"
@@ -180,9 +208,6 @@
                 </div>
 
             <?php endif; ?>
-
-            <!-- CSRF pour AJAX (hors form GET pour ne pas finir dans l'URL) -->
-            <input type="hidden" id="csrf-token" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
 
         </section>
     </div>

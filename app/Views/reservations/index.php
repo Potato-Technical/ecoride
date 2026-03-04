@@ -1,5 +1,4 @@
 <h1 class="mb-4">Mes réservations</h1>
-
 <?php if (empty($reservations)): ?>
 
     <div class="alert alert-info">
@@ -48,9 +47,7 @@
                                       action="/reservations/annuler"
                                       class="d-grid js-cancel-form">
 
-                                    <input type="hidden"
-                                           name="csrfToken"
-                                           value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+                                    <?= csrf_field() ?>
 
                                     <input type="hidden"
                                            name="id"
@@ -68,9 +65,7 @@
                                       action="/trajets/reserver/confirm"
                                       class="d-grid js-reserve-form">
 
-                                    <input type="hidden"
-                                           name="csrfToken"
-                                           value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+                                    <?= csrf_field() ?>
 
                                     <input type="hidden"
                                            name="trajet_id"

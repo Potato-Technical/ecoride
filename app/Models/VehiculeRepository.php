@@ -59,8 +59,8 @@ class VehiculeRepository
                 marque,
                 couleur,
                 energie,
-                fumeur_accepte,
-                animaux_acceptes,
+                fumeur,
+                animaux,
                 utilisateur_id
             ) VALUES (
                 :immatriculation,
@@ -69,8 +69,8 @@ class VehiculeRepository
                 :marque,
                 :couleur,
                 :energie,
-                :fumeur_accepte,
-                :animaux_acceptes,
+                :fumeur,
+                :animaux,
                 :utilisateur_id
             )
         ");
@@ -82,8 +82,8 @@ class VehiculeRepository
             'marque'                        => $data['marque'],
             'couleur'                       => $data['couleur'],
             'energie'                       => $data['energie'],
-            'fumeur_accepte'                => (int)$data['fumeur_accepte'],
-            'animaux_acceptes'              => (int)$data['animaux_acceptes'],
+            'fumeur'                        => (int)$data['fumeur'],
+            'animaux'                      => (int)$data['animaux'],
             'utilisateur_id'                => (int)$data['utilisateur_id'],
         ]);
     }
@@ -101,14 +101,21 @@ class VehiculeRepository
     public function findAllByUserId(int $userId): array
     {
         $stmt = $this->pdo->prepare("
-            SELECT id, immatriculation, marque, modele, energie
+            SELECT 
+                id,
+                immatriculation,
+                marque,
+                modele,
+                energie,
+                date_premiere_immatriculation
             FROM vehicule
             WHERE utilisateur_id = :uid
             ORDER BY id ASC
         ");
+
         $stmt->execute(['uid' => $userId]);
 
-        return $stmt->fetchAll() ?: [];
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
     /**
@@ -183,8 +190,8 @@ class VehiculeRepository
                 modele = :modele,
                 couleur = :couleur,
                 energie = :energie,
-                fumeur_accepte = :fumeur_accepte,
-                animaux_acceptes = :animaux_acceptes,
+                fumeur = :fumeur,
+                animaux = :animaux,
                 preferences_libres = :preferences_libres
             WHERE id = :id AND utilisateur_id = :uid'
         );
@@ -198,8 +205,8 @@ class VehiculeRepository
             'modele'                        => $data['modele'],
             'couleur'                       => $data['couleur'],
             'energie'                       => $data['energie'],
-            'fumeur_accepte'                => (int)$data['fumeur_accepte'],
-            'animaux_acceptes'              => (int)$data['animaux_acceptes'],
+            'fumeur'                        => (int)$data['fumeur'],
+            'animaux'                      => (int)$data['animaux'],
             'preferences_libres'            => $prefs,
             'id'                            => $id,
             'uid'                           => $userId,

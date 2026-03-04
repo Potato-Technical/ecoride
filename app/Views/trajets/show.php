@@ -67,9 +67,7 @@
                       action="/trajets/reserver"
                       class="d-inline js-reserve-form">
 
-                    <input type="hidden"
-                           name="csrfToken"
-                           value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                    <?= csrf_field() ?>
 
                     <input type="hidden"
                            name="trajet_id"

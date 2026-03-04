@@ -1,5 +1,6 @@
 -- EcoRide - Données initiales (seed) — MPD final
 -- Script idempotent : relançable sans dérive (pas d'UPDATE métier)
+-- Source de vérité du solde : credit_mouvement (ledger). La colonne utilisateur.credits est ignorée.
 
 START TRANSACTION;
 
@@ -16,12 +17,12 @@ INSERT INTO role (libelle)
 SELECT 'administrateur'
 WHERE NOT EXISTS (SELECT 1 FROM role WHERE libelle = 'administrateur');
 
--- Comptes (solde officiel = utilisateur.credits)
+-- Comptes (credits = 0, solde réel via credit_mouvement)
 -- Admin
 INSERT INTO utilisateur (pseudo, email, mot_de_passe_hash, photo, est_suspendu, credits, role_id, created_at)
 SELECT 'admin','admin@ecoride.fr',
   '$2y$10$gBOjTMa40zl82O.VVye1y.tWx1xJZusE7vUmmtgB/hN5p1npA7W7K',
-  NULL,0,200,r.id,NOW()
+  NULL,0,0,r.id,NOW()
 FROM role r
 WHERE r.libelle='administrateur'
   AND NOT EXISTS (SELECT 1 FROM utilisateur WHERE email='admin@ecoride.fr');
@@ -30,37 +31,46 @@ WHERE r.libelle='administrateur'
 INSERT INTO utilisateur (pseudo, email, mot_de_passe_hash, photo, est_suspendu, credits, role_id, created_at)
 SELECT 'employe','employe@ecoride.fr',
   '$2y$10$FMXHLyLOWx9J9b7wTWuPUOplV7LZWodHNdGeV9svPYOaooZSHOeQy',
-  NULL,0,20,r.id,NOW()
+  NULL,0,0,r.id,NOW()
 FROM role r
 WHERE r.libelle='employe'
   AND NOT EXISTS (SELECT 1 FROM utilisateur WHERE email='employe@ecoride.fr');
 
--- Chauffeur (80 - 2 commission = 78)
+-- Chauffeur (solde via credit_initial 80 puis commission -2 => 78)
 INSERT INTO utilisateur (pseudo, email, mot_de_passe_hash, photo, est_suspendu, credits, role_id, created_at)
 SELECT 'chauffeur','chauffeur@ecoride.fr',
   '$2y$10$snTA1hsyAbcbCtEIAgP5LeFIP9nLTfIF4Dlj7vdpXFWmVJ8b3dz0u',
-  NULL,0,78,r.id,NOW()
+  NULL,0,0,r.id,NOW()
 FROM role r
 WHERE r.libelle='utilisateur'
   AND NOT EXISTS (SELECT 1 FROM utilisateur WHERE email='chauffeur@ecoride.fr');
 
--- Passager (80 - 25 réservation = 55)
+-- Passager (solde via credit_initial 80 puis réservation -25 => 55)
 INSERT INTO utilisateur (pseudo, email, mot_de_passe_hash, photo, est_suspendu, credits, role_id, created_at)
 SELECT 'passager','passager@ecoride.fr',
   '$2y$10$CR2nmsjgvzPxvGM.1OcZluEIMu/FsTz6WGTGhYaQi5Jdv9XGRcUaG',
-  NULL,0,55,r.id,NOW()
+  NULL,0,0,r.id,NOW()
 FROM role r
 WHERE r.libelle='utilisateur'
   AND NOT EXISTS (SELECT 1 FROM utilisateur WHERE email='passager@ecoride.fr');
 
--- Trace création compte (historique, pas solde)
+-- Crédit initial (source de vérité = credit_mouvement)
 INSERT INTO credit_mouvement (type, montant, utilisateur_id, participation_id, trajet_id, created_at)
-SELECT 'creation_compte', 20, u.id, NULL, NULL, NOW()
+SELECT
+  'credit_initial',
+  CASE u.email
+    WHEN 'admin@ecoride.fr'     THEN 200
+    WHEN 'employe@ecoride.fr'   THEN 20
+    WHEN 'chauffeur@ecoride.fr' THEN 80
+    WHEN 'passager@ecoride.fr'  THEN 80
+    ELSE 0
+  END,
+  u.id, NULL, NULL, NOW()
 FROM utilisateur u
 WHERE u.email IN ('admin@ecoride.fr','employe@ecoride.fr','chauffeur@ecoride.fr','passager@ecoride.fr')
   AND NOT EXISTS (
     SELECT 1 FROM credit_mouvement cm
-    WHERE cm.utilisateur_id=u.id AND cm.type='creation_compte'
+    WHERE cm.utilisateur_id=u.id AND cm.type='credit_initial'
   );
 
 -- Véhicules chauffeur
@@ -133,7 +143,7 @@ WHERE u.email='chauffeur@ecoride.fr'
       AND t.date_heure_depart='2026-03-02 09:00:00'
   );
 
--- Commission plateforme (US9) : trace (le débit est déjà reflété dans credits=78)
+-- Commission plateforme (US9) : mouvement réel (chauffeur -2)
 INSERT INTO credit_mouvement (type, montant, utilisateur_id, participation_id, trajet_id, created_at)
 SELECT
   'commission_plateforme', -2, uc.id, NULL, t.id, NOW()
@@ -147,7 +157,7 @@ WHERE uc.email='chauffeur@ecoride.fr'
     WHERE cm.type='commission_plateforme' AND cm.trajet_id=t.id AND cm.utilisateur_id=uc.id
   );
 
--- Participation confirmée (US6) : trace (places_restantes=2 et credits passager=55 déjà cohérents)
+-- Participation confirmée (US6)
 INSERT INTO participation (etat, confirme_le, credits_utilises, utilisateur_id, trajet_id, created_at)
 SELECT
   'confirme',
@@ -167,7 +177,7 @@ WHERE up.email='passager@ecoride.fr'
     WHERE p.utilisateur_id=up.id AND p.trajet_id=t.id
   );
 
--- Débit réservation (US6) : trace (le débit est déjà reflété dans credits=55)
+-- Débit réservation (US6) : mouvement réel (passager -25)
 INSERT INTO credit_mouvement (type, montant, utilisateur_id, participation_id, trajet_id, created_at)
 SELECT
   'debit_reservation',

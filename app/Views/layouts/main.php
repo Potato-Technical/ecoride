@@ -14,6 +14,7 @@
             <link rel="stylesheet" href="/assets/css/<?= htmlspecialchars($css, ENT_QUOTES, 'UTF-8') ?>">
         <?php endforeach; ?>
     <?php endif; ?>
+    <meta name="csrf-token" content="<?= htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 
 <body class="bg-light d-flex flex-column min-vh-100">

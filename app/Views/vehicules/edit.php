@@ -1,9 +1,7 @@
 <h1 class="h4 mb-3">Modifier un véhicule</h1>
 
 <form method="POST" action="/vehicules/update" class="d-grid gap-3">
-    <input type="hidden"
-           name="csrfToken"
-           value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
+    <?= csrf_field() ?>
 
     <input type="hidden"
            name="id"
@@ -69,23 +67,23 @@
     <div class="form-check">
         <input class="form-check-input"
                type="checkbox"
-               id="fumeur_accepte"
-               name="fumeur_accepte"
-               <?= !empty($vehicule['fumeur_accepte']) ? 'checked' : '' ?>>
-        <label class="form-check-label" for="fumeur_accepte">
+               id="fumeur"
+               name="fumeur"
+               <?= !empty($vehicule['fumeur']) ? 'checked' : '' ?>>
+        <label class="form-check-label" for="fumeur">
             Fumeur accepté
         </label>
     </div>
 
     <div class="form-check">
-        <input class="form-check-input"
-               type="checkbox"
-               id="animaux_acceptes"
-               name="animaux_acceptes"
-               <?= !empty($vehicule['animaux_acceptes']) ? 'checked' : '' ?>>
-        <label class="form-check-label" for="animaux_acceptes">
-            Animaux acceptés
-        </label>
+    <input class="form-check-input"
+            type="checkbox"
+            id="animaux"
+            name="animaux"
+            <?= !empty($vehicule['animaux']) ? 'checked' : '' ?>>
+    <label class="form-check-label" for="animaux">
+        Animaux acceptés
+    </label>
     </div>
 
     <div>

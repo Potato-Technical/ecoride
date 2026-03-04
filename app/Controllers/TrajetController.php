@@ -44,7 +44,6 @@ class TrajetController extends Controller
             'limit'       => $limit,
             'title'       => 'Recherche de covoiturages',
             'scripts'     => ['/assets/js/trajets.js'],
-            'csrfToken' => csrf_token(),
         ]);
     }
 
@@ -99,6 +98,7 @@ class TrajetController extends Controller
      * - Normalisation de la date (datetime-local)
      *
      * US 4 : Proposer un covoiturage
+     * US 9 : Commission plateforme (-2) à la création, tracée sur credit_mouvement.trajet_id
      */
     public function create(): void
     {
@@ -107,7 +107,7 @@ class TrajetController extends Controller
             http_response_code(405);
             exit;
         }
-        
+
         $this->requireAuth();
 
         $vehRepo = new VehiculeRepository();
@@ -157,20 +157,46 @@ class TrajetController extends Controller
             }
 
             $repo = new TrajetRepository();
+            $creditRepo = new CreditMouvementRepository();
+            $pdo = Database::getInstance();
 
-            $repo->create([
-                'lieu_depart'       => $lieuDepart,
-                'lieu_arrivee'      => $lieuArrivee,
-                'date_heure_depart' => $dateDepart,
-                'prix'              => $prix,
-                'nb_places'         => $nbPlaces,
-                'chauffeur_id'      => $_SESSION['user_id'],
-                'vehicule_id'       => $vehiculeId,
-            ]);
+            try {
+                $pdo->beginTransaction();
 
-            $this->setFlash('success', 'Trajet créé avec succès');
-            header('Location: /trajets');
-            exit;
+                $trajetId = $repo->create([
+                    'lieu_depart'       => $lieuDepart,
+                    'lieu_arrivee'      => $lieuArrivee,
+                    'date_heure_depart' => $dateDepart,
+                    'prix'              => $prix,
+                    'nb_places'         => $nbPlaces,
+                    'chauffeur_id'      => (int)$_SESSION['user_id'],
+                    'vehicule_id'       => $vehiculeId,
+                ]);
+
+                // US9 : commission plateforme (-2) liée au trajet
+                // Nécessite CreditMouvementRepository::add(..., ?int $trajetId = null)
+                $creditRepo->add(
+                    (int)$_SESSION['user_id'],
+                    'commission_plateforme',
+                    -2,
+                    null,
+                    $trajetId
+                );
+
+                $pdo->commit();
+
+                $this->setFlash('success', 'Trajet créé avec succès');
+                header('Location: /trajets');
+                exit;
+
+            } catch (\Throwable $e) {
+                if ($pdo->inTransaction()) {
+                    $pdo->rollBack();
+                }
+                error_log('CREATE TRIP FAIL: ' . $e->getMessage());
+                $this->render('errors/500', ['title' => 'Erreur lors de la création']);
+                return;
+            }
         }
 
         $this->render('trajets/create', [

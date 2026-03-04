@@ -95,7 +95,7 @@ class ReservationController extends Controller
         $this->render('reservations/index', [
             'reservations' => $reservations,
             'title' => 'Mes réservations',
-            'scripts' => ['/assets/js/reservations.js'],
+            'scripts' => ['/assets/js/trajets.js?v=50'],
         ]);
     }
 
@@ -129,7 +129,7 @@ class ReservationController extends Controller
         if (
             !$trajet ||
             $trajet['statut'] !== 'planifie' ||
-            (int) $trajet['nb_places'] <= 0
+            (int) $trajet['places_restantes'] <= 0
         ) {
             $this->render('errors/403', ['title' => 'Trajet non réservable']);
             return;
@@ -158,7 +158,7 @@ class ReservationController extends Controller
                 header('Location: /trajet?id=' . $trajetId);
                 exit;
             }
-            
+
             $existing = $partRepo->findOne((int) $_SESSION['user_id'], $trajetId);
 
             if ($existing) {
@@ -207,6 +207,7 @@ class ReservationController extends Controller
             }
 
             // 4) Création normale
+            // IMPORTANT : create() insère déjà debit_reservation dans credit_mouvement
             $partRepo->create(
                 (int) $_SESSION['user_id'],
                 $trajetId,
@@ -236,52 +237,69 @@ class ReservationController extends Controller
 
     /**
      * Annule une réservation appartenant à l'utilisateur connecté.
-     *
-     * L'identifiant de la participation est récupéré via le POST (id).
      */
     public function cancel(): void
     {
-        // Action sensible : POST uniquement
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
             exit;
         }
 
-        // Accès réservé aux utilisateurs connectés
         $this->requireAuth();
 
-        // Réponse JSON
-        header('Content-Type: application/json');
-
-        // Récupération et validation de l'identifiant de la participation
         $participationId = isset($_POST['id']) ? (int) $_POST['id'] : 0;
 
+        $isAjax =
+            (isset($_SERVER['HTTP_ACCEPT']) && str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')) ||
+            (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest');
+
         if ($participationId <= 0) {
-            http_response_code(400);
-            echo json_encode([
-                'status'  => 'error',
-                'message' => 'Requête invalide'
-            ]);
+
+            if ($isAjax) {
+                header('Content-Type: application/json; charset=utf-8');
+                http_response_code(400);
+                echo json_encode([
+                    'status'  => 'error',
+                    'message' => 'Requête invalide'
+                ]);
+                exit;
+            }
+
+            $this->error(400);
             return;
         }
 
         $repo = new ParticipationRepository();
+        $ok = $repo->cancel($participationId, (int)$_SESSION['user_id']);
 
-        $ok = $repo->cancel($participationId, $_SESSION['user_id']);
-
-        // Échec métier de l’annulation
         if (!$ok) {
-            echo json_encode([
-                'status'  => 'error',
-                'message' => 'Annulation impossible'
-            ]);
-            return;
+
+            if ($isAjax) {
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode([
+                    'status'  => 'error',
+                    'message' => 'Annulation impossible'
+                ]);
+                exit;
+            }
+
+            $this->setFlash('error', 'Annulation impossible');
+            header('Location: /reservations');
+            exit;
         }
 
-        // Succès
-        echo json_encode([
-            'status'  => 'success',
-            'message' => 'Réservation annulée'
-        ]);
+        // SUCCESS
+        if ($isAjax) {
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode([
+                'status'  => 'success',
+                'message' => 'Réservation annulée'
+            ]);
+            exit;
+        }
+
+        $this->setFlash('success', 'Réservation annulée');
+        header('Location: /reservations');
+        exit;
     }
 }

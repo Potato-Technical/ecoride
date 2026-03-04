@@ -38,15 +38,14 @@ class ParticipationRepository
         ]);
         $participationId = (int) $pdo->lastInsertId();
 
-        $stmt = $pdo->prepare(
-            "INSERT INTO credit_mouvement (type, montant, utilisateur_id, participation_id)
-            VALUES ('debit_reservation', :montant, :uid, :pid)"
+        // Mouvement débit (source de vérité = ledger)
+        $creditRepo = new CreditMouvementRepository();
+        $creditRepo->add(
+            $userId,
+            'debit_reservation',
+            -abs($prix),
+            $participationId
         );
-        $stmt->execute([
-            'montant' => -abs($prix),
-            'uid'     => $userId,
-            'pid'     => $participationId,
-        ]);
     }
 
     /**
@@ -316,7 +315,7 @@ class ParticipationRepository
              */
             $stmt = $pdo->prepare(
                 'UPDATE trajet
-                SET nb_places = nb_places + 1
+                SET places_restantes = LEAST(nb_places, places_restantes + 1)
                 WHERE id = :tid'
             );
             $stmt->execute(['tid' => (int)$participation['trajet_id']]);
@@ -330,17 +329,13 @@ class ParticipationRepository
              * 6) Mouvement de remboursement
              *    → montant positif (historique financier)
              */
-            $stmt = $pdo->prepare(
-                "INSERT INTO credit_mouvement
-                    (type, montant, utilisateur_id, participation_id)
-                VALUES
-                    ('remboursement', :montant, :uid, :pid)"
+            $creditRepo = new CreditMouvementRepository();
+            $creditRepo->add(
+                $userId,
+                'remboursement',
+                (int) $participation['credits_utilises'],
+                (int) $participation['id']
             );
-            $stmt->execute([
-                'montant' => (int) $participation['credits_utilises'],
-                'uid'     => $userId,
-                'pid'     => (int) $participation['id'],
-            ]);
 
             /**
              * 7) Validation définitive

@@ -29,7 +29,7 @@ CREATE TABLE utilisateur (
     mot_de_passe_hash VARCHAR(255) NOT NULL, -- hash du mot de passe
     photo VARCHAR(255), -- avatar optionnel
     est_suspendu BOOLEAN NOT NULL DEFAULT FALSE, -- désactivation logique du compte
-    credits INT NOT NULL DEFAULT 20, -- solde officiel (US7)
+    credits INT NOT NULL DEFAULT 0,
     role_id INT NOT NULL, -- rôle fonctionnel de l'utilisateur
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- date de création du compte
     updated_at DATETIME DEFAULT NULL, -- date de dernière modification du compte
@@ -177,6 +177,7 @@ CREATE TABLE credit_mouvement (
     trajet_id INT DEFAULT NULL, -- lien optionnel trajet (commission/stats)
 
     CHECK (type IN (
+        'credit_initial',
         'creation_compte',
         'debit_reservation',
         'credit_trajet',

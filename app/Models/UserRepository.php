@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models; // Namespace des repositories
+use App\Models\CreditMouvementRepository;
 
 use App\Core\Database; // Accès PDO
 use PDO;               // FETCH_ASSOC
@@ -90,12 +91,14 @@ class UserRepository
                 pseudo,
                 email,
                 mot_de_passe_hash,
-                role_id
+                role_id,
+                credits
             ) VALUES (
                 :pseudo,
                 :email,
                 :mot_de_passe_hash,
-                :role_id
+                :role_id,
+                0
             )'
         );
 
@@ -103,9 +106,9 @@ class UserRepository
             'pseudo'            => $data['pseudo'],
             'email'             => $data['email'],
             'mot_de_passe_hash' => $data['mot_de_passe_hash'],
-            'role_id'           => $data['role_id']
+            'role_id'           => $data['role_id'],
         ]);
 
-        return (int)$pdo->lastInsertId();
+        return (int) $pdo->lastInsertId();
     }
 }

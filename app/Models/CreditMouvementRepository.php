@@ -29,21 +29,24 @@ class CreditMouvementRepository
      * - Création de compte (crédit initial)
      * - Réservation de trajet (débit)
      * - Annulation / remboursement
+     * - Commission plateforme (liée à un trajet)
      *
      * @param int      $userId          Identifiant de l’utilisateur impacté
      * @param string   $type            Type de mouvement (creation_compte, debit_reservation, remboursement, etc.)
      * @param int      $montant         Montant du mouvement (positif ou négatif)
      * @param int|null $participationId Participation liée (optionnelle)
+     * @param int|null $trajetId        Trajet lié (optionnel)
      */
     public function add(
         int $userId,
         string $type,
         int $montant,
-        ?int $participationId = null
+        ?int $participationId = null,
+        ?int $trajetId = null
     ): void {
         $stmt = $this->pdo->prepare(
-            'INSERT INTO credit_mouvement (type, montant, utilisateur_id, participation_id)
-             VALUES (:type, :montant, :user_id, :participation_id)'
+            'INSERT INTO credit_mouvement (type, montant, utilisateur_id, participation_id, trajet_id, created_at)
+            VALUES (:type, :montant, :user_id, :participation_id, :trajet_id, NOW())'
         );
 
         $stmt->execute([
@@ -51,6 +54,7 @@ class CreditMouvementRepository
             'montant'          => $montant,
             'user_id'          => $userId,
             'participation_id' => $participationId,
+            'trajet_id'        => $trajetId,
         ]);
     }
 

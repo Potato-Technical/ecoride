@@ -149,8 +149,8 @@ class AuthController extends Controller
             $role = $roleRepo->findByLibelle('utilisateur');
 
             if (!$role) {
-                // Incohérence base → erreur serveur
                 $this->error(500);
+                return;
             }
 
             $pdo = Database::getInstance();
@@ -159,6 +159,7 @@ class AuthController extends Controller
                 $pdo->beginTransaction();
 
                 // Création du compte utilisateur
+                // IMPORTANT (option 1) : UserRepository::create() doit mettre credits = 0
                 $userId = $userRepo->create([
                     'pseudo'            => $pseudo,
                     'email'             => $email,
@@ -166,9 +167,10 @@ class AuthController extends Controller
                     'role_id'           => $role['id'],
                 ]);
 
-                // Crédit initial : 20 (DEFAULT / seed attendu)
+                // Crédit initial (source de vérité = credit_mouvement)
+                // IMPORTANT : CreditMouvementRepository::add() doit insérer created_at (NOW())
                 $creditRepo = new CreditMouvementRepository();
-                $creditRepo->add($userId, 'creation_compte', 20);
+                $creditRepo->add($userId, 'credit_initial', 20, null);
 
                 $pdo->commit();
 
@@ -181,6 +183,7 @@ class AuthController extends Controller
                     $pdo->rollBack();
                 }
                 $this->error(500);
+                return;
             }
         }
 
