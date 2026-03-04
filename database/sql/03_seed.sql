@@ -1,6 +1,6 @@
 -- EcoRide - Données initiales (seed) — MPD final
 -- Script idempotent : relançable sans dérive (pas d'UPDATE métier)
--- Source de vérité du solde : credit_mouvement (ledger). La colonne utilisateur.credits est ignorée.
+-- Source de vérité du solde : credit_mouvement (ledger). Pas de colonne de solde dans utilisateur.
 
 START TRANSACTION;
 
@@ -17,39 +17,39 @@ INSERT INTO role (libelle)
 SELECT 'administrateur'
 WHERE NOT EXISTS (SELECT 1 FROM role WHERE libelle = 'administrateur');
 
--- Comptes (credits = 0, solde réel via credit_mouvement)
+-- Comptes (solde via credit_mouvement)
 -- Admin
-INSERT INTO utilisateur (pseudo, email, mot_de_passe_hash, photo, est_suspendu, credits, role_id, created_at)
+INSERT INTO utilisateur (pseudo, email, mot_de_passe_hash, photo, est_suspendu, role_id, created_at)
 SELECT 'admin','admin@ecoride.fr',
   '$2y$10$gBOjTMa40zl82O.VVye1y.tWx1xJZusE7vUmmtgB/hN5p1npA7W7K',
-  NULL,0,0,r.id,NOW()
+  NULL,0,r.id,NOW()
 FROM role r
 WHERE r.libelle='administrateur'
   AND NOT EXISTS (SELECT 1 FROM utilisateur WHERE email='admin@ecoride.fr');
 
 -- Employé
-INSERT INTO utilisateur (pseudo, email, mot_de_passe_hash, photo, est_suspendu, credits, role_id, created_at)
+INSERT INTO utilisateur (pseudo, email, mot_de_passe_hash, photo, est_suspendu, role_id, created_at)
 SELECT 'employe','employe@ecoride.fr',
   '$2y$10$FMXHLyLOWx9J9b7wTWuPUOplV7LZWodHNdGeV9svPYOaooZSHOeQy',
-  NULL,0,0,r.id,NOW()
+  NULL,0,r.id,NOW()
 FROM role r
 WHERE r.libelle='employe'
   AND NOT EXISTS (SELECT 1 FROM utilisateur WHERE email='employe@ecoride.fr');
 
 -- Chauffeur (solde via credit_initial 80 puis commission -2 => 78)
-INSERT INTO utilisateur (pseudo, email, mot_de_passe_hash, photo, est_suspendu, credits, role_id, created_at)
+INSERT INTO utilisateur (pseudo, email, mot_de_passe_hash, photo, est_suspendu, role_id, created_at)
 SELECT 'chauffeur','chauffeur@ecoride.fr',
   '$2y$10$snTA1hsyAbcbCtEIAgP5LeFIP9nLTfIF4Dlj7vdpXFWmVJ8b3dz0u',
-  NULL,0,0,r.id,NOW()
+  NULL,0,r.id,NOW()
 FROM role r
 WHERE r.libelle='utilisateur'
   AND NOT EXISTS (SELECT 1 FROM utilisateur WHERE email='chauffeur@ecoride.fr');
 
 -- Passager (solde via credit_initial 80 puis réservation -25 => 55)
-INSERT INTO utilisateur (pseudo, email, mot_de_passe_hash, photo, est_suspendu, credits, role_id, created_at)
+INSERT INTO utilisateur (pseudo, email, mot_de_passe_hash, photo, est_suspendu, role_id, created_at)
 SELECT 'passager','passager@ecoride.fr',
   '$2y$10$CR2nmsjgvzPxvGM.1OcZluEIMu/FsTz6WGTGhYaQi5Jdv9XGRcUaG',
-  NULL,0,0,r.id,NOW()
+  NULL,0,r.id,NOW()
 FROM role r
 WHERE r.libelle='utilisateur'
   AND NOT EXISTS (SELECT 1 FROM utilisateur WHERE email='passager@ecoride.fr');

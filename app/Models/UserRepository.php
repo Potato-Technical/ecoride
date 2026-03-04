@@ -91,14 +91,12 @@ class UserRepository
                 pseudo,
                 email,
                 mot_de_passe_hash,
-                role_id,
-                credits
+                role_id
             ) VALUES (
                 :pseudo,
                 :email,
                 :mot_de_passe_hash,
-                :role_id,
-                0
+                :role_id
             )'
         );
 

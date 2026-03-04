@@ -159,7 +159,7 @@ class AuthController extends Controller
                 $pdo->beginTransaction();
 
                 // Création du compte utilisateur
-                // IMPORTANT (option 1) : UserRepository::create() doit mettre credits = 0
+                // Solde géré via credit_mouvement (ledger) : pas de colonne credits dans utilisateur
                 $userId = $userRepo->create([
                     'pseudo'            => $pseudo,
                     'email'             => $email,

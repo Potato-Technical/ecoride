@@ -3,7 +3,7 @@
  SGBD : MySQL 8 / InnoDB / utf8mb4
 
  Choix structurants (version cible) :
- - Le solde officiel est stocké : utilisateur.credits (DEFAULT 20 à l’inscription).
+ - Le solde officiel est calculé : SUM(credit_mouvement.montant) (ledger). Aucune colonne de solde dans utilisateur.
  - Les places restantes sont stockées : trajet.places_restantes (initialisée à nb_places).
  - Historisation financière via credit_mouvement (trace, pas source de vérité du solde).
  - Idempotence paiement chauffeur : trajet.paid_at (paiement 1 seule fois).
@@ -29,7 +29,6 @@ CREATE TABLE utilisateur (
     mot_de_passe_hash VARCHAR(255) NOT NULL, -- hash du mot de passe
     photo VARCHAR(255), -- avatar optionnel
     est_suspendu BOOLEAN NOT NULL DEFAULT FALSE, -- désactivation logique du compte
-    credits INT NOT NULL DEFAULT 0,
     role_id INT NOT NULL, -- rôle fonctionnel de l'utilisateur
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- date de création du compte
     updated_at DATETIME DEFAULT NULL, -- date de dernière modification du compte
@@ -166,7 +165,7 @@ CREATE TABLE incident (
 
 
 -- Table : credit_mouvement
--- Rôle : historique financier (trace) — le solde officiel reste utilisateur.credits
+-- Rôle : historique financier (trace) — ledger = source de vérité du solde (SUM montant)
 CREATE TABLE credit_mouvement (
     id INT AUTO_INCREMENT PRIMARY KEY,
     type VARCHAR(50) NOT NULL, -- nature du mouvement
