@@ -90,12 +90,12 @@ class ReservationController extends Controller
         $this->requireAuth();
 
         $repo = new ParticipationRepository();
-        $reservations = $repo->findByUser($_SESSION['user_id']);
+        $reservations = $repo->findByUserWithTrajetStatus((int)$_SESSION['user_id']);
 
         $this->render('reservations/index', [
             'reservations' => $reservations,
             'title' => 'Mes réservations',
-            'scripts' => ['/assets/js/trajets.js?v=50'],
+            'scripts' => ['/assets/js/reservations.js?v=50'],
         ]);
     }
 
@@ -276,6 +276,8 @@ class ReservationController extends Controller
 
             if ($isAjax) {
                 header('Content-Type: application/json; charset=utf-8');
+                http_response_code(403);
+
                 echo json_encode([
                     'status'  => 'error',
                     'message' => 'Annulation impossible'

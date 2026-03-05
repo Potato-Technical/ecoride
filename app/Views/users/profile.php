@@ -14,6 +14,7 @@
             <a class="btn btn-outline-primary" href="/reservations">Mes réservations</a>
             <a class="btn btn-outline-primary" href="/vehicules">Mes véhicules</a>
             <a class="btn btn-outline-primary" href="/trajets/chauffeur">Mes trajets (chauffeur)</a>
+            <a class="btn btn-outline-primary" href="/historique">Historique</a>
         </div>
 
     </div>

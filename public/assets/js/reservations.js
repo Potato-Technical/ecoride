@@ -2,7 +2,6 @@
  * Gestion des annulations de réservation (AJAX)
  */
 document.querySelectorAll('.js-cancel-form').forEach(form => {
-
   if (form.dataset.bound === '1') return;
   form.dataset.bound = '1';
 
@@ -12,7 +11,7 @@ document.querySelectorAll('.js-cancel-form').forEach(form => {
     if (form.dataset.submitting === '1') return;
     form.dataset.submitting = '1';
 
-    const btn = form.querySelector('button');
+    let btn = form.querySelector('button');
 
     if (btn) {
       btn.disabled = true;
@@ -32,7 +31,7 @@ document.querySelectorAll('.js-cancel-form').forEach(form => {
       });
 
       const contentType = response.headers.get('content-type') || '';
-      let data = null;
+      let data;
 
       if (contentType.includes('application/json')) {
         data = await response.json();
@@ -40,7 +39,7 @@ document.querySelectorAll('.js-cancel-form').forEach(form => {
         const text = await response.text();
         data = {
           status: 'error',
-          message: text?.trim() || 'Réponse serveur invalide'
+          message: (text && text.trim()) ? text.trim() : 'Réponse serveur invalide'
         };
       }
 
@@ -56,43 +55,40 @@ document.querySelectorAll('.js-cancel-form').forEach(form => {
         if (card) {
           card.style.transition = 'opacity 0.3s';
           card.style.opacity = '0';
-          setTimeout(() => card.remove(), 300);
+
+          setTimeout(() => {
+            // Supprime la colonne Bootstrap qui contient la card (évite un "trou" vide)
+            const col = card.closest('.col-md-6') || card.closest('.col-lg-4') || card.parentElement;
+            if (col) col.remove();
+            else card.remove();
+
+            // Si plus aucune réservation, afficher le message "Aucune réservation..."
+            const list = document.getElementById('reservations-list');
+            if (list && list.querySelectorAll('.card').length === 0) {
+              list.outerHTML = `
+                <div class="alert alert-info">
+                  Aucune réservation pour le moment.
+                </div>
+              `;
+            }
+          }, 300);
         }
         return;
       }
 
       if (btn) {
         btn.disabled = false;
-        btn.textContent = btn.dataset.originalText || 'Annuler';
+        btn.textContent = btn.dataset.originalText || 'Annuler la réservation';
       }
 
     } catch (e) {
       showToast('Erreur réseau', 'error');
       if (btn) {
         btn.disabled = false;
-        btn.textContent = btn.dataset.originalText || 'Annuler';
+        btn.textContent = btn.dataset.originalText || 'Annuler la réservation';
       }
     } finally {
       form.dataset.submitting = '0';
     }
   });
 });
-
-
-/**
- * Prévention du double clic (réservation / confirmation)
- * (submit normal, on ne bloque pas l’événement)
- */
-document.querySelectorAll('.js-reserve-form').forEach(form => {
-  if (form.dataset.bound === '1') return;
-  form.dataset.bound = '1';
-
-  form.addEventListener('submit', () => {
-    const btn = form.querySelector('button');
-    if (!btn) return;
-
-    btn.disabled = true;
-    btn.textContent = 'Traitement...';
-  });
-});
-

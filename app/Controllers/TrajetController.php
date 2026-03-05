@@ -275,9 +275,35 @@ class TrajetController extends Controller
                 exit;
             }
 
-            // 2) Verrouillage des participations confirmées
+            // 2) Verrouille + capture la liste des passagers confirmés (pour mail)
+            $passagers = $partRepo->findConfirmedPassengersByTrajetForUpdate($trajetId);
+
             // 3) Annulation des participations + remboursements
             $nbAnnulees = $partRepo->cancelAllConfirmedByTrajet($trajetId);
+
+            // 3bis) Journalisation mail (preuve d'envoi)
+            if ($nbAnnulees > 0 && !empty($passagers)) {
+                $insMail = $pdo->prepare(
+                    'INSERT INTO notification_mail (type, sujet, corps, date_envoi, utilisateur_id)
+                    VALUES (:type, :sujet, :corps, NOW(), :uid)'
+                );
+
+                $sujet = 'Annulation de votre covoiturage';
+                foreach ($passagers as $p) {
+                    $pseudo = (string)$p['pseudo'];
+                    $corps = "Bonjour {$pseudo},\n\n"
+                        . "Le chauffeur a annulé le trajet #{$trajetId}.\n"
+                        . "Vos crédits ont été remboursés.\n\n"
+                        . "EcoRide";
+
+                    $insMail->execute([
+                        'type'  => 'annulation_trajet',
+                        'sujet' => $sujet,
+                        'corps' => $corps,
+                        'uid'   => (int)$p['utilisateur_id'],
+                    ]);
+                }
+            }
 
             // 4) Réincrémentation des places (selon le nombre de participations annulées)
             if ($nbAnnulees > 0) {
@@ -294,7 +320,9 @@ class TrajetController extends Controller
             exit;
 
         } catch (\Throwable $e) {
-            $pdo->rollBack();
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
             error_log('CANCEL TRIP FAIL: ' . $e->getMessage());
             $this->render('errors/500', ['title' => 'Erreur lors de l’annulation']);
             exit;
@@ -362,5 +390,105 @@ class TrajetController extends Controller
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode($trajets);
         exit;
+    }
+
+    public function start(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            exit;
+        }
+
+        $this->requireAuth();
+
+        $trajetId = (int)($_POST['trajet_id'] ?? 0);
+
+        $repo = new TrajetRepository();
+        $pdo = Database::getInstance();
+
+        try {
+
+            $pdo->beginTransaction();
+
+            $trajet = $repo->findOwnedForUpdate($trajetId, (int)$_SESSION['user_id']);
+
+            if (!$trajet || $trajet['statut'] !== 'planifie') {
+                $pdo->rollBack();
+                $this->setFlash('error', 'Trajet non démarrable');
+                header('Location: /trajets/chauffeur');
+                exit;
+            }
+
+            if (!$repo->setStart($trajetId)) {
+                $pdo->rollBack();
+                $this->setFlash('error', 'Impossible de démarrer');
+                header('Location: /trajets/chauffeur');
+                exit;
+            }
+
+            $pdo->commit();
+
+            $this->setFlash('success', 'Trajet démarré');
+            header('Location: /trajets/chauffeur');
+            exit;
+
+        } catch (\Throwable $e) {
+
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+
+            $this->error(500);
+        }
+    }
+
+    public function finish(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            exit;
+        }
+
+        $this->requireAuth();
+
+        $trajetId = (int)($_POST['trajet_id'] ?? 0);
+
+        $repo = new TrajetRepository();
+        $pdo = Database::getInstance();
+
+        try {
+
+            $pdo->beginTransaction();
+
+            $trajet = $repo->findOwnedForUpdate($trajetId, (int)$_SESSION['user_id']);
+
+            if (!$trajet || $trajet['statut'] !== 'demarre') {
+                $pdo->rollBack();
+                $this->setFlash('error', 'Trajet non terminable');
+                header('Location: /trajets/chauffeur');
+                exit;
+            }
+
+            if (!$repo->setFinish($trajetId)) {
+                $pdo->rollBack();
+                $this->setFlash('error', 'Impossible de terminer');
+                header('Location: /trajets/chauffeur');
+                exit;
+            }
+
+            $pdo->commit();
+
+            $this->setFlash('success', 'Trajet terminé');
+            header('Location: /trajets/chauffeur');
+            exit;
+
+        } catch (\Throwable $e) {
+
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+
+            $this->error(500);
+        }
     }
 }

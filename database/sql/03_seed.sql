@@ -105,7 +105,7 @@ INSERT INTO trajet (
 )
 SELECT
   'Paris','Lyon',
-  '2026-03-01 08:00:00',
+  '2026-03-15 08:00:00',
   NULL,
   25.00, 3, 2, 'planifie', NULL,
   u.id, v.id, NOW()
@@ -117,7 +117,7 @@ WHERE u.email='chauffeur@ecoride.fr'
     WHERE t.lieu_depart='Paris'
       AND t.lieu_arrivee='Lyon'
       AND t.chauffeur_id=u.id
-      AND t.date_heure_depart='2026-03-01 08:00:00'
+      AND t.date_heure_depart='2026-03-15 08:00:00'
   );
 
 -- Paris->Lille : complet => places_restantes=0
@@ -128,7 +128,7 @@ INSERT INTO trajet (
 )
 SELECT
   'Paris','Lille',
-  '2026-03-02 09:00:00',
+  '2026-03-16 09:00:00',
   NULL,
   15.00, 2, 0, 'planifie', NULL,
   u.id, v.id, NOW()
@@ -140,7 +140,7 @@ WHERE u.email='chauffeur@ecoride.fr'
     WHERE t.lieu_depart='Paris'
       AND t.lieu_arrivee='Lille'
       AND t.chauffeur_id=u.id
-      AND t.date_heure_depart='2026-03-02 09:00:00'
+      AND t.date_heure_depart='2026-03-16 09:00:00'
   );
 
 -- Commission plateforme (US9) : mouvement réel (chauffeur -2)
@@ -151,7 +151,7 @@ FROM utilisateur uc
 JOIN trajet t ON t.chauffeur_id=uc.id
 WHERE uc.email='chauffeur@ecoride.fr'
   AND t.lieu_depart='Paris' AND t.lieu_arrivee='Lyon'
-  AND t.date_heure_depart='2026-03-01 08:00:00'
+  AND t.date_heure_depart='2026-03-15 08:00:00'
   AND NOT EXISTS (
     SELECT 1 FROM credit_mouvement cm
     WHERE cm.type='commission_plateforme' AND cm.trajet_id=t.id AND cm.utilisateur_id=uc.id
@@ -171,7 +171,7 @@ JOIN utilisateur uc ON uc.email='chauffeur@ecoride.fr'
 JOIN trajet t ON t.chauffeur_id=uc.id
 WHERE up.email='passager@ecoride.fr'
   AND t.lieu_depart='Paris' AND t.lieu_arrivee='Lyon'
-  AND t.date_heure_depart='2026-03-01 08:00:00'
+  AND t.date_heure_depart='2026-03-15 08:00:00'
   AND NOT EXISTS (
     SELECT 1 FROM participation p
     WHERE p.utilisateur_id=up.id AND p.trajet_id=t.id
@@ -192,7 +192,7 @@ JOIN trajet t ON t.chauffeur_id=uc.id
 JOIN participation p ON p.utilisateur_id=up.id AND p.trajet_id=t.id
 WHERE up.email='passager@ecoride.fr'
   AND t.lieu_depart='Paris' AND t.lieu_arrivee='Lyon'
-  AND t.date_heure_depart='2026-03-01 08:00:00'
+  AND t.date_heure_depart='2026-03-15 08:00:00'
   AND NOT EXISTS (
     SELECT 1 FROM credit_mouvement cm
     WHERE cm.type='debit_reservation' AND cm.participation_id=p.id AND cm.utilisateur_id=up.id
@@ -207,7 +207,7 @@ JOIN utilisateur uc ON uc.email='chauffeur@ecoride.fr'
 JOIN trajet t ON t.chauffeur_id=uc.id
 WHERE up.email='passager@ecoride.fr'
   AND t.lieu_depart='Paris' AND t.lieu_arrivee='Lyon'
-  AND t.date_heure_depart='2026-03-01 08:00:00'
+  AND t.date_heure_depart='2026-03-15 08:00:00'
   AND NOT EXISTS (
     SELECT 1 FROM avis a
     WHERE a.trajet_id=t.id AND a.auteur_id=up.id AND a.cible_id=uc.id
@@ -221,7 +221,7 @@ JOIN utilisateur uc ON uc.email='chauffeur@ecoride.fr'
 JOIN trajet t ON t.chauffeur_id=uc.id
 WHERE up.email='passager@ecoride.fr'
   AND t.lieu_depart='Paris' AND t.lieu_arrivee='Lille'
-  AND t.date_heure_depart='2026-03-02 09:00:00'
+  AND t.date_heure_depart='2026-03-16 09:00:00'
   AND NOT EXISTS (
     SELECT 1 FROM avis a
     WHERE a.trajet_id=t.id AND a.auteur_id=up.id AND a.cible_id=uc.id
@@ -239,7 +239,7 @@ JOIN utilisateur uc ON uc.email='chauffeur@ecoride.fr'
 JOIN trajet t ON t.chauffeur_id=uc.id
 WHERE up.email='passager@ecoride.fr'
   AND t.lieu_depart='Paris' AND t.lieu_arrivee='Lyon'
-  AND t.date_heure_depart='2026-03-01 08:00:00'
+  AND t.date_heure_depart='2026-03-15 08:00:00'
   AND NOT EXISTS (
     SELECT 1 FROM incident i
     WHERE i.trajet_id=t.id AND i.passager_id=up.id

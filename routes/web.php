@@ -24,6 +24,9 @@ return [
     // USER
     ['GET',  '/profil',           ['UserController', 'profile'], [AuthMiddleware::class]],
 
+    // HISTORIQUE (US10)
+    ['GET',  '/historique', ['HistoryController', 'index'], [AuthMiddleware::class]],
+
     // TRAJETS
     ['GET',  '/trajets',               ['TrajetController', 'index']],
     ['GET',  '/trajets/{id:\d+}',      ['TrajetController', 'show']], // id strictement numérique
@@ -36,6 +39,10 @@ return [
     ['GET',  '/trajets/create',    ['TrajetController', 'create'], [AuthMiddleware::class]],
     ['POST', '/trajets/create',    ['TrajetController', 'create'], [CsrfMiddleware::class, AuthMiddleware::class, NotSuspendedMiddleware::class]],
     ['POST', '/trajets/annuler',   ['TrajetController', 'cancel'], [CsrfMiddleware::class, AuthMiddleware::class, NotSuspendedMiddleware::class]],
+
+    // Démarrer / terminer un trajet
+    ['POST', '/trajets/demarrer', ['TrajetController', 'start'], [CsrfMiddleware::class, AuthMiddleware::class, NotSuspendedMiddleware::class]],
+    ['POST', '/trajets/terminer', ['TrajetController', 'finish'], [CsrfMiddleware::class, AuthMiddleware::class, NotSuspendedMiddleware::class]],
 
     // Véhicules
     ['GET',  '/vehicules',        ['VehiculeController', 'index'], [AuthMiddleware::class]],

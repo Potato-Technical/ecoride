@@ -41,6 +41,20 @@
 
                         <?php if (($t['statut'] ?? '') === 'planifie'): ?>
                             <form method="POST"
+                                  action="/trajets/demarrer"
+                                  class="d-inline ms-2">
+                                <?= csrf_field() ?>
+                                <input type="hidden"
+                                       name="trajet_id"
+                                       value="<?= (int)$t['id'] ?>">
+
+                                <button type="submit"
+                                        class="btn btn-outline-success btn-sm">
+                                    Démarrer
+                                </button>
+                            </form>
+
+                            <form method="POST"
                                   action="/trajets/annuler"
                                   class="d-inline ms-2">
                                 <?= csrf_field() ?>
@@ -53,9 +67,25 @@
                                     Annuler
                                 </button>
                             </form>
+
+                        <?php elseif (($t['statut'] ?? '') === 'demarre'): ?>
+                            <form method="POST"
+                                  action="/trajets/terminer"
+                                  class="d-inline ms-2">
+                                <?= csrf_field() ?>
+                                <input type="hidden"
+                                       name="trajet_id"
+                                       value="<?= (int)$t['id'] ?>">
+
+                                <button type="submit"
+                                        class="btn btn-outline-warning btn-sm">
+                                    Terminer
+                                </button>
+                            </form>
+
                         <?php else: ?>
                             <button class="btn btn-outline-secondary btn-sm ms-2" disabled>
-                                Annuler
+                                Aucune action
                             </button>
                         <?php endif; ?>
                     </div>

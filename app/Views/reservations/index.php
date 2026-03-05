@@ -1,4 +1,5 @@
 <h1 class="mb-4">Mes réservations</h1>
+
 <?php if (empty($reservations)): ?>
 
     <div class="alert alert-info">
@@ -7,8 +8,16 @@
 
 <?php else: ?>
 
-    <div class="row">
+    <div class="row" id="reservations-list">
         <?php foreach ($reservations as $r): ?>
+
+            <?php
+                $etat = strtolower(trim((string) $r['etat']));
+                $trajetStatut = (string)($r['trajet_statut'] ?? '');
+                $annulable = ($etat === 'confirme') && ($trajetStatut === 'planifie');
+                $ts = strtotime($r['date_heure_depart']);
+            ?>
+
             <div class="col-md-6 col-lg-4 mb-4">
                 <div class="card h-100 shadow-sm">
 
@@ -23,7 +32,7 @@
                         <p class="text-muted mb-2">
                             Départ :
                             <?= htmlspecialchars(
-                                date('d/m/Y H:i', strtotime($r['date_heure_depart'])),
+                                $ts ? date('d/m/Y H:i', $ts) : 'Date invalide',
                                 ENT_QUOTES,
                                 'UTF-8'
                             ) ?>
@@ -34,15 +43,19 @@
                             <strong><?= (int) $r['prix'] ?> crédits</strong>
                         </p>
 
-                        <p class="mb-3">
-                            État :
+                        <p class="mb-2">
+                            État participation :
                             <strong><?= htmlspecialchars($r['etat'], ENT_QUOTES, 'UTF-8') ?></strong>
+                        </p>
+
+                        <p class="mb-3">
+                            Statut trajet :
+                            <strong><?= htmlspecialchars($r['trajet_statut'], ENT_QUOTES, 'UTF-8') ?></strong>
                         </p>
 
                         <div class="mt-auto">
 
-                            <?php if ($r['etat'] === 'confirme'): ?>
-                                <!-- Annulation -->
+                            <?php if ($annulable): ?>
                                 <form method="POST"
                                       action="/reservations/annuler"
                                       class="d-grid js-cancel-form">
@@ -51,32 +64,13 @@
 
                                     <input type="hidden"
                                            name="id"
-                                           value="<?= (int) $r['id'] ?>">
+                                           value="<?= (int) $r['participation_id'] ?>">
 
                                     <button type="submit"
                                             class="btn btn-outline-danger btn-sm">
                                         Annuler la réservation
                                     </button>
                                 </form>
-
-                            <?php elseif ($r['etat'] === 'annule'): ?>
-                                <!-- Réactivation -->
-                                <form method="POST"
-                                      action="/trajets/reserver/confirm"
-                                      class="d-grid js-reserve-form">
-
-                                    <?= csrf_field() ?>
-
-                                    <input type="hidden"
-                                           name="trajet_id"
-                                           value="<?= (int) $r['trajet_id'] ?>">
-
-                                    <button type="submit"
-                                            class="btn btn-outline-success btn-sm">
-                                        Réactiver la réservation
-                                    </button>
-                                </form>
-
                             <?php else: ?>
                                 <span class="text-muted small">
                                     Action indisponible
@@ -89,6 +83,7 @@
 
                 </div>
             </div>
+
         <?php endforeach; ?>
     </div>
 

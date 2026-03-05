@@ -277,5 +277,35 @@ class TrajetRepository
         );
         $stmt->execute(['nb' => $nb, 'id' => $trajetId]);
     }
-    
+
+    public function setStart(int $trajetId): bool
+    {
+        $pdo = Database::getInstance();
+
+        $stmt = $pdo->prepare(
+            "UPDATE trajet
+            SET statut = 'demarre'
+            WHERE id = :id AND statut = 'planifie'"
+        );
+
+        $stmt->execute(['id' => $trajetId]);
+
+        return $stmt->rowCount() === 1;
+    }
+
+    public function setFinish(int $trajetId): bool
+    {
+        $pdo = Database::getInstance();
+
+        $stmt = $pdo->prepare(
+            "UPDATE trajet
+            SET statut = 'termine',
+                date_heure_arrivee = NOW()
+            WHERE id = :id AND statut = 'demarre'"
+        );
+
+        $stmt->execute(['id' => $trajetId]);
+
+        return $stmt->rowCount() === 1;
+    }
 }

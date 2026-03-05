@@ -58,9 +58,9 @@ class Router
                 $controller->$action();
             });
         } catch (\Throwable $e) {
-            // En Socle 0 on ne log pas encore finement, on rend 500 propre.
-            var_dump($e->getMessage());
-    exit;
+            error_log('ROUTER DISPATCH FAIL: ' . $e->getMessage());
+            (new ErrorController())->serverError();
+            return;
         }
     }
 
