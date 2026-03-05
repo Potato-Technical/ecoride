@@ -7,6 +7,7 @@ use App\Core\Database;
 use App\Models\ParticipationRepository;
 use App\Models\TrajetRepository;
 use App\Models\CreditMouvementRepository;
+use App\Models\IncidentRepository;
 
 /**
  * Contrôleur de réservation.
@@ -89,13 +90,34 @@ class ReservationController extends Controller
     {
         $this->requireAuth();
 
+        $userId = (int)$_SESSION['user_id'];
+
         $repo = new ParticipationRepository();
-        $reservations = $repo->findByUserWithTrajetStatus((int)$_SESSION['user_id']);
+        $incidentRepo = new IncidentRepository();
+
+        $reservations = $repo->findByUserWithTrajetStatus($userId);
+
+        // US11: bouton "Valider OK/KO" si confirmé + trajet terminé + pas déjà validé
+        foreach ($reservations as &$r) {
+            $etat = strtolower(trim((string)($r['etat'] ?? '')));
+            $trajetStatut = strtolower(trim((string)($r['trajet_statut'] ?? '')));
+            $trajetId = (int)($r['trajet_id'] ?? 0);
+
+            $canValidate = ($trajetId > 0 && $etat === 'confirme' && $trajetStatut === 'termine');
+
+            if ($canValidate) {
+                $already = $incidentRepo->findByTrajetAndPassager($trajetId, $userId);
+                $canValidate = ($already === null);
+            }
+
+            $r['can_validate'] = $canValidate;
+        }
+        unset($r);
 
         $this->render('reservations/index', [
             'reservations' => $reservations,
-            'title' => 'Mes réservations',
-            'scripts' => ['/assets/js/reservations.js?v=50'],
+            'title'        => 'Mes réservations',
+            'scripts'      => ['/assets/js/reservations.js?v=50'],
         ]);
     }
 
@@ -155,7 +177,7 @@ class ReservationController extends Controller
             if ($solde < (int)$trajet['prix']) {
                 $pdo->rollBack();
                 $this->setFlash('error', 'Crédits insuffisants pour réserver ce trajet');
-                header('Location: /trajet?id=' . $trajetId);
+                header('Location: /trajets/' . $trajetId);
                 exit;
             }
 

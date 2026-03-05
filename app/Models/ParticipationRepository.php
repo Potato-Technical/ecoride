@@ -441,4 +441,29 @@ class ParticipationRepository
         $stmt->execute(['tid' => $trajetId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function countConfirmedByTrajet(int $trajetId): int
+    {
+        $pdo = Database::getInstance();
+        $stmt = $pdo->prepare(
+            "SELECT COUNT(*)
+            FROM participation
+            WHERE trajet_id = :tid AND etat = 'confirme'"
+        );
+        $stmt->execute(['tid' => $trajetId]);
+        return (int)$stmt->fetchColumn();
+    }
+
+    public function sumCreditsConfirmedByTrajet(int $trajetId): int
+    {
+        $pdo = Database::getInstance();
+        $stmt = $pdo->prepare(
+            "SELECT COALESCE(SUM(credits_utilises),0)
+            FROM participation
+            WHERE trajet_id = :tid AND etat = 'confirme'"
+        );
+        $stmt->execute(['tid' => $trajetId]);
+        return (int)$stmt->fetchColumn();
+    }
+
 }

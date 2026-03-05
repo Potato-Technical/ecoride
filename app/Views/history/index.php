@@ -31,7 +31,7 @@
 
                         <div class="mt-auto">
                             <?php if (($t['statut'] ?? '') === 'planifie'): ?>
-                                <form method="POST" action="/trajets/annuler" class="d-grid">
+                                <form method="POST" action="/trajets/<?= (int)($t['id'] ?? 0) ?>/annuler" class="d-grid">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="trajet_id" value="<?= (int)$t['id'] ?>">
                                     <button type="submit" class="btn btn-outline-danger btn-sm">
@@ -94,7 +94,16 @@
                                 $annulable =
                                     ($p['etat'] === 'confirme')
                                     && ($p['trajet_statut'] === 'planifie');
+
+                                $validable = !empty($p['can_validate']);
                             ?>
+
+                            <?php if ($validable): ?>
+                                <a class="btn btn-outline-primary btn-sm w-100 mb-2"
+                                   href="/incidents/create?trajet_id=<?= (int)$p['trajet_id'] ?>">
+                                    Valider le trajet (OK/KO)
+                                </a>
+                            <?php endif; ?>
 
                             <?php if ($annulable): ?>
                                 <form method="POST" action="/reservations/annuler" class="d-grid">
@@ -104,7 +113,7 @@
                                         Annuler ma participation
                                     </button>
                                 </form>
-                            <?php else: ?>
+                            <?php elseif (!$validable): ?>
                                 <span class="text-muted small">Action indisponible</span>
                             <?php endif; ?>
                         </div>

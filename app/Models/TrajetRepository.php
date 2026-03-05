@@ -49,7 +49,8 @@ class TrajetRepository
                 prix,
                 nb_places,
                 places_restantes,
-                statut
+                statut,
+                paid_at
             FROM trajet
             WHERE chauffeur_id = :uid
             ORDER BY date_heure_depart DESC'

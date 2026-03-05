@@ -238,7 +238,7 @@ class TrajetController extends Controller
 
         $this->requireAuth();
 
-        $trajetId = (int)($_POST['trajet_id'] ?? 0);
+        $trajetId = (int)($_SERVER['_route_params']['id'] ?? 0);
         if ($trajetId <= 0) {
             $this->render('errors/400', ['title' => 'Requête invalide']);
             return;
@@ -401,7 +401,7 @@ class TrajetController extends Controller
 
         $this->requireAuth();
 
-        $trajetId = (int)($_POST['trajet_id'] ?? 0);
+        $trajetId = (int)($_SERVER['_route_params']['id'] ?? 0);
 
         $repo = new TrajetRepository();
         $pdo = Database::getInstance();
@@ -410,9 +410,32 @@ class TrajetController extends Controller
 
             $pdo->beginTransaction();
 
-            $trajet = $repo->findOwnedForUpdate($trajetId, (int)$_SESSION['user_id']);
+            $userId = (int)$_SESSION['user_id'];
 
-            if (!$trajet || $trajet['statut'] !== 'planifie') {
+            $trajet = $repo->findOwnedForUpdate($trajetId, $userId);
+
+            // Interdire de démarrer un 2e trajet si un autre est déjà "demarre"
+            $stmt = $pdo->prepare(
+                "SELECT 1
+                FROM trajet
+                WHERE chauffeur_id = :cid
+                AND statut = 'demarre'
+                AND id <> :id
+                LIMIT 1"
+            );
+            $stmt->execute([
+                'cid' => $userId,
+                'id'  => $trajetId,
+            ]);
+
+            if ($stmt->fetchColumn()) {
+                $pdo->rollBack();
+                $this->setFlash('error', 'Impossible : vous avez déjà un trajet en cours');
+                header('Location: /trajets/chauffeur');
+                exit;
+            }
+
+            if (!$trajet || ($trajet['statut'] ?? '') !== 'planifie') {
                 $pdo->rollBack();
                 $this->setFlash('error', 'Trajet non démarrable');
                 header('Location: /trajets/chauffeur');
@@ -451,7 +474,7 @@ class TrajetController extends Controller
 
         $this->requireAuth();
 
-        $trajetId = (int)($_POST['trajet_id'] ?? 0);
+        $trajetId = (int)($_SERVER['_route_params']['id'] ?? 0);
 
         $repo = new TrajetRepository();
         $pdo = Database::getInstance();
@@ -474,6 +497,34 @@ class TrajetController extends Controller
                 $this->setFlash('error', 'Impossible de terminer');
                 header('Location: /trajets/chauffeur');
                 exit;
+            }
+
+            // US11 : journaliser le mail "validation trajet" pour les passagers confirmés
+            $partRepo = new ParticipationRepository();
+            $passagers = $partRepo->findConfirmedPassengersByTrajetForUpdate($trajetId);
+
+            if (!empty($passagers)) {
+                $insMail = $pdo->prepare(
+                    'INSERT INTO notification_mail (type, sujet, corps, date_envoi, utilisateur_id)
+                    VALUES (:type, :sujet, :corps, NOW(), :uid)'
+                );
+
+                $sujet = 'Validation du trajet';
+                foreach ($passagers as $p) {
+                    $pseudo = (string)$p['pseudo'];
+
+                    $corps = "Bonjour {$pseudo},\n\n"
+                        . "Le trajet #{$trajetId} est terminé.\n"
+                        . "Merci de le valider (OK/KO) depuis votre espace : /reservations.\n\n"
+                        . "EcoRide";
+
+                    $insMail->execute([
+                        'type'  => 'validation_trajet',
+                        'sujet' => $sujet,
+                        'corps' => $corps,
+                        'uid'   => (int)$p['utilisateur_id'],
+                    ]);
+                }
             }
 
             $pdo->commit();

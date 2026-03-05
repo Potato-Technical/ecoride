@@ -12,41 +12,39 @@
 
     <div class="list-group">
         <?php foreach ($trajets as $t): ?>
+            <?php $tid = (int)($t['id'] ?? 0); ?>
             <div class="list-group-item">
                 <div class="d-flex justify-content-between align-items-start">
                     <div class="me-3">
                         <div class="fw-semibold">
-                            <?= htmlspecialchars($t['lieu_depart'], ENT_QUOTES, 'UTF-8') ?>
+                            <?= htmlspecialchars($t['lieu_depart'] ?? '', ENT_QUOTES, 'UTF-8') ?>
                             →
-                            <?= htmlspecialchars($t['lieu_arrivee'], ENT_QUOTES, 'UTF-8') ?>
+                            <?= htmlspecialchars($t['lieu_arrivee'] ?? '', ENT_QUOTES, 'UTF-8') ?>
                         </div>
 
                         <div class="text-muted small">
                             <?= htmlspecialchars(
-                                date('d/m/Y H:i', strtotime($t['date_heure_depart'])),
+                                !empty($t['date_heure_depart']) ? date('d/m/Y H:i', strtotime($t['date_heure_depart'])) : '',
                                 ENT_QUOTES,
                                 'UTF-8'
                             ) ?>
-                            · <?= (int)$t['prix'] ?> crédits
-                            · <?= (int)$t['nb_places'] ?> place(s)
-                            · <?= htmlspecialchars($t['statut'], ENT_QUOTES, 'UTF-8') ?>
+                            · <?= (int)($t['prix'] ?? 0) ?> crédits
+                            · <?= (int)($t['nb_places'] ?? 0) ?> place(s)
+                            · <?= htmlspecialchars($t['statut'] ?? '', ENT_QUOTES, 'UTF-8') ?>
                         </div>
                     </div>
 
                     <div class="text-nowrap">
-                        <a href="/trajet?id=<?= (int)$t['id'] ?>"
+                        <a href="/trajets/<?= $tid ?>"
                            class="btn btn-outline-primary btn-sm">
                             Voir
                         </a>
 
                         <?php if (($t['statut'] ?? '') === 'planifie'): ?>
                             <form method="POST"
-                                  action="/trajets/demarrer"
+                                  action="/trajets/<?= $tid ?>/demarrer"
                                   class="d-inline ms-2">
                                 <?= csrf_field() ?>
-                                <input type="hidden"
-                                       name="trajet_id"
-                                       value="<?= (int)$t['id'] ?>">
 
                                 <button type="submit"
                                         class="btn btn-outline-success btn-sm">
@@ -55,12 +53,9 @@
                             </form>
 
                             <form method="POST"
-                                  action="/trajets/annuler"
+                                  action="/trajets/<?= $tid ?>/annuler"
                                   class="d-inline ms-2">
                                 <?= csrf_field() ?>
-                                <input type="hidden"
-                                       name="trajet_id"
-                                       value="<?= (int)$t['id'] ?>">
 
                                 <button type="submit"
                                         class="btn btn-outline-danger btn-sm">
@@ -70,12 +65,9 @@
 
                         <?php elseif (($t['statut'] ?? '') === 'demarre'): ?>
                             <form method="POST"
-                                  action="/trajets/terminer"
+                                  action="/trajets/<?= $tid ?>/terminer"
                                   class="d-inline ms-2">
                                 <?= csrf_field() ?>
-                                <input type="hidden"
-                                       name="trajet_id"
-                                       value="<?= (int)$t['id'] ?>">
 
                                 <button type="submit"
                                         class="btn btn-outline-warning btn-sm">

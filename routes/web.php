@@ -9,7 +9,7 @@ return [
     // PUBLIC
     ['GET',  '/',                 ['HomeController', 'index']],
     ['GET',  '/a-propos',         ['HomeController', 'about']],
-    ['GET', '/contact',           ['ContactController', 'index']],
+    ['GET',  '/contact',          ['ContactController', 'index']],
     ['GET',  '/mentions-legales', ['HomeController', 'legalMentions']],
     ['GET',  '/cgu',              ['HomeController', 'cgu']],
     ['GET',  '/accessibilite',    ['HomeController', 'accessibilite']],
@@ -24,25 +24,27 @@ return [
     // USER
     ['GET',  '/profil',           ['UserController', 'profile'], [AuthMiddleware::class]],
 
-    // HISTORIQUE (US10)
+    // HISTORIQUE
     ['GET',  '/historique', ['HistoryController', 'index'], [AuthMiddleware::class]],
 
     // TRAJETS
     ['GET',  '/trajets',               ['TrajetController', 'index']],
-    ['GET',  '/trajets/{id:\d+}',      ['TrajetController', 'show']], // id strictement numérique
-
-    // LEGACY WRAPPER (temporaire)
-    ['GET',  '/trajet',          ['TrajetController', 'show']], // query ?id=
+    ['GET',  '/trajets/{id:\d+}',      ['TrajetController', 'show']],
+    ['GET',  '/trajet',                ['TrajetController', 'show']], // legacy ?id=
 
     // Chauffeur / création / annulation
     ['GET',  '/trajets/chauffeur', ['TrajetController', 'myTrips'], [AuthMiddleware::class]],
     ['GET',  '/trajets/create',    ['TrajetController', 'create'], [AuthMiddleware::class]],
     ['POST', '/trajets/create',    ['TrajetController', 'create'], [CsrfMiddleware::class, AuthMiddleware::class, NotSuspendedMiddleware::class]],
-    ['POST', '/trajets/annuler',   ['TrajetController', 'cancel'], [CsrfMiddleware::class, AuthMiddleware::class, NotSuspendedMiddleware::class]],
 
     // Démarrer / terminer un trajet
-    ['POST', '/trajets/demarrer', ['TrajetController', 'start'], [CsrfMiddleware::class, AuthMiddleware::class, NotSuspendedMiddleware::class]],
-    ['POST', '/trajets/terminer', ['TrajetController', 'finish'], [CsrfMiddleware::class, AuthMiddleware::class, NotSuspendedMiddleware::class]],
+    ['POST', '/trajets/{id:\d+}/demarrer', ['TrajetController', 'start'],  [CsrfMiddleware::class, AuthMiddleware::class, NotSuspendedMiddleware::class]],
+    ['POST', '/trajets/{id:\d+}/terminer', ['TrajetController', 'finish'], [CsrfMiddleware::class, AuthMiddleware::class, NotSuspendedMiddleware::class]],
+    ['POST', '/trajets/{id:\d+}/annuler',  ['TrajetController', 'cancel'], [CsrfMiddleware::class, AuthMiddleware::class, NotSuspendedMiddleware::class]],
+
+    // INCIDENTS
+    ['GET',  '/trajets/{id:\d+}/incidents/create', ['IncidentController', 'create'], [AuthMiddleware::class]],
+    ['POST', '/trajets/{id:\d+}/incidents',        ['IncidentController', 'store'],  [CsrfMiddleware::class, AuthMiddleware::class, NotSuspendedMiddleware::class]],
 
     // Véhicules
     ['GET',  '/vehicules',        ['VehiculeController', 'index'], [AuthMiddleware::class]],
