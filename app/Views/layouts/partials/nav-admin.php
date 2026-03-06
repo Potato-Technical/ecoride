@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+<nav class="navbar navbar-expand-lg navbar-light border-bottom">
     <div class="container">
 
         <a class="navbar-brand fw-semibold" href="/admin">EcoRide</a>
@@ -15,19 +15,24 @@
 
         <div class="collapse navbar-collapse" id="mainNavbar">
             <ul class="navbar-nav ms-auto gap-lg-3">
-                
+
                 <li class="nav-item">
-                    <a href="/admin" class="nav-link">Dashboard</a>
+                    <a href="/admin" class="nav-link <?= active('/admin') ?>">
+                        Dashboard
+                    </a>
                 </li>
 
                 <li class="nav-item">
-                    <a href="/trajets" class="nav-link">Trajets</a>
+                    <a href="/trajets" class="nav-link <?= active('/trajets') ?>">
+                        Trajets
+                    </a>
                 </li>
 
                 <li class="nav-item">
                     <form method="POST" action="/logout" class="nav-link text-danger">
                         <?= csrf_field() ?>
-                        <button type="submit" class="btn btn-link nav-link text-danger p-0">
+                        <button type="submit"
+                                class="btn btn-link nav-link text-danger p-0">
                             Déconnexion
                         </button>
                     </form>

@@ -44,7 +44,8 @@ class ParticipationRepository
             $userId,
             'debit_reservation',
             -abs($prix),
-            $participationId
+            $participationId,
+            $trajetId
         );
     }
 
@@ -80,14 +81,22 @@ class ParticipationRepository
      */
     public function hasParticipation(int $userId, int $trajetId): bool
     {
+        return $this->hasAnyParticipation($userId, $trajetId);
+    }
+
+    public function hasConfirmedParticipation(int $userId, int $trajetId): bool
+    {
         $pdo = Database::getInstance();
 
         $stmt = $pdo->prepare(
-            "SELECT 1 FROM participation
-            WHERE utilisateur_id = :uid AND trajet_id = :tid
+            "SELECT 1
+            FROM participation
+            WHERE utilisateur_id = :uid
+            AND trajet_id = :tid
             AND etat = 'confirme'
             LIMIT 1"
         );
+
         $stmt->execute([
             'uid' => $userId,
             'tid' => $trajetId

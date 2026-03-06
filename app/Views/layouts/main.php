@@ -8,6 +8,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"rel="stylesheet">
     <!-- Design system -->
     <link rel="stylesheet" href="/assets/css/style.css">
+    <!-- Layout global -->
+    <link rel="stylesheet" href="/assets/css/layout.css">
+    <!-- Header -->
+    <link rel="stylesheet" href="/assets/css/header.css">
     <!-- CSS par page -->
     <?php if (!empty($pageCss) && is_array($pageCss)): ?>
         <?php foreach ($pageCss as $css): ?>

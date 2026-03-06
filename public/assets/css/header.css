@@ -15,3 +15,23 @@
 .nav-link:hover {
   color: var(--color-focus);
 }
+
+.nav-cta {
+  background: var(--color-cta);
+  color: #fff;
+  border: 0;
+  padding: .45rem .75rem;
+  border-radius: .5rem;
+}
+
+.nav-cta:hover,
+.nav-cta:focus {
+  background: var(--color-cta-hover);
+  color: #fff;
+}
+
+.nav-link.active {
+  color: var(--color-focus);
+  font-weight: 600;
+  border-bottom: 2px solid var(--color-focus);
+}

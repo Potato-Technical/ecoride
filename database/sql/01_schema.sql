@@ -188,6 +188,7 @@ CREATE TABLE credit_mouvement (
     KEY idx_credit_participation (participation_id),
     KEY idx_credit_trajet (trajet_id),
     KEY idx_credit_type_date (type, created_at),
+    UNIQUE KEY uniq_credit_trajet (type, trajet_id, utilisateur_id), -- Anti double paiement chauffeur (1 seul credit_trajet par trajet + utilisateur)
 
     FOREIGN KEY (utilisateur_id) REFERENCES utilisateur(id),
     FOREIGN KEY (participation_id) REFERENCES participation(id),

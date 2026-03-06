@@ -1,7 +1,7 @@
 <nav class="navbar navbar-expand-lg navbar-light border-bottom">
     <div class="container">
 
-        <a class="navbar-brand fw-semibold" href="/">EcoRide</a>
+        <a class="navbar-brand fw-semibold" href="/employe">EcoRide</a>
 
         <button class="navbar-toggler"
                 type="button"
@@ -17,26 +17,14 @@
             <ul class="navbar-nav ms-auto gap-lg-3">
 
                 <li class="nav-item">
-                    <a href="/profil" class="nav-link <?= active('/profil') ?>">
-                        Profil
+                    <a href="/employe" class="nav-link <?= active('/employe') ?>">
+                        Incidents
                     </a>
                 </li>
 
                 <li class="nav-item">
                     <a href="/trajets" class="nav-link <?= active('/trajets') ?>">
                         Trajets
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a href="/reservations" class="nav-link <?= active('/reservations') ?>">
-                        Réservations
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a href="/vehicules" class="nav-link <?= active('/vehicules') ?>">
-                        Véhicules
                     </a>
                 </li>
 

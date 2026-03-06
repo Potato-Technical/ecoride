@@ -33,8 +33,10 @@ error_reporting($debug ? E_ALL : 0);
 
 // Autoload Composer
 require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../app/Helpers/csrf.php';
-require_once __DIR__ . '/../app/Helpers/flash.php';
+// Charger tous les helpers
+foreach (glob(__DIR__ . '/../app/Helpers/*.php') as $helper) {
+    require_once $helper;
+}
 
 // Démarrage de l’application
 use App\Core\Router; // Import du routeur principal de l’application

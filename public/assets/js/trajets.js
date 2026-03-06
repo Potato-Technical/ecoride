@@ -1,10 +1,11 @@
-/**
- * TRAJETS
- * - Toggle filtres (mobile)
- * - Load more (AJAX) avec CSRF
- */
+/* TRAJETS
+   - Toggle filtres
+   - Load more AJAX
+   - Validation trajet
+*/
 
 document.addEventListener('DOMContentLoaded', () => {
+  /* TOGGLE FILTRES */
   const toggleBtn = document.querySelector('[data-toggle-filters]');
   const filters = document.querySelector('.trajets-filters');
 
@@ -14,94 +15,122 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  /* LOAD MORE */
   const loadBtn = document.querySelector('.load-more-btn');
-  if (!loadBtn) return;
-
   const form = document.querySelector('#trajets-search-form');
-  if (!form) return;
-
-  // Conteneur global (section résultats)
   const container = document.querySelector('.trajets-results');
-  if (!container) return;
 
-  // On insère les nouvelles cards avant le bloc qui contient le bouton
-  const loadMoreBlock = loadBtn.parentElement;
-  if (!loadMoreBlock) return;
+  if (loadBtn && form && container) {
+    const loadMoreBlock = loadBtn.parentElement;
 
-  let offset = parseInt(loadBtn.dataset.offset || '6', 10);
-  const limit = parseInt(loadBtn.dataset.limit || '6', 10);
+    let offset = parseInt(loadBtn.dataset.offset || '6', 10);
+    const limit = parseInt(loadBtn.dataset.limit || '6', 10);
 
-  loadBtn.addEventListener('click', async () => {
-    try {
-      const formData = new FormData(form);
-      formData.append('offset', String(offset));
-      formData.append('limit', String(limit));
+    loadBtn.addEventListener('click', async () => {
+      loadBtn.disabled = true;
 
-      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-      formData.append('_csrf', csrfToken);
+      try {
+        const formData = new FormData(form);
+        formData.append('offset', String(offset));
+        formData.append('limit', String(limit));
 
-      const res = await fetch('/trajets/load-more', {
-        method: 'POST',
-        credentials: 'same-origin',
-        body: formData
-      });
+        const csrfToken =
+          document.querySelector('meta[name="csrf-token"]')?.content || '';
 
-      if (!res.ok) {
-        console.error('Load more failed', res.status);
-        return;
-      }
+        formData.append('_csrf', csrfToken);
 
-      const trajets = await res.json();
+        const res = await fetch('/trajets/load-more', {
+          method: 'POST',
+          credentials: 'same-origin',
+          body: formData
+        });
 
-      if (!Array.isArray(trajets) || trajets.length === 0) {
-        loadBtn.disabled = true;
-        return;
-      }
+        if (!res.ok) {
+          console.error('Load more failed', res.status);
+          loadBtn.disabled = false;
+          return;
+        }
 
-      trajets.forEach(trajet => {
-        const dt = formatDateTime(trajet.date_heure_depart);
-        const places = parseInt(trajet.places_restantes ?? 0, 10);
+        const trajets = await res.json();
 
-        loadMoreBlock.insertAdjacentHTML('beforebegin', `
-          <article class="trajet-card card shadow-sm mb-4">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-start mb-2">
-                <div>
-                  <strong>${escapeHtml(trajet.lieu_depart)}</strong> →
-                  <strong>${escapeHtml(trajet.lieu_arrivee)}</strong>
+        if (!Array.isArray(trajets) || trajets.length === 0) {
+          return;
+        }
+
+        trajets.forEach(trajet => {
+          const dt = formatDateTime(trajet.date_heure_depart);
+          const places = parseInt(trajet.places_restantes ?? 0, 10);
+
+          loadMoreBlock.insertAdjacentHTML('beforebegin', `
+            <article class="trajet-card card shadow-sm mb-4">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <strong>${escapeHtml(trajet.lieu_depart)}</strong>
+                    →
+                    <strong>${escapeHtml(trajet.lieu_arrivee)}</strong>
+                  </div>
+
+                  <div class="trajet-price fw-semibold">
+                    ${Number(trajet.prix).toFixed(2).replace('.', ',')} crédits
+                  </div>
                 </div>
-                <div class="trajet-price fw-semibold">
-                  ${Number(trajet.prix).toFixed(2).replace('.', ',')} crédits
+
+                <div class="text-muted mb-3">
+                  ${escapeHtml(dt)}
                 </div>
+
+                <div class="text-muted small">
+                  Places restantes : ${Number.isFinite(places) ? places : 0}
+                </div>
+
+                <a href="/trajet?id=${parseInt(trajet.id, 10)}"
+                   class="btn btn-outline-success w-100">
+                  Voir le détail
+                </a>
               </div>
+            </article>
+          `);
+        });
 
-              <div class="text-muted mb-3">
-                ${escapeHtml(dt)}
-              </div>
+        offset += trajets.length;
+        loadBtn.dataset.offset = String(offset);
+        loadBtn.disabled = false;
+      } catch (e) {
+        console.error(e);
+        loadBtn.disabled = false;
+      }
+    });
+  }
 
-              <div class="text-muted small">
-                Places restantes : ${Number.isFinite(places) ? places : 0}
-              </div>
+  /* VALIDATION */
+  const radios = document.querySelectorAll('input[name="etat"]');
+  const description = document.getElementById('description');
 
-              <a href="/trajet?id=${parseInt(trajet.id, 10)}"
-                 class="btn btn-outline-success w-100">
-                Voir le détail
-              </a>
-            </div>
-          </article>
-        `);
-      });
+  if (radios.length && description) {
+    function sync() {
+      const selected = document.querySelector('input[name="etat"]:checked');
+      if (!selected) return;
 
-      offset += trajets.length;
-      loadBtn.dataset.offset = String(offset);
+      const isKo = selected.value === 'ko';
 
-    } catch (e) {
-      console.error(e);
+      description.required = isKo;
+      description.disabled = !isKo;
+
+      if (!isKo) {
+        description.value = '';
+      }
     }
-  });
+
+    radios.forEach(radio => {
+      radio.addEventListener('change', sync);
+    });
+
+    sync();
+  }
 });
 
-// Format "HH:MM • DD/MM/YYYY" depuis "YYYY-MM-DD HH:MM:SS"
+/* HELPERS */
 function formatDateTime(dateStr) {
   const d = new Date(String(dateStr).replace(' ', 'T'));
   if (Number.isNaN(d.getTime())) return '';
@@ -115,7 +144,6 @@ function formatDateTime(dateStr) {
   return `${hh}:${mm} • ${dd}/${mo}/${yy}`;
 }
 
-// helper XSS côté client
 function escapeHtml(str) {
   return String(str)
     .replaceAll('&', '&amp;')

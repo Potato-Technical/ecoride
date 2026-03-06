@@ -1,6 +1,8 @@
--- EcoRide - Données initiales (seed) — MPD final
+-- EcoRide - Données initiales (seed) - MPD final
 -- Script idempotent : relançable sans dérive (pas d'UPDATE métier)
 -- Source de vérité du solde : credit_mouvement (ledger). Pas de colonne de solde dans utilisateur.
+
+SET NAMES utf8mb4;
 
 START TRANSACTION;
 

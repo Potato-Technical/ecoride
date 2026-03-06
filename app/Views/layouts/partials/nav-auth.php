@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-warning-subtle border-bottom">
+<nav class="navbar navbar-expand-lg navbar-light border-bottom">
     <div class="container">
 
         <a class="navbar-brand fw-semibold" href="/">EcoRide</a>
@@ -18,7 +18,7 @@
 
                 <!-- Chauffeur -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle"
+                    <a class="nav-link dropdown-toggle <?= active('/trajets/chauffeur') ?>"
                        href="#"
                        role="button"
                        data-bs-toggle="dropdown"
@@ -27,12 +27,14 @@
                     </a>
                     <ul class="dropdown-menu">
                         <li>
-                            <a class="dropdown-item" href="/trajets/chauffeur">
+                            <a class="dropdown-item <?= active('/trajets/chauffeur') ?>"
+                               href="/trajets/chauffeur">
                                 Mes trajets
                             </a>
-                        </li>                        
+                        </li>
                         <li>
-                            <a class="dropdown-item" href="/trajets/create">
+                            <a class="dropdown-item <?= active('/trajets/create') ?>"
+                               href="/trajets/create">
                                 Créer un trajet
                             </a>
                         </li>
@@ -41,7 +43,7 @@
 
                 <!-- Passager -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle"
+                    <a class="nav-link dropdown-toggle <?= active('/reservations') ?>"
                        href="#"
                        role="button"
                        data-bs-toggle="dropdown"
@@ -50,12 +52,14 @@
                     </a>
                     <ul class="dropdown-menu">
                         <li>
-                            <a class="dropdown-item" href="/reservations">
+                            <a class="dropdown-item <?= active('/reservations') ?>"
+                               href="/reservations">
                                 Mes réservations
                             </a>
-                        </li>                        
+                        </li>
                         <li>
-                            <a class="dropdown-item" href="/trajets">
+                            <a class="dropdown-item <?= active('/trajets') ?>"
+                               href="/trajets">
                                 Trajets
                             </a>
                         </li>
@@ -64,7 +68,7 @@
 
                 <!-- Compte -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle"
+                    <a class="nav-link dropdown-toggle <?= active('/profil') ?>"
                        href="#"
                        role="button"
                        data-bs-toggle="dropdown"
@@ -73,16 +77,20 @@
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
-                            <a class="dropdown-item" href="/profil">
+                            <a class="dropdown-item <?= active('/profil') ?>"
+                               href="/profil">
                                 Mon compte
                             </a>
-                        </li>                        
+                        </li>
                         <li>
-                            <a class="dropdown-item" href="/vehicules">
+                            <a class="dropdown-item <?= active('/vehicules') ?>"
+                               href="/vehicules">
                                 Mes véhicules
                             </a>
                         </li>
+
                         <li><hr class="dropdown-divider"></li>
+
                         <li>
                             <form method="POST" action="/logout" class="px-3">
                                 <?= csrf_field() ?>

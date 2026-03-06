@@ -32,12 +32,12 @@ return [
     ['GET',  '/trajets/{id:\d+}',      ['TrajetController', 'show']],
     ['GET',  '/trajet',                ['TrajetController', 'show']], // legacy ?id=
 
-    // Chauffeur / création / annulation
+    // Chauffeur / création
     ['GET',  '/trajets/chauffeur', ['TrajetController', 'myTrips'], [AuthMiddleware::class]],
     ['GET',  '/trajets/create',    ['TrajetController', 'create'], [AuthMiddleware::class]],
     ['POST', '/trajets/create',    ['TrajetController', 'create'], [CsrfMiddleware::class, AuthMiddleware::class, NotSuspendedMiddleware::class]],
 
-    // Démarrer / terminer un trajet
+    // Démarrer / terminer / annuler un trajet
     ['POST', '/trajets/{id:\d+}/demarrer', ['TrajetController', 'start'],  [CsrfMiddleware::class, AuthMiddleware::class, NotSuspendedMiddleware::class]],
     ['POST', '/trajets/{id:\d+}/terminer', ['TrajetController', 'finish'], [CsrfMiddleware::class, AuthMiddleware::class, NotSuspendedMiddleware::class]],
     ['POST', '/trajets/{id:\d+}/annuler',  ['TrajetController', 'cancel'], [CsrfMiddleware::class, AuthMiddleware::class, NotSuspendedMiddleware::class]],
@@ -65,4 +65,13 @@ return [
 
     // ADMIN
     ['GET',  '/admin', ['AdminController', 'index'], [AuthMiddleware::class, RoleMiddleware::class . ':administrateur']],
+
+    // EMPLOYE
+    ['GET',  '/employe', ['EmployeController', 'index'], [AuthMiddleware::class, RoleMiddleware::class . ':employe']],
+    ['POST', '/employe/incidents/{id:\d+}/prendre',  ['EmployeController', 'takeIncident'],   [CsrfMiddleware::class, AuthMiddleware::class, RoleMiddleware::class . ':employe']],
+    ['POST', '/employe/incidents/{id:\d+}/resoudre', ['EmployeController', 'resolveIncident'],[CsrfMiddleware::class, AuthMiddleware::class, RoleMiddleware::class . ':employe']],
+    ['POST', '/employe/incidents/{id:\d+}/rejeter',  ['EmployeController', 'rejectIncident'], [CsrfMiddleware::class, AuthMiddleware::class, RoleMiddleware::class . ':employe']],
+
+    ['POST', '/employe/avis/{id:\d+}/valider', ['EmployeController', 'validateAvis'], [CsrfMiddleware::class, AuthMiddleware::class, RoleMiddleware::class . ':employe']],
+    ['POST', '/employe/avis/{id:\d+}/refuser', ['EmployeController', 'rejectAvis'],   [CsrfMiddleware::class, AuthMiddleware::class, RoleMiddleware::class . ':employe']],
 ];

@@ -1,11 +1,9 @@
-/* TRAJETS – MOBILE FIRST */
-
+/* TRAJETS */
 .trajets-page {
   padding: 1.5rem 0;
 }
 
-/* LAYOUT GLOBAL */
-
+/* LAYOUT */
 .trajets-layout {
   display: flex;
   flex-direction: column;
@@ -14,7 +12,6 @@
 }
 
 /* FILTRES */
-
 .trajets-filters {
   background: #fff;
   border-radius: 12px;
@@ -37,7 +34,6 @@
 }
 
 /* RÉSULTATS */
-
 .trajets-results {
   display: flex;
   flex-direction: column;
@@ -54,7 +50,6 @@
 }
 
 /* BOUTONS */
-
 .trajets-page .btn-success {
   background-color: var(--color-cta);
   border-color: var(--color-cta);
@@ -65,8 +60,54 @@
   border-color: var(--color-cta-hover);
 }
 
-/* DESKTOP */
+/* CHOIX ÉTAT TRAJET */
+.trajet-etat {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
 
+.trajet-option {
+  flex: 1;
+  cursor: pointer;
+}
+
+.trajet-option input {
+  display: none;
+}
+
+.trajet-option-ui {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--divider);
+  background: #fff;
+  transition: all 0.15s ease;
+}
+
+.trajet-option-ui:hover {
+  border-color: var(--color-primary);
+}
+
+.trajet-icon {
+  font-size: 22px;
+}
+
+/* ÉTAT OK */
+.trajet-option-ok input:checked + .trajet-option-ui {
+  border-color: var(--success);
+  background: #eef9f0;
+}
+
+/* ÉTAT PROBLÈME */
+.trajet-option-ko input:checked + .trajet-option-ui {
+  border-color: var(--warning);
+  background: #fff6e6;
+}
+
+/* DESKTOP */
 @media (min-width: 992px) {
   .trajets-layout {
     flex-direction: row;

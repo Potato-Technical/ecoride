@@ -7,6 +7,7 @@ use App\Core\Database;
 use App\Models\ParticipationRepository;
 use App\Models\IncidentRepository;
 use App\Models\CreditMouvementRepository;
+use App\Services\TrajetPaymentService;
 use PDO;
 use PDOException;
 
@@ -25,7 +26,7 @@ class IncidentController extends Controller
         $userId = (int)($_SESSION['user_id'] ?? 0);
 
         $partRepo = new ParticipationRepository();
-        if (!$partRepo->hasParticipation($userId, $trajetId)) {
+        if ($partRepo->hasConfirmedParticipation($userId, $trajetId)) {
             $this->render('errors/403', ['title' => 'Action interdite']);
             return;
         }
@@ -75,7 +76,6 @@ class IncidentController extends Controller
         $pdo = Database::getInstance();
         $partRepo = new ParticipationRepository();
         $incidentRepo = new IncidentRepository();
-        $creditRepo = new CreditMouvementRepository();
 
         try {
             $pdo->beginTransaction();
@@ -103,7 +103,7 @@ class IncidentController extends Controller
                 exit;
             }
 
-            if (!$partRepo->hasParticipation($userId, $trajetId)) {
+            if ($partRepo->hasConfirmedParticipation($userId, $trajetId)) {
                 $pdo->rollBack();
                 $this->render('errors/403', ['title' => 'Action interdite']);
                 return;
@@ -131,31 +131,8 @@ class IncidentController extends Controller
                 'descr' => $description,
             ]);
 
-            // AUTO-PAY (A uniquement) : payer si toutes validations reçues et aucun KO ouvert/en_cours
-            if (empty($trajet['paid_at'])) {
-                $nbConfirmed = $partRepo->countConfirmedByTrajet($trajetId);
-                $nbIncidents = $incidentRepo->countByTrajet($trajetId);
-
-                if ($nbConfirmed > 0 && $nbIncidents >= $nbConfirmed && !$incidentRepo->hasKoNotResolved($trajetId)) {
-                    $montant = $partRepo->sumCreditsConfirmedByTrajet($trajetId);
-
-                    if ($montant > 0) {
-                        // Idempotence paiement
-                        $upd = $pdo->prepare("UPDATE trajet SET paid_at = NOW() WHERE id = :id AND paid_at IS NULL");
-                        $upd->execute(['id' => $trajetId]);
-
-                        if ($upd->rowCount() === 1) {
-                            $creditRepo->add(
-                                (int)($trajet['chauffeur_id'] ?? 0),
-                                'credit_trajet',
-                                +$montant,
-                                null,
-                                $trajetId
-                            );
-                        }
-                    }
-                }
-            }
+            $pay = new TrajetPaymentService();
+            $pay->tryAutoPayIfEligible($pdo, $trajetId);
 
             $pdo->commit();
 
