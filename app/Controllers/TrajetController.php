@@ -8,6 +8,7 @@ use App\Models\TrajetRepository;
 use App\Models\ParticipationRepository;
 use App\Models\VehiculeRepository;
 use App\Models\CreditMouvementRepository;
+use App\Models\AvisRepository;
 
 
 class TrajetController extends Controller
@@ -21,28 +22,47 @@ class TrajetController extends Controller
     {
         $repo = new TrajetRepository();
 
-        // Filtres utilisateur (GET) — persistés dans l'URL
         $filters = [
             'depart'   => trim($_GET['depart'] ?? ''),
             'arrivee'  => trim($_GET['arrivee'] ?? ''),
             'date'     => trim($_GET['date'] ?? ''),
             'prix_max' => trim($_GET['prix_max'] ?? ''),
             'eco'      => isset($_GET['eco']),
-            'sort'     => $_GET['sort'] ?? null,
+            'sort'     => $_GET['sort'] ?? 'date',
         ];
 
-        // Pagination initiale
         $limit  = 6;
         $offset = 0;
 
-        // Requête SQL centralisée dans le repository
-        $trajets = $repo->searchWithFiltersPaginated($filters, $limit, $offset);
+        $hasSearch = (
+            $filters['depart'] !== '' &&
+            $filters['arrivee'] !== '' &&
+            $filters['date'] !== ''
+        );
+
+        $trajets = [];
+        $nearestDate = null;
+
+        if ($hasSearch) {
+            $trajets = $repo->searchWithFiltersPaginated($filters, $limit, $offset);
+
+            if (empty($trajets)) {
+                $nearestDate = $repo->findNearestAvailableDate(
+                    $filters['depart'],
+                    $filters['arrivee'],
+                    $filters['date']
+                );
+            }
+        }
 
         $this->render('trajets/index', [
             'trajets'     => $trajets,
             'filters'     => $filters,
             'limit'       => $limit,
+            'hasSearch'   => $hasSearch,
+            'nearestDate' => $nearestDate,
             'title'       => 'Recherche de covoiturages',
+            'pageCss'     => ['trajets.css'],
             'scripts'     => ['/assets/js/trajets.js'],
         ]);
     }
@@ -73,17 +93,21 @@ class TrajetController extends Controller
             return;
         }
 
-        // UX : savoir si l’utilisateur a déjà une participation sur ce trajet
         $hasParticipation = false;
         if (!empty($_SESSION['user_id'])) {
             $pRepo = new ParticipationRepository();
             $hasParticipation = $pRepo->hasParticipation($_SESSION['user_id'], $id);
         }
 
+        $avisRepo = new AvisRepository();
+        $avis = $avisRepo->findValidatedByCibleId((int)$trajet['chauffeur_id']);
+
         $this->render('trajets/show', [
             'trajet'           => $trajet,
+            'avis'             => $avis,
             'hasParticipation' => $hasParticipation,
             'title'            => 'Détail du covoiturage',
+            'pageCss'          => ['trajets-show.css'],
             'scripts'          => ['/assets/js/reservations.js'],
         ]);
     }
@@ -364,27 +388,36 @@ class TrajetController extends Controller
      */
     public function loadMore(): void
     {
-        // Action AJAX : POST uniquement
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
             exit;
         }
 
-        $repo = new TrajetRepository();
-
-        // Filtres envoyés par AJAX (doivent correspondre aux name="" du formulaire)
         $filters = [
             'depart'   => trim($_POST['depart'] ?? ''),
             'arrivee'  => trim($_POST['arrivee'] ?? ''),
             'date'     => trim($_POST['date'] ?? ''),
             'prix_max' => trim($_POST['prix_max'] ?? ''),
             'eco'      => !empty($_POST['eco']),
-            'sort'     => $_POST['sort'] ?? null,
+            'sort'     => $_POST['sort'] ?? 'date',
         ];
+
+        $hasSearch = (
+            $filters['depart'] !== '' &&
+            $filters['arrivee'] !== '' &&
+            $filters['date'] !== ''
+        );
+
+        if (!$hasSearch) {
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode([]);
+            exit;
+        }
 
         $offset = (int) ($_POST['offset'] ?? 0);
         $limit  = (int) ($_POST['limit'] ?? 6);
 
+        $repo = new TrajetRepository();
         $trajets = $repo->searchWithFiltersPaginated($filters, $limit, $offset);
 
         header('Content-Type: application/json; charset=utf-8');

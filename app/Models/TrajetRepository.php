@@ -15,7 +15,58 @@ class TrajetRepository
     {
         $pdo = Database::getInstance();
 
-        $stmt = $pdo->prepare("SELECT * FROM trajet WHERE id = :id");
+        $stmt = $pdo->prepare("
+            SELECT
+                t.id,
+                t.lieu_depart,
+                t.lieu_arrivee,
+                t.date_heure_depart,
+                t.date_heure_arrivee,
+                t.prix,
+                t.nb_places,
+                t.places_restantes,
+                t.statut,
+                t.chauffeur_id,
+                t.vehicule_id,
+                u.pseudo,
+                u.photo,
+                v.marque,
+                v.modele,
+                v.couleur,
+                v.energie,
+                v.fumeur,
+                v.animaux,
+                v.preferences_libres,
+                COALESCE(AVG(CASE WHEN a.statut_validation = 'valide' THEN a.note END), 0) AS note_moyenne
+            FROM trajet t
+            JOIN utilisateur u ON u.id = t.chauffeur_id
+            JOIN vehicule v ON v.id = t.vehicule_id
+            LEFT JOIN avis a ON a.cible_id = t.chauffeur_id
+            WHERE t.id = :id
+            GROUP BY
+                t.id,
+                t.lieu_depart,
+                t.lieu_arrivee,
+                t.date_heure_depart,
+                t.date_heure_arrivee,
+                t.prix,
+                t.nb_places,
+                t.places_restantes,
+                t.statut,
+                t.chauffeur_id,
+                t.vehicule_id,
+                u.pseudo,
+                u.photo,
+                v.marque,
+                v.modele,
+                v.couleur,
+                v.energie,
+                v.fumeur,
+                v.animaux,
+                v.preferences_libres
+            LIMIT 1
+        ");
+
         $stmt->execute(['id' => $id]);
 
         $trajet = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -132,30 +183,33 @@ class TrajetRepository
         $pdo = Database::getInstance();
 
         $sql = "
-            SELECT t.*, u.pseudo, v.energie
+            SELECT
+                t.id,
+                t.lieu_depart,
+                t.lieu_arrivee,
+                t.date_heure_depart,
+                t.date_heure_arrivee,
+                t.prix,
+                t.places_restantes,
+                u.pseudo,
+                v.energie,
+                COALESCE(AVG(CASE WHEN a.statut_validation = 'valide' THEN a.note END), 0) AS note_moyenne
             FROM trajet t
             JOIN utilisateur u ON u.id = t.chauffeur_id
             JOIN vehicule v ON v.id = t.vehicule_id
+            LEFT JOIN avis a ON a.cible_id = t.chauffeur_id
             WHERE t.places_restantes > 0
             AND t.statut = 'planifie'
+            AND t.lieu_depart LIKE :depart
+            AND t.lieu_arrivee LIKE :arrivee
+            AND DATE(t.date_heure_depart) = :date
         ";
 
-        $params = [];
-
-        if (($filters['depart'] ?? '') !== '') {
-            $sql .= " AND t.lieu_depart LIKE :depart";
-            $params['depart'] = '%' . $filters['depart'] . '%';
-        }
-
-        if (($filters['arrivee'] ?? '') !== '') {
-            $sql .= " AND t.lieu_arrivee LIKE :arrivee";
-            $params['arrivee'] = '%' . $filters['arrivee'] . '%';
-        }
-
-        if (($filters['date'] ?? '') !== '') {
-            $sql .= " AND DATE(t.date_heure_depart) = :date";
-            $params['date'] = $filters['date'];
-        }
+        $params = [
+            'depart' => '%' . $filters['depart'] . '%',
+            'arrivee' => '%' . $filters['arrivee'] . '%',
+            'date' => $filters['date'],
+        ];
 
         if (($filters['prix_max'] ?? '') !== '') {
             $sql .= " AND t.prix <= :prix_max";
@@ -163,13 +217,25 @@ class TrajetRepository
         }
 
         if (!empty($filters['eco'])) {
-            $sql .= " AND v.energie IN ('electrique', 'hybride')";
+            $sql .= " AND v.energie = 'electrique'";
         }
 
-        // Tri
-        switch ($filters['sort'] ?? null) {
+        $sql .= "
+            GROUP BY
+                t.id,
+                t.lieu_depart,
+                t.lieu_arrivee,
+                t.date_heure_depart,
+                t.date_heure_arrivee,
+                t.prix,
+                t.places_restantes,
+                u.pseudo,
+                v.energie
+        ";
+
+        switch ($filters['sort'] ?? 'date') {
             case 'prix':
-                $sql .= " ORDER BY t.prix ASC";
+                $sql .= " ORDER BY t.prix ASC, t.date_heure_depart ASC";
                 break;
             case 'date':
             default:
@@ -177,24 +243,20 @@ class TrajetRepository
                 break;
         }
 
-        // Pagination
         $sql .= " LIMIT :limit OFFSET :offset";
 
         $stmt = $pdo->prepare($sql);
 
-        // Bind paramètres dynamiques (typage explicite + normalisation du nom)
         foreach ($params as $k => $v) {
-            $key  = ltrim((string) $k, ':');
-            $name = ':' . $key;
+            $name = ':' . $k;
 
-            if ($key === 'prix_max') {
+            if ($k === 'prix_max') {
                 $stmt->bindValue($name, (int) $v, PDO::PARAM_INT);
             } else {
                 $stmt->bindValue($name, (string) $v, PDO::PARAM_STR);
             }
         }
 
-        // Bind LIMIT/OFFSET en int (obligatoire)
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 
@@ -308,5 +370,32 @@ class TrajetRepository
         $stmt->execute(['id' => $trajetId]);
 
         return $stmt->rowCount() === 1;
+    }
+
+    public function findNearestAvailableDate(string $depart, string $arrivee, string $date): ?string
+    {
+        $pdo = Database::getInstance();
+
+        $stmt = $pdo->prepare("
+            SELECT DATE(t.date_heure_depart) AS prochaine_date
+            FROM trajet t
+            WHERE t.places_restantes > 0
+            AND t.statut = 'planifie'
+            AND t.lieu_depart LIKE :depart
+            AND t.lieu_arrivee LIKE :arrivee
+            AND DATE(t.date_heure_depart) > :date
+            ORDER BY t.date_heure_depart ASC
+            LIMIT 1
+        ");
+
+        $stmt->execute([
+            'depart'  => '%' . $depart . '%',
+            'arrivee' => '%' . $arrivee . '%',
+            'date'    => $date,
+        ]);
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row['prochaine_date'] ?? null;
     }
 }

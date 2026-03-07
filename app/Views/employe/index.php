@@ -208,7 +208,7 @@
                                     <div class="emp-card__top">
                                         <div>
                                             <div class="emp-card__id">
-                                                #<?= (int) $a['id'] ?> · Trajet #<?= (int) $a['trajet_id'] ?>
+                                                AVIS-<?= (int)$a['id'] ?>
                                             </div>
                                             <h3 class="emp-card__title">Avis en attente</h3>
                                         </div>

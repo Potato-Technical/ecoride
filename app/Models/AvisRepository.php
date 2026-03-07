@@ -24,11 +24,14 @@ class AvisRepository
 
     public function setStatus(int $avisId, string $status): bool
     {
-        if (!in_array($status, ['valide','refuse'], true)) return false;
+        if (!in_array($status, ['valide', 'refuse'], true)) {
+            return false;
+        }
 
         $pdo = Database::getInstance();
         $stmt = $pdo->prepare("UPDATE avis SET statut_validation = :s WHERE id = :id");
         $stmt->execute(['s' => $status, 'id' => $avisId]);
+
         return $stmt->rowCount() === 1;
     }
 
@@ -63,6 +66,31 @@ class AvisRepository
                 END,
                 a.created_at ASC"
         );
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function findValidatedByCibleId(int $cibleId, int $limit = 5): array
+    {
+        $pdo = Database::getInstance();
+
+        $stmt = $pdo->prepare(
+            "SELECT
+                a.note,
+                a.commentaire,
+                a.created_at,
+                u.pseudo AS auteur_pseudo
+             FROM avis a
+             JOIN utilisateur u ON u.id = a.auteur_id
+             WHERE a.cible_id = :cible_id
+               AND a.statut_validation = 'valide'
+             ORDER BY a.created_at DESC
+             LIMIT :lim"
+        );
+
+        $stmt->bindValue(':cible_id', $cibleId, PDO::PARAM_INT);
+        $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
+        $stmt->execute();
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }

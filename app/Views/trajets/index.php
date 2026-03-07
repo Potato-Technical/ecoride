@@ -1,215 +1,237 @@
 <?php
 /**
- * Vue : Liste des trajets (mobile-first)
- *
  * Données disponibles :
- * - $trajets (array)  : résultats SQL
- * - $filters (array)  : filtres issus de l’URL (GET)
- * - $limit (int)      : nombre d’éléments chargés initialement
+ * - $trajets
+ * - $filters
+ * - $limit
+ * - $hasSearch
+ * - $nearestDate
  */
 ?>
 
 <section class="trajets-page">
-
-    <!-- BARRE DE RECHERCHE (GET) -->
-    <section class="trajets-search">
-        <form id="trajets-search-form" method="GET" class="mb-4">
-
-            <!-- MOBILE  -->
-            <div class="d-md-none">
-
-                <input type="text"
-                       name="depart"
-                       class="form-control mb-2"
-                       placeholder="Départ"
-                       value="<?= htmlspecialchars($filters['depart'] ?? '') ?>">
-
-                <input type="text"
-                       name="arrivee"
-                       class="form-control mb-2"
-                       placeholder="Arrivée"
-                       value="<?= htmlspecialchars($filters['arrivee'] ?? '') ?>">
-
-                <input type="date"
-                       name="date"
-                       class="form-control mb-2"
-                       value="<?= htmlspecialchars($filters['date'] ?? '') ?>">
-
-                <input type="number"
-                       name="prix_max"
-                       class="form-control mb-2"
-                       placeholder="Prix max"
-                       value="<?= htmlspecialchars($filters['prix_max'] ?? '') ?>">
-
-                <div class="form-check mb-2">
-                    <input class="form-check-input"
-                           type="checkbox"
-                           name="eco"
-                           id="eco-mobile"
-                           <?= !empty($filters['eco']) ? 'checked' : '' ?>>
-                    <label class="form-check-label" for="eco-mobile">
-                        Voyage écologique
-                    </label>
-                </div>
-
-                <button class="btn btn-success w-100">
-                    Rechercher
-                </button>
+    <form id="trajets-search-form" method="GET" class="trajets-search-bar">
+        <div class="trajets-search-grid">
+            <div class="trajets-search-field">
+                <label for="depart" class="visually-hidden">Départ</label>
+                <input
+                    id="depart"
+                    type="text"
+                    name="depart"
+                    class="form-control"
+                    placeholder="Départ"
+                    value="<?= htmlspecialchars($filters['depart'] ?? '') ?>"
+                    required
+                >
             </div>
 
-            <!-- DESKTOP -->
-            <aside class="d-none d-md-block col-md-3">
+            <div class="trajets-search-field">
+                <label for="arrivee" class="visually-hidden">Arrivée</label>
+                <input
+                    id="arrivee"
+                    type="text"
+                    name="arrivee"
+                    class="form-control"
+                    placeholder="Arrivée"
+                    value="<?= htmlspecialchars($filters['arrivee'] ?? '') ?>"
+                    required
+                >
+            </div>
 
-                <input type="text"
-                       name="depart"
-                       class="form-control mb-2"
-                       placeholder="Départ"
-                       value="<?= htmlspecialchars($filters['depart'] ?? '') ?>">
+            <div class="trajets-search-field">
+                <label for="date" class="visually-hidden">Date</label>
+                <input
+                    id="date"
+                    type="date"
+                    name="date"
+                    class="form-control"
+                    value="<?= htmlspecialchars($filters['date'] ?? '') ?>"
+                    required
+                >
+            </div>
 
-                <input type="text"
-                       name="arrivee"
-                       class="form-control mb-2"
-                       placeholder="Arrivée"
-                       value="<?= htmlspecialchars($filters['arrivee'] ?? '') ?>">
+            <div class="trajets-search-field">
+                <label for="prix_max" class="visually-hidden">Prix max</label>
+                <input
+                    id="prix_max"
+                    type="number"
+                    name="prix_max"
+                    class="form-control"
+                    placeholder="Prix max"
+                    value="<?= htmlspecialchars($filters['prix_max'] ?? '') ?>"
+                    min="0"
+                >
+            </div>
 
-                <input type="date"
-                       name="date"
-                       class="form-control mb-2"
-                       value="<?= htmlspecialchars($filters['date'] ?? '') ?>">
+            <div class="trajets-search-submit">
+                <button class="btn btn-success" type="submit">Recherche</button>
+            </div>
+        </div>
 
-                <input type="number"
-                       name="prix_max"
-                       class="form-control mb-2"
-                       placeholder="Prix max"
-                       value="<?= htmlspecialchars($filters['prix_max'] ?? '') ?>">
+        <div class="trajets-search-mobile-options">
+            <div class="trajets-mobile-filter-line">
+                <label class="trajets-check">
+                    <input
+                        type="checkbox"
+                        name="eco"
+                        value="1"
+                        <?= !empty($filters['eco']) ? 'checked' : '' ?>
+                    >
+                    <span>Voyage écologique</span>
+                </label>
+            </div>
 
-                <div class="form-check mb-2">
-                    <input class="form-check-input"
-                           type="checkbox"
-                           name="eco"
-                           id="eco-desktop"
-                           <?= !empty($filters['eco']) ? 'checked' : '' ?>>
-                    <label class="form-check-label" for="eco-desktop">
-                        Voyage écologique
-                    </label>
-                </div>
-
-                <h6 class="mt-3">Trier par</h6>
-
-                <div class="form-check">
-                    <input class="form-check-input"
-                           type="radio"
-                           name="sort"
-                           value="prix"
-                           <?= ($filters['sort'] ?? '') === 'prix' ? 'checked' : '' ?>>
-                    <label class="form-check-label">
-                        Prix le plus bas
-                    </label>
-                </div>
-
-                <div class="form-check">
-                    <input class="form-check-input"
-                           type="radio"
-                           name="sort"
-                           value="date"
-                           <?= ($filters['sort'] ?? '') === 'date' ? 'checked' : '' ?>>
-                    <label class="form-check-label">
+            <div class="trajets-mobile-filter-line">
+                <label for="sort-mobile" class="trajets-sort-label">Trier par</label>
+                <select id="sort-mobile" name="sort" class="form-select trajets-sort-select">
+                    <option value="date" <?= ($filters['sort'] ?? 'date') === 'date' ? 'selected' : '' ?>>
                         Départ le plus proche
-                    </label>
+                    </option>
+                    <option value="prix" <?= ($filters['sort'] ?? 'date') === 'prix' ? 'selected' : '' ?>>
+                        Prix le plus bas
+                    </option>
+                </select>
+            </div>
+        </div>
+    </form>
+
+    <div class="trajets-layout">
+        <aside class="trajets-filters">
+            <div class="trajets-filters-box">
+                <div class="trajets-filters-head">
+                    <h2>Trier par</h2>
+                    <a href="/trajets" class="trajets-filters-reset">Tout effacer</a>
                 </div>
 
-                <button class="btn btn-outline-secondary mt-3 w-100">
-                    Appliquer
-                </button>
-            </aside>
+                <div class="trajets-filters-list">
+                    <label class="trajets-filter-check">
+                        <input
+                            type="checkbox"
+                            id="eco-desktop"
+                            <?= !empty($filters['eco']) ? 'checked' : '' ?>
+                        >
+                        <span>Voyage écologique</span>
+                    </label>
 
-        </form>
-    </section>
+                    <label class="trajets-filter-radio <?= ($filters['sort'] ?? 'date') === 'prix' ? 'is-active' : '' ?>">
+                        <input
+                            type="radio"
+                            name="sort-desktop"
+                            value="prix"
+                            <?= ($filters['sort'] ?? 'date') === 'prix' ? 'checked' : '' ?>
+                        >
+                        <span>Prix le plus bas</span>
+                    </label>
 
-    <!--FILTRES + RÉSULTATS -->
-    <div class="trajets-layout">
-
-        <!--  FILTRES LATÉRAUX (UI) -->
-        <aside class="trajets-filters">
-
-            <div class="filters-header d-flex justify-content-between align-items-center mb-3">
-                <h2 class="h6 mb-0">Trier par</h2>
-
-                <button type="button"
-                        class="btn btn-sm btn-outline-secondary d-lg-none"
-                        data-toggle-filters>
-                    Filtres
-                </button>
+                    <label class="trajets-filter-radio <?= ($filters['sort'] ?? 'date') === 'date' ? 'is-active' : '' ?>">
+                        <input
+                            type="radio"
+                            name="sort-desktop"
+                            value="date"
+                            <?= ($filters['sort'] ?? 'date') === 'date' ? 'checked' : '' ?>
+                        >
+                        <span>Départ le plus proche</span>
+                    </label>
+                </div>
             </div>
-
-            <div class="filters-body">
-                <p class="text-muted small mb-0">
-                    (Filtres avancés – évolution prévue)
-                </p>
-            </div>
-
         </aside>
 
-        <!-- RÉSULTATS -->
-        <section class="trajets-results">
+        <section class="trajets-results" id="trajets-results">
+            <?php if (!$hasSearch): ?>
+                <div class="trajets-state">
+                    Veuillez saisir un départ, une arrivée et une date pour lancer la recherche.
+                </div>
 
-            <?php if (empty($trajets)): ?>
-
-                <div class="alert alert-info">
-                    Aucun trajet disponible pour le moment.
+            <?php elseif (empty($trajets)): ?>
+                <div class="trajets-state">
+                    Aucun trajet disponible pour cette date.
+                    <?php if (!empty($nearestDate)): ?>
+                        <br>
+                        Le prochain trajet disponible est le
+                        <strong><?= htmlspecialchars(date('d/m/Y', strtotime($nearestDate))) ?></strong>.
+                    <?php endif; ?>
                 </div>
 
             <?php else: ?>
+                <div class="trajets-list">
+                    <?php foreach ($trajets as $trajet): ?>
+                        <?php
+                            $departAt = strtotime($trajet['date_heure_depart']);
+                            $arriveeAt = !empty($trajet['date_heure_arrivee']) ? strtotime($trajet['date_heure_arrivee']) : null;
+                            $isEco = ($trajet['energie'] ?? '') === 'electrique';
+                            $note = number_format((float)($trajet['note_moyenne'] ?? 0), 1, ',', ' ');
+                        ?>
+                        <article class="trajet-card">
+                            <a class="trajet-card-link" href="/trajets/<?= (int)$trajet['id'] ?>">
+                                <div class="trajet-card-top">
+                                    <div class="trajet-card-times">
+                                        <div class="trajet-card-route">
+                                            <span class="trajet-time"><?= date('H:i', $departAt) ?></span>
+                                            <span class="trajet-city"><?= htmlspecialchars($trajet['lieu_depart']) ?></span>
+                                        </div>
 
-                <?php foreach ($trajets as $trajet): ?>
+                                        <?php if ($arriveeAt): ?>
+                                            <div class="trajet-card-duration">
+                                                <?php
+                                                    $durationMinutes = max(0, (int)(($arriveeAt - $departAt) / 60));
+                                                    $hours = floor($durationMinutes / 60);
+                                                    $minutes = $durationMinutes % 60;
+                                                    echo $hours . 'h' . str_pad((string)$minutes, 2, '0', STR_PAD_LEFT);
+                                                ?>
+                                            </div>
+                                        <?php endif; ?>
 
-                    <article class="trajet-card card shadow-sm mb-4">
+                                        <div class="trajet-card-route">
+                                            <?php if ($arriveeAt): ?>
+                                                <span class="trajet-time"><?= date('H:i', $arriveeAt) ?></span>
+                                            <?php endif; ?>
+                                            <span class="trajet-city"><?= htmlspecialchars($trajet['lieu_arrivee']) ?></span>
+                                        </div>
+                                    </div>
 
-                        <div class="card-body">
-
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div>
-                                    <strong><?= htmlspecialchars($trajet['lieu_depart']) ?></strong>
-                                    →
-                                    <strong><?= htmlspecialchars($trajet['lieu_arrivee']) ?></strong>
+                                    <div class="trajet-card-price">
+                                        <?= number_format((float)$trajet['prix'], 2, ',', ' ') ?> €
+                                    </div>
                                 </div>
 
-                                <div class="trajet-price fw-semibold">
-                                    <?= number_format((float) $trajet['prix'], 2, ',', ' ') ?> crédits
+                                <div class="trajet-card-separator"></div>
+
+                                <div class="trajet-card-bottom">
+                                    <div class="trajet-driver-avatar" aria-hidden="true">
+                                        <?= strtoupper(substr((string)$trajet['pseudo'], 0, 1)) ?>
+                                    </div>
+
+                                    <div class="trajet-driver-meta">
+                                        <div class="trajet-driver-line">
+                                            <span class="trajet-driver-name"><?= htmlspecialchars($trajet['pseudo']) ?></span>
+                                            <?php if ($isEco): ?>
+                                                <span class="trajet-eco-badge" title="Voyage écologique">🍃</span>
+                                            <?php endif; ?>
+                                            <span class="trajet-rating">★ <?= $note ?></span>
+                                        </div>
+
+                                        <div class="trajet-driver-extra">
+                                            <span><?= date('d/m/Y', $departAt) ?></span>
+                                            <span>•</span>
+                                            <span><?= (int)$trajet['places_restantes'] ?> place(s)</span>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <div class="text-muted mb-3">
-                                <?= date('H:i', strtotime($trajet['date_heure_depart'])) ?>
-                                •
-                                <?= date('d/m/Y', strtotime($trajet['date_heure_depart'])) ?>
-                            </div>
-
-                            <div class="text-muted small">
-                                Places restantes : <?= (int)($trajet['places_restantes'] ?? 0) ?>
-                            </div>
-
-                            <a href="/trajet?id=<?= (int) $trajet['id'] ?>"
-                               class="btn btn-outline-success w-100">
-                                Voir le détail
                             </a>
-
-                        </div>
-                    </article>
-
-                <?php endforeach; ?>
-
-                <div class="text-center mt-4">
-                    <button class="btn btn-success px-4 load-more-btn"
-                            data-offset="<?= count($trajets) ?>"
-                            data-limit="<?= (int) ($limit ?? 6) ?>">
-                        Charger plus de résultats
-                    </button>
+                        </article>
+                    <?php endforeach; ?>
                 </div>
 
+                <?php if (count($trajets) === (int)($limit ?? 6)): ?>
+                    <div class="text-center mt-4" id="load-more-wrapper">
+                        <button class="btn btn-success px-4 load-more-btn"
+                                data-offset="<?= count($trajets) ?>"
+                                data-limit="<?= (int)($limit ?? 6) ?>">
+                            Charger plus de résultats
+                        </button>
+                    </div>
+                <?php endif; ?>
             <?php endif; ?>
-
         </section>
     </div>
-
 </section>

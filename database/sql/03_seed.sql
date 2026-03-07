@@ -122,6 +122,29 @@ WHERE u.email='chauffeur@ecoride.fr'
       AND t.date_heure_depart='2026-03-15 08:00:00'
   );
 
+-- Trajet futur dispo pour tester "date la plus proche" / "prochain trajet disponible"
+INSERT INTO trajet (
+  lieu_depart, lieu_arrivee, date_heure_depart, date_heure_arrivee,
+  prix, nb_places, places_restantes, statut, paid_at,
+  chauffeur_id, vehicule_id, created_at
+)
+SELECT
+  'Paris','Lyon',
+  '2026-03-16 08:00:00',
+  NULL,
+  22.00, 3, 3, 'planifie', NULL,
+  u.id, v.id, NOW()
+FROM utilisateur u
+JOIN vehicule v ON v.immatriculation='CHAUF-000-EC'
+WHERE u.email='chauffeur@ecoride.fr'
+  AND NOT EXISTS (
+    SELECT 1 FROM trajet t
+    WHERE t.lieu_depart='Paris'
+      AND t.lieu_arrivee='Lyon'
+      AND t.chauffeur_id=u.id
+      AND t.date_heure_depart='2026-03-16 08:00:00'
+  );
+
 -- Paris->Lille : complet => places_restantes=0
 INSERT INTO trajet (
   lieu_depart, lieu_arrivee, date_heure_depart, date_heure_arrivee,
