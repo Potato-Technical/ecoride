@@ -80,6 +80,7 @@ class ReservationController extends Controller
         $this->render('reservations/confirm', [
             'trajet' => $trajet,
             'title'  => 'Confirmer la réservation',
+            'pageCss' => ['reservation-confirm.css'],
         ]);
     }
 
@@ -90,7 +91,7 @@ class ReservationController extends Controller
     {
         $this->requireAuth();
 
-        $userId = (int)$_SESSION['user_id'];
+        $userId = (int) $_SESSION['user_id'];
 
         $repo = new ParticipationRepository();
         $incidentRepo = new IncidentRepository();
@@ -99,9 +100,9 @@ class ReservationController extends Controller
 
         // US11: bouton "Valider OK/KO" si confirmé + trajet terminé + pas déjà validé
         foreach ($reservations as &$r) {
-            $etat = strtolower(trim((string)($r['etat'] ?? '')));
-            $trajetStatut = strtolower(trim((string)($r['trajet_statut'] ?? '')));
-            $trajetId = (int)($r['trajet_id'] ?? 0);
+            $etat = strtolower(trim((string) ($r['etat'] ?? '')));
+            $trajetStatut = strtolower(trim((string) ($r['trajet_statut'] ?? '')));
+            $trajetId = (int) ($r['trajet_id'] ?? 0);
 
             $canValidate = ($trajetId > 0 && $etat === 'confirme' && $trajetStatut === 'termine');
 
@@ -117,6 +118,7 @@ class ReservationController extends Controller
         $this->render('reservations/index', [
             'reservations' => $reservations,
             'title'        => 'Mes réservations',
+            'pageCss'      => ['reservation-index.css'],
             'scripts'      => ['/assets/js/reservations.js?v=50'],
         ]);
     }
@@ -129,6 +131,7 @@ class ReservationController extends Controller
      */
     public function confirm(): void
     {
+        $this->requireAuth();
         // Action sensible : POST uniquement
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
@@ -192,32 +195,9 @@ class ReservationController extends Controller
                     exit;
                 }
 
-                // Annulée → réactivation (Option B)
                 if ($existing['etat'] === 'annule') {
-
-                    $ok = $partRepo->reactivate(
-                        (int) $_SESSION['user_id'],
-                        $trajetId,
-                        (int) $trajet['prix']
-                    );
-
-                    // On vérifie le retour
-                    if (!$ok) {
-                        $pdo->rollBack();
-                        $this->setFlash('error', 'Réactivation impossible');
-                        header('Location: /reservations');
-                        exit;
-                    }
-
-                    if (!$trajetRepo->decrementPlaces($trajetId)) {
-                        $pdo->rollBack();
-                        $this->setFlash('error', 'Plus de place disponible');
-                        header('Location: /trajets');
-                        exit;
-                    }
-
-                    $pdo->commit();
-                    $this->setFlash('success', 'Réservation confirmée');
+                    $pdo->rollBack();
+                    $this->setFlash('error', 'Cette réservation a déjà été annulée et ne peut pas être reprise.');
                     header('Location: /reservations');
                     exit;
                 }

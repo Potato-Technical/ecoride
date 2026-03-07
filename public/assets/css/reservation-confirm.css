@@ -1,0 +1,147 @@
+    .confirm-reservation-page {
+        max-width: 1200px;
+    }
+
+    .confirm-title {
+        font-size: clamp(2rem, 2.8vw, 3rem);
+        font-weight: 800;
+        color: #20313c;
+        line-height: 1.1;
+    }
+
+    .confirm-main-card,
+    .confirm-side-card {
+        border-radius: 18px;
+        background: #ffffff;
+    }
+
+    .confirm-step {
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #4f7b62;
+    }
+
+    .confirm-route {
+        font-size: clamp(1.5rem, 2vw, 2.2rem);
+        font-weight: 800;
+        color: #1f2f39;
+        line-height: 1.2;
+    }
+
+    .confirm-arrow {
+        color: #4f7b62;
+    }
+
+    .confirm-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+    }
+
+    .confirm-info-item {
+        background: #f7f7f4;
+        border: 1px solid #ece9df;
+        border-radius: 14px;
+        padding: 1rem 1.1rem;
+    }
+
+    .confirm-info-label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: #6f7a74;
+        margin-bottom: 0.35rem;
+    }
+
+    .confirm-info-value {
+        font-size: 1.05rem;
+        color: #20313c;
+    }
+
+    .confirm-alert {
+        background: #f1f6ef;
+        border: 1px solid #d8e6d6;
+        color: #284532;
+        border-radius: 14px;
+        padding: 1rem 1.1rem;
+        font-size: 0.98rem;
+    }
+
+    .btn-confirm-reservation {
+        background: #2f5d46;
+        border: 1px solid #2f5d46;
+        color: #fff;
+        border-radius: 12px;
+        padding: 0.85rem 1.4rem;
+        font-weight: 700;
+    }
+
+    .btn-confirm-reservation:hover,
+    .btn-confirm-reservation:focus {
+        background: #284f3c;
+        border-color: #284f3c;
+        color: #fff;
+    }
+
+    .btn-cancel-reservation {
+        background: #fff;
+        border: 1px solid #cfd6d1;
+        color: #41505a;
+        border-radius: 12px;
+        padding: 0.85rem 1.4rem;
+        font-weight: 700;
+    }
+
+    .btn-cancel-reservation:hover,
+    .btn-cancel-reservation:focus {
+        background: #f7f7f4;
+        border-color: #bfc8c2;
+        color: #2a3942;
+    }
+
+    .confirm-side-title {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #1f2f39;
+    }
+
+    .confirm-summary-line,
+    .confirm-price-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: flex-start;
+        margin-bottom: 0.9rem;
+    }
+
+    .confirm-summary-line span,
+    .confirm-price-row span {
+        color: #66736b;
+    }
+
+    .confirm-summary-line strong,
+    .confirm-price-row strong {
+        color: #1f2f39;
+        text-align: right;
+    }
+
+    .confirm-price-row {
+        margin-bottom: 0;
+        font-size: 1.05rem;
+    }
+
+    @media (max-width: 575.98px) {
+        .confirm-main-card .card-body,
+        .confirm-side-card .card-body {
+            padding: 1.25rem !important;
+        }
+
+        .btn-confirm-reservation,
+        .btn-cancel-reservation {
+            width: 100%;
+        }
+    }

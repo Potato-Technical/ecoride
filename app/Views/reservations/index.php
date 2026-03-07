@@ -1,25 +1,28 @@
-<h1 class="mb-4">Mes réservations</h1>
+<h1 class="reservations-page-title mb-4">Mes réservations</h1>
 
 <?php if (empty($reservations)): ?>
 
-    <div class="alert alert-info">
-        Aucune réservation pour le moment.
-    </div>
+    <section class="reservation-empty-state card border-0 shadow-sm">
+        <div class="card-body p-4 p-lg-5">
+            <p class="reservation-empty-kicker mb-2">Espace passager</p>
+            <h2 class="reservation-empty-title mb-3">Aucune réservation pour le moment</h2>
+            <p class="reservation-empty-text mb-0">
+                Vos trajets réservés apparaîtront ici dès qu’une participation sera confirmée.
+            </p>
+        </div>
+    </section>
 
 <?php else: ?>
 
-    <div class="row" id="reservations-list">
+    <div class="row g-4" id="reservations-list">
         <?php foreach ($reservations as $r): ?>
 
             <?php
                 $etat = strtolower(trim((string) ($r['etat'] ?? '')));
                 $trajetStatut = strtolower(trim((string) ($r['trajet_statut'] ?? '')));
-
                 $annulable = ($etat === 'confirme') && ($trajetStatut === 'planifie');
-
                 $ts = strtotime($r['date_heure_depart'] ?? '');
 
-                // Libellé utilisateur du statut trajet
                 $trajetLabel = match ($trajetStatut) {
                     'planifie' => 'Planifié',
                     'demarre'  => 'En cours',
@@ -28,22 +31,14 @@
                     default    => 'Inconnu',
                 };
 
-                // Condition stricte UI "Valider le trajet"
-                // - participation confirmée
-                // - trajet terminé
-                // - pas déjà d’incident (un seul par trajet/passager)
-                // On se base sur une clé préparée côté contrôleur (ex: can_validate)
                 $validable = ($etat === 'confirme') && ($trajetStatut === 'termine') && !empty($r['can_validate']);
-
-                // Cas informatif : trajet terminé mais non validable (incident déjà existant, etc.)
                 $alreadyValidated = ($etat === 'confirme' && $trajetStatut === 'termine' && !$validable);
 
-                // Message explicatif
                 $statusMsg = '';
 
                 if ($etat !== 'confirme') {
                     if ($etat === 'annule') {
-                        $statusMsg = 'Participation annulée.';
+                        $statusMsg = 'Cette réservation a déjà été annulée et ne peut pas être reprise.';
                     } elseif ($etat === 'demande') {
                         $statusMsg = 'Demande en attente de confirmation.';
                     } else {
@@ -65,84 +60,112 @@
                     }
                 }
 
-                $hasActionButton = ($validable || $annulable);
+                $participationLabel = match ($etat) {
+                    'confirme' => 'Confirmée',
+                    'annule'   => 'Annulée',
+                    'demande'  => 'En attente',
+                    default    => 'Inconnu',
+                };
+
+                $trajetBadgeClass = match ($trajetStatut) {
+                    'planifie' => 'badge badge-soft-success',
+                    'demarre'  => 'badge badge-soft-warning',
+                    'termine'  => 'badge badge-soft-neutral',
+                    'annule'   => 'badge badge-soft-danger',
+                    default    => 'badge badge-soft-neutral',
+                };
+
+                $participationBadgeClass = match ($etat) {
+                    'confirme' => 'badge badge-soft-success',
+                    'annule'   => 'badge badge-soft-danger',
+                    'demande'  => 'badge badge-soft-warning',
+                    default    => 'badge badge-soft-neutral',
+                };
             ?>
 
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card h-100 shadow-sm">
+            <div class="col-12 col-md-6 col-xl-4">
+                <article class="reservation-card card border-0 shadow-sm h-100">
+                    <div class="card-body p-4 d-flex flex-column">
 
-                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                            <p class="reservation-card-kicker mb-0">Trajet réservé</p>
+                            <span class="<?= htmlspecialchars($trajetBadgeClass, ENT_QUOTES, 'UTF-8') ?>">
+                                <?= htmlspecialchars($trajetLabel, ENT_QUOTES, 'UTF-8') ?>
+                            </span>
+                        </div>
 
-                        <h2 class="h6 card-title mb-2">
+                        <h2 class="reservation-route mb-3">
                             <?= htmlspecialchars($r['lieu_depart'] ?? '', ENT_QUOTES, 'UTF-8') ?>
-                            →
+                            <span class="reservation-arrow">→</span>
                             <?= htmlspecialchars($r['lieu_arrivee'] ?? '', ENT_QUOTES, 'UTF-8') ?>
                         </h2>
 
-                        <p class="text-muted mb-2">
-                            Départ :
-                            <?= htmlspecialchars(
-                                $ts ? date('d/m/Y H:i', $ts) : 'Date invalide',
-                                ENT_QUOTES,
-                                'UTF-8'
-                            ) ?>
-                        </p>
+                        <div class="reservation-info-grid mb-3">
+                            <div class="reservation-info-item">
+                                <span class="reservation-info-label">Départ</span>
+                                <strong class="reservation-info-value">
+                                    <?= htmlspecialchars(
+                                        $ts ? date('d/m/Y à H:i', $ts) : 'Date invalide',
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>
+                                </strong>
+                            </div>
 
-                        <p class="mb-2">
-                            Prix :
-                            <strong><?= (int) ($r['prix'] ?? 0) ?> crédits</strong>
-                        </p>
+                            <div class="reservation-info-item">
+                                <span class="reservation-info-label">Prix</span>
+                                <strong class="reservation-info-value">
+                                    <?= (int) ($r['prix'] ?? 0) ?> crédits
+                                </strong>
+                            </div>
+                        </div>
 
-                        <p class="mb-2">
-                            État participation :
-                            <strong><?= htmlspecialchars($r['etat'] ?? '', ENT_QUOTES, 'UTF-8') ?></strong>
-                        </p>
+                        <div class="reservation-meta mb-3">
+                            <div class="reservation-meta-row">
+                                <span>Participation</span>
+                                <span class="<?= htmlspecialchars($participationBadgeClass, ENT_QUOTES, 'UTF-8') ?>">
+                                    <?= htmlspecialchars($participationLabel, ENT_QUOTES, 'UTF-8') ?>
+                                </span>
+                            </div>
 
-                        <p class="mb-3">
-                            Statut trajet :
-                            <strong><?= htmlspecialchars($trajetLabel, ENT_QUOTES, 'UTF-8') ?></strong>
-                        </p>
+                            <div class="reservation-meta-row">
+                                <span>Statut trajet</span>
+                                <strong><?= htmlspecialchars($trajetLabel, ENT_QUOTES, 'UTF-8') ?></strong>
+                            </div>
+                        </div>
 
-                        <div class="mt-auto">
+                        <div class="reservation-status-box mb-4">
+                            <?= htmlspecialchars($statusMsg, ENT_QUOTES, 'UTF-8') ?>
+                        </div>
+
+                        <div class="mt-auto d-flex flex-column gap-2">
 
                             <?php if ($validable): ?>
-                                <a href="/trajets/<?= (int)$r['trajet_id'] ?>/incidents/create"
-                                   class="btn btn-outline-primary btn-sm w-100 mb-2">
+                                <a href="/trajets/<?= (int) $r['trajet_id'] ?>/incidents/create"
+                                   class="btn btn-reservation-primary">
                                     Valider le trajet
                                 </a>
                             <?php endif; ?>
 
                             <?php if ($annulable): ?>
-
                                 <form method="POST"
                                       action="/reservations/annuler"
-                                      class="d-grid js-cancel-form">
-
+                                      class="m-0 js-cancel-form">
                                     <?= csrf_field() ?>
 
                                     <input type="hidden"
                                            name="id"
                                            value="<?= (int) ($r['participation_id'] ?? 0) ?>">
 
-                                    <button type="submit"
-                                            class="btn btn-outline-danger btn-sm">
+                                    <button type="submit" class="btn btn-reservation-secondary w-100">
                                         Annuler la réservation
                                     </button>
                                 </form>
-
-                            <?php endif; ?>
-
-                            <?php if (!$hasActionButton): ?>
-                                <p class="text-muted small mb-0">
-                                    <?= htmlspecialchars($statusMsg, ENT_QUOTES, 'UTF-8') ?>
-                                </p>
                             <?php endif; ?>
 
                         </div>
-
                     </div>
-
-                </div>
+                </article>
             </div>
 
         <?php endforeach; ?>
