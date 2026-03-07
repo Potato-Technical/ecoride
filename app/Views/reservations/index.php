@@ -52,7 +52,7 @@
                     } elseif ($trajetStatut === 'termine') {
                         $statusMsg = $alreadyValidated
                             ? 'Trajet terminé. Validation déjà envoyée.'
-                            : 'Trajet terminé. Merci de le valider (OK/KO).';
+                            : 'Trajet terminé. Merci de confirmé la fin de votre trajet.';
                     } elseif ($trajetStatut === 'annule') {
                         $statusMsg = 'Trajet annulé. Vos crédits ont été remboursés (si réservation confirmée).';
                     } else {

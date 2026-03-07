@@ -13,32 +13,47 @@ class HistoryController extends Controller
     {
         $this->requireAuth();
 
-        $userId = (int)$_SESSION['user_id'];
+        $userId = (int) $_SESSION['user_id'];
 
-        $trajetRepo = new TrajetRepository();
-        $partRepo   = new ParticipationRepository();
-        $incidentRepo = new IncidentRepository(); 
+        $trajetRepo   = new TrajetRepository();
+        $partRepo     = new ParticipationRepository();
+        $incidentRepo = new IncidentRepository();
 
         $mesTrajets = $trajetRepo->findByChauffeurId($userId);
         $mesParticipations = $partRepo->findByUserWithTrajetStatus($userId);
 
-        // Marqueur UI "valider OK/KO"
         foreach ($mesParticipations as &$p) {
-            $canValidate =
-                ($p['etat'] === 'confirme')
-                && (($p['trajet_statut'] ?? '') === 'termine');
+            $etatParticipation = $p['etat'] ?? '';
+            $trajetStatut      = $p['trajet_statut'] ?? '';
 
-            if ($canValidate) {
-                $already = $incidentRepo->findByTrajetAndPassager((int)$p['trajet_id'], $userId);
-                $canValidate = ($already === null);
+            $alreadyValidated = false;
+
+            if (
+                $etatParticipation === 'confirme'
+                && $trajetStatut === 'termine'
+            ) {
+                $alreadyValidated = $incidentRepo->findByTrajetAndPassager(
+                    (int) $p['trajet_id'],
+                    $userId
+                ) !== null;
             }
 
-            $p['can_validate'] = $canValidate;
+            $p['already_validated'] = $alreadyValidated;
+
+            $p['can_validate'] =
+                ($etatParticipation === 'confirme')
+                && ($trajetStatut === 'termine')
+                && !$alreadyValidated;
+
+            $p['can_cancel'] =
+                ($etatParticipation === 'confirme')
+                && ($trajetStatut === 'planifie');
         }
         unset($p);
 
         $this->render('history/index', [
-            'title'            => 'Historique',
+            'title'             => 'Historique',
+            'pageCss'           => ['history-index'],
             'mesTrajets'        => $mesTrajets,
             'mesParticipations' => $mesParticipations,
         ]);

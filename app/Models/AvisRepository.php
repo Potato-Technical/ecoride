@@ -49,16 +49,12 @@ class AvisRepository
                 a.commentaire,
                 a.statut_validation,
                 a.created_at,
-
                 ua.pseudo AS auteur_pseudo,
                 uc.pseudo AS cible_pseudo
-
             FROM avis a
             JOIN utilisateur ua ON ua.id = a.auteur_id
             JOIN utilisateur uc ON uc.id = a.cible_id
-
             WHERE a.statut_validation IN ('en_attente','valide','refuse')
-
             ORDER BY
                 CASE
                     WHEN a.statut_validation = 'en_attente' THEN 0
@@ -93,5 +89,65 @@ class AvisRepository
         $stmt->execute();
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function existsByTrajetAndAuteur(int $trajetId, int $auteurId): bool
+    {
+        $pdo = Database::getInstance();
+
+        $stmt = $pdo->prepare(
+            "SELECT 1
+             FROM avis
+             WHERE trajet_id = :tid
+               AND auteur_id = :aid
+             LIMIT 1"
+        );
+
+        $stmt->execute([
+            'tid' => $trajetId,
+            'aid' => $auteurId,
+        ]);
+
+        return (bool) $stmt->fetchColumn();
+    }
+
+    public function countByTrajet(int $trajetId): int
+    {
+        $pdo = Database::getInstance();
+
+        $stmt = $pdo->prepare(
+            "SELECT COUNT(*)
+             FROM avis
+             WHERE trajet_id = :tid"
+        );
+
+        $stmt->execute(['tid' => $trajetId]);
+
+        return (int) $stmt->fetchColumn();
+    }
+
+    public function create(
+        int $trajetId,
+        int $auteurId,
+        int $cibleId,
+        int $note,
+        ?string $commentaire
+    ): void {
+        $pdo = Database::getInstance();
+
+        $stmt = $pdo->prepare(
+            "INSERT INTO avis
+                (note, commentaire, statut_validation, auteur_id, cible_id, trajet_id, created_at)
+             VALUES
+                (:note, :commentaire, 'en_attente', :auteur_id, :cible_id, :trajet_id, NOW())"
+        );
+
+        $stmt->execute([
+            'note'        => $note,
+            'commentaire' => $commentaire,
+            'auteur_id'   => $auteurId,
+            'cible_id'    => $cibleId,
+            'trajet_id'   => $trajetId,
+        ]);
     }
 }

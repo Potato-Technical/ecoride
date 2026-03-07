@@ -1,0 +1,94 @@
+.incident-create{
+    max-width: 720px;
+    margin: auto;
+}
+
+.page-title{
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.page-subtitle{
+    color: #6c757d;
+    margin-bottom: 24px;
+}
+
+.er-card{
+    border-radius: 12px;
+}
+
+.form-section{
+    margin-bottom: 24px;
+}
+
+.trajet-etat{
+    display: flex;
+    gap: 16px;
+    margin-top: 10px;
+}
+
+.trajet-option{
+    flex:1;
+    border:1px solid #e5e5e5;
+    border-radius:10px;
+    padding:14px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.trajet-option:hover{
+    background:#f9f9f9;
+}
+
+.trajet-option input{
+    display:none;
+}
+
+/* état sélectionné */
+
+.trajet-option input:checked + .trajet-option-ui{
+    font-weight:600;
+}
+
+.trajet-option-ok input:checked + .trajet-option-ui{
+    border-left:4px solid #198754;
+    padding-left:10px;
+}
+
+.trajet-option-ko input:checked + .trajet-option-ui{
+    border-left:4px solid #dc3545;
+    padding-left:10px;
+}
+
+.trajet-option input:checked + .trajet-option-ui{
+    background:#f8f9fa;
+    border-radius:8px;
+    padding:8px;
+}
+
+.trajet-option-ui{
+    display:flex;
+    gap:10px;
+}
+
+.trajet-icon{
+    width:18px;
+    height:18px;
+}
+
+.option-text{
+    font-size:13px;
+    color:#6c757d;
+}
+
+.form-hint{
+    font-size:13px;
+    color:#6c757d;
+}
+
+.form-actions{
+    display:flex;
+    gap:12px;
+    margin-top:20px;
+}

@@ -1,0 +1,74 @@
+.history-title{
+    margin-bottom: 2rem;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #173042;
+}
+
+.history-section{
+    margin-bottom: 2rem;
+}
+
+.history-section-title{
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #173042;
+}
+
+.history-alert{
+    border-radius: 10px;
+}
+
+.history-separator{
+    margin: 2rem 0;
+    opacity: .2;
+}
+
+.history-card{
+    border: 1px solid #e8e8e8;
+    border-radius: 12px;
+}
+
+.history-card .card-body{
+    padding: 1.25rem;
+}
+
+.history-card-title{
+    margin-bottom: .75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1f2d3d;
+}
+
+.history-arrow{
+    margin: 0 .2rem;
+}
+
+.history-meta{
+    margin-bottom: .75rem;
+    color: #6c757d;
+}
+
+.history-line{
+    margin-bottom: .5rem;
+    color: #1f2d3d;
+}
+
+.history-actions{
+    padding-top: 1rem;
+}
+
+.history-state{
+    display: inline-block;
+    font-size: .875rem;
+    font-weight: 500;
+}
+
+.history-state-muted{
+    color: #6c757d;
+}
+
+.history-state-success{
+    color: #198754;
+}

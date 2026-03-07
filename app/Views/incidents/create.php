@@ -1,74 +1,133 @@
-<h1 class="mb-4">Valider le trajet</h1>
+<div class="container incident-create">
 
-<div class="alert alert-info">
-    Indique comment le trajet s’est déroulé.  
-    Si un problème est survenu, ajoute une description.
-</div>
+    <h1 class="page-title">Valider le trajet</h1>
 
-<form method="POST" action="/trajets/<?= (int)$trajetId ?>/incidents" class="card shadow-sm p-4">
-    <?= csrf_field() ?>
+    <p class="page-subtitle">
+        Indique comment le trajet s’est déroulé.
+    </p>
 
-    <input type="hidden" name="trajet_id" value="<?= (int)($trajetId ?? 0) ?>">
+    <form method="POST"
+          action="/trajets/<?= (int)$trajetId ?>/incidents"
+          class="card er-card p-4">
 
-    <div class="mb-4">
-        <label class="form-label">Comment s’est passé le trajet ?</label>
+        <?= csrf_field() ?>
 
-        <div class="trajet-etat">
+        <input type="hidden" name="trajet_id" value="<?= (int)($trajetId ?? 0) ?>">
 
-            <label class="trajet-option trajet-option-ok">
-                <input type="radio" name="etat" value="ok" checked>
+        <div class="form-section">
 
-                <div class="trajet-option-ui">
-                    <span class="trajet-icon">✓</span>
-
-                    <div>
-                        <strong>Tout s’est bien passé</strong>
-                        <div class="text-muted small">
-                            Le trajet s’est déroulé normalement.
-                        </div>
-                    </div>
-                </div>
+            <label class="form-label">
+                Comment s’est passé le trajet ?
             </label>
 
-            <label class="trajet-option trajet-option-ko">
-                <input type="radio" name="etat" value="ko">
+            <div class="trajet-etat">
 
-                <div class="trajet-option-ui">
-                    <span class="trajet-icon">⚠</span>
+                <label class="trajet-option trajet-option-ok">
+                    <input type="radio" name="etat" value="ok" checked>
 
-                    <div>
-                        <strong>Signaler un problème</strong>
-                        <div class="text-muted small">
-                            Retard, comportement, véhicule, etc.
+                    <div class="trajet-option-ui">
+                        <span class="trajet-icon icon-ok"></span>
+
+                        <div>
+                            <strong>Tout s’est bien passé</strong>
+                            <div class="option-text">
+                                Laisse une note et un commentaire.
+                            </div>
                         </div>
                     </div>
-                </div>
+                </label>
+
+                <label class="trajet-option trajet-option-ko">
+                    <input type="radio" name="etat" value="ko">
+
+                    <div class="trajet-option-ui">
+                        <span class="trajet-icon icon-ko"></span>
+
+                        <div>
+                            <strong>Signaler un problème</strong>
+                            <div class="option-text">
+                                Décris le problème rencontré.
+                            </div>
+                        </div>
+                    </div>
+                </label>
+
+            </div>
+        </div>
+
+
+        <div class="form-section">
+
+            <label for="note" class="form-label">
+                Note du chauffeur
             </label>
+
+            <select id="note" name="note" class="form-select">
+                <option value="">Choisir une note</option>
+                <option value="1">1 - Très mauvais</option>
+                <option value="2">2 - Mauvais</option>
+                <option value="3">3 - Correct</option>
+                <option value="4">4 - Bien</option>
+                <option value="5">5 - Très bien</option>
+            </select>
+
+            <small class="form-hint">
+                Obligatoire si tout s’est bien passé.
+            </small>
 
         </div>
-    </div>
 
-    <div class="mb-3">
-        <label for="description" class="form-label">
-            Description du problème
-        </label>
 
-        <textarea
-            id="description"
-            name="description"
-            class="form-control"
-            rows="4"
-            placeholder="Décris le problème rencontré (facultatif si tout s’est bien passé)"
-        ></textarea>
-    </div>
+        <div class="form-section">
 
-    <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-success">
-            Envoyer
-        </button>
+            <label for="commentaire" class="form-label">
+                Commentaire
+            </label>
 
-        <a href="/reservations" class="btn btn-outline-secondary">
-            Retour
-        </a>
-    </div>
-</form>
+            <textarea
+                id="commentaire"
+                name="commentaire"
+                class="form-control"
+                rows="4"
+                placeholder="Ton avis sur le trajet et le chauffeur"
+            ></textarea>
+
+        </div>
+
+
+        <div class="form-section">
+
+            <label for="description" class="form-label">
+                Description du problème
+            </label>
+
+            <textarea
+                id="description"
+                name="description"
+                class="form-control"
+                rows="4"
+                placeholder="Décris le problème rencontré"
+            ></textarea>
+
+            <small class="form-hint">
+                Obligatoire uniquement si un problème est signalé.
+            </small>
+
+        </div>
+
+
+        <div class="form-actions">
+
+            <button type="submit" class="btn btn-success">
+                Envoyer
+            </button>
+
+            <a href="/reservations" class="btn btn-outline-secondary">
+                Retour
+            </a>
+
+        </div>
+
+    </form>
+
+</div>

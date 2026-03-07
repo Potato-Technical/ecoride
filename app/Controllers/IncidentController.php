@@ -6,7 +6,7 @@ use App\Core\Controller;
 use App\Core\Database;
 use App\Models\ParticipationRepository;
 use App\Models\IncidentRepository;
-use App\Models\CreditMouvementRepository;
+use App\Models\AvisRepository;
 use App\Services\TrajetPaymentService;
 use PDO;
 use PDOException;
@@ -25,22 +25,49 @@ class IncidentController extends Controller
 
         $userId = (int)($_SESSION['user_id'] ?? 0);
 
+        $pdo = Database::getInstance();
         $partRepo = new ParticipationRepository();
-        if ($partRepo->hasConfirmedParticipation($userId, $trajetId)) {
+        $incidentRepo = new IncidentRepository();
+        $avisRepo = new AvisRepository();
+
+        $stmt = $pdo->prepare(
+            "SELECT id, statut, chauffeur_id
+             FROM trajet
+             WHERE id = :id
+             LIMIT 1"
+        );
+        $stmt->execute(['id' => $trajetId]);
+        $trajet = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$trajet) {
+            $this->render('errors/404', ['title' => 'Trajet introuvable']);
+            return;
+        }
+
+        if (($trajet['statut'] ?? '') !== 'termine') {
+            $this->setFlash('error', 'Trajet non validable (pas terminé)');
+            header('Location: /historique');
+            exit;
+        }
+
+        if (!$partRepo->hasConfirmedParticipation($userId, $trajetId)) {
             $this->render('errors/403', ['title' => 'Action interdite']);
             return;
         }
 
-        $incidentRepo = new IncidentRepository();
-        if ($incidentRepo->findByTrajetAndPassager($trajetId, $userId)) {
+        if (
+            $incidentRepo->findByTrajetAndPassager($trajetId, $userId) ||
+            $avisRepo->existsByTrajetAndAuteur($trajetId, $userId)
+        ) {
             $this->setFlash('info', 'Validation déjà envoyée');
-            header('Location: /reservations');
+            header('Location: /historique');
             exit;
         }
 
         $this->render('incidents/create', [
             'title'    => 'Valider le trajet',
             'trajetId' => $trajetId,
+            'pageCss'  => ['incident-create.css'],
         ]);
     }
 
@@ -62,13 +89,30 @@ class IncidentController extends Controller
         }
 
         $description = trim((string)($_POST['description'] ?? ''));
+
+        if ($etat === 'ok') {
+            $description = null;
+        }
+
         if ($etat === 'ko' && $description === '') {
-            $this->setFlash('error', 'Description obligatoire si KO');
+            $this->setFlash('error', 'Description obligatoire si incident');
             header('Location: /trajets/' . $trajetId . '/incidents/create');
             exit;
         }
-        if ($etat === 'ok') {
-            $description = null;
+
+        $note = isset($_POST['note']) ? (int)$_POST['note'] : 0;
+        $commentaire = trim((string)($_POST['commentaire'] ?? ''));
+        $commentaire = ($commentaire === '') ? null : $commentaire;
+
+        if ($etat === 'ok' && ($note < 1 || $note > 5)) {
+            $this->setFlash('error', 'Note obligatoire si le trajet s’est bien passé');
+            header('Location: /trajets/' . $trajetId . '/incidents/create');
+            exit;
+        }
+
+        if ($etat === 'ko') {
+            $note = 0;
+            $commentaire = null;
         }
 
         $userId = (int)($_SESSION['user_id'] ?? 0);
@@ -76,11 +120,11 @@ class IncidentController extends Controller
         $pdo = Database::getInstance();
         $partRepo = new ParticipationRepository();
         $incidentRepo = new IncidentRepository();
+        $avisRepo = new AvisRepository();
 
         try {
             $pdo->beginTransaction();
 
-            // Lock trajet + lecture chauffeur_id/statut/paid_at
             $stmt = $pdo->prepare(
                 "SELECT id, statut, paid_at, chauffeur_id
                  FROM trajet
@@ -99,24 +143,26 @@ class IncidentController extends Controller
             if (($trajet['statut'] ?? '') !== 'termine') {
                 $pdo->rollBack();
                 $this->setFlash('error', 'Trajet non validable (pas terminé)');
-                header('Location: /reservations');
+                header('Location: /historique');
                 exit;
             }
 
-            if ($partRepo->hasConfirmedParticipation($userId, $trajetId)) {
+            if (!$partRepo->hasConfirmedParticipation($userId, $trajetId)) {
                 $pdo->rollBack();
                 $this->render('errors/403', ['title' => 'Action interdite']);
                 return;
             }
 
-            if ($incidentRepo->findByTrajetAndPassager($trajetId, $userId)) {
+            if (
+                $incidentRepo->findByTrajetAndPassager($trajetId, $userId) ||
+                $avisRepo->existsByTrajetAndAuteur($trajetId, $userId)
+            ) {
                 $pdo->rollBack();
                 $this->setFlash('info', 'Validation déjà envoyée');
-                header('Location: /reservations');
+                header('Location: /historique');
                 exit;
             }
 
-            // Insert incident
             $ins = $pdo->prepare(
                 "INSERT INTO incident
                  (trajet_id, passager_id, chauffeur_id, etat, description, statut, handled_by, created_at, resolved_at)
@@ -126,10 +172,20 @@ class IncidentController extends Controller
             $ins->execute([
                 'tid'   => $trajetId,
                 'pid'   => $userId,
-                'cid'   => (int)($trajet['chauffeur_id'] ?? 0),
+                'cid'   => (int)$trajet['chauffeur_id'],
                 'etat'  => $etat,
                 'descr' => $description,
             ]);
+
+            if ($etat === 'ok') {
+                $avisRepo->create(
+                    $trajetId,
+                    $userId,
+                    (int)$trajet['chauffeur_id'],
+                    $note,
+                    $commentaire
+                );
+            }
 
             $pay = new TrajetPaymentService();
             $pay->tryAutoPayIfEligible($pdo, $trajetId);
@@ -137,7 +193,7 @@ class IncidentController extends Controller
             $pdo->commit();
 
             $this->setFlash('success', 'Validation envoyée');
-            header('Location: /reservations');
+            header('Location: /historique');
             exit;
 
         } catch (PDOException $e) {
@@ -145,10 +201,9 @@ class IncidentController extends Controller
                 $pdo->rollBack();
             }
 
-            // MySQL duplicate key (UNIQUE trajet_id, passager_id)
             if ((int)($e->errorInfo[1] ?? 0) === 1062) {
                 $this->setFlash('info', 'Validation déjà envoyée');
-                header('Location: /reservations');
+                header('Location: /historique');
                 exit;
             }
 
