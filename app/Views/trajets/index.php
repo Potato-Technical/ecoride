@@ -50,47 +50,8 @@
                 >
             </div>
 
-            <div class="trajets-search-field">
-                <label for="prix_max" class="visually-hidden">Prix max</label>
-                <input
-                    id="prix_max"
-                    type="number"
-                    name="prix_max"
-                    class="form-control"
-                    placeholder="Prix max"
-                    value="<?= htmlspecialchars($filters['prix_max'] ?? '') ?>"
-                    min="0"
-                >
-            </div>
-
             <div class="trajets-search-submit">
                 <button class="btn btn-success" type="submit">Recherche</button>
-            </div>
-        </div>
-
-        <div class="trajets-search-mobile-options">
-            <div class="trajets-mobile-filter-line">
-                <label class="trajets-check">
-                    <input
-                        type="checkbox"
-                        name="eco"
-                        value="1"
-                        <?= !empty($filters['eco']) ? 'checked' : '' ?>
-                    >
-                    <span>Voyage écologique</span>
-                </label>
-            </div>
-
-            <div class="trajets-mobile-filter-line">
-                <label for="sort-mobile" class="trajets-sort-label">Trier par</label>
-                <select id="sort-mobile" name="sort" class="form-select trajets-sort-select">
-                    <option value="date" <?= ($filters['sort'] ?? 'date') === 'date' ? 'selected' : '' ?>>
-                        Départ le plus proche
-                    </option>
-                    <option value="prix" <?= ($filters['sort'] ?? 'date') === 'prix' ? 'selected' : '' ?>>
-                        Prix le plus bas
-                    </option>
-                </select>
             </div>
         </div>
     </form>
@@ -107,17 +68,69 @@
                     <label class="trajets-filter-check">
                         <input
                             type="checkbox"
-                            id="eco-desktop"
+                            name="eco"
+                            value="1"
+                            form="trajets-search-form"
+                            data-trajets-filter
                             <?= !empty($filters['eco']) ? 'checked' : '' ?>
                         >
                         <span>Voyage écologique</span>
                     </label>
 
+                    <div class="trajets-filter-field">
+                        <label for="prix_max">Prix max</label>
+                        <input
+                            id="prix_max"
+                            type="number"
+                            name="prix_max"
+                            class="form-control"
+                            form="trajets-search-form"
+                            data-trajets-filter
+                            placeholder="Prix max"
+                            value="<?= htmlspecialchars($filters['prix_max'] ?? '') ?>"
+                            min="0"
+                        >
+                    </div>
+
+                    <div class="trajets-filter-field">
+                        <label for="duree_max">Durée max (min)</label>
+                        <input
+                            id="duree_max"
+                            type="number"
+                            name="duree_max"
+                            class="form-control"
+                            form="trajets-search-form"
+                            data-trajets-filter
+                            placeholder="Durée max"
+                            value="<?= htmlspecialchars($filters['duree_max'] ?? '') ?>"
+                            min="1"
+                        >
+                    </div>
+
+                    <div class="trajets-filter-field">
+                        <label for="note_min">Note min</label>
+                        <input
+                            id="note_min"
+                            type="number"
+                            name="note_min"
+                            class="form-control"
+                            form="trajets-search-form"
+                            data-trajets-filter
+                            placeholder="Note min"
+                            value="<?= htmlspecialchars($filters['note_min'] ?? '') ?>"
+                            min="0"
+                            max="5"
+                            step="0.1"
+                        >
+                    </div>
+
                     <label class="trajets-filter-radio <?= ($filters['sort'] ?? 'date') === 'prix' ? 'is-active' : '' ?>">
                         <input
                             type="radio"
-                            name="sort-desktop"
+                            name="sort"
                             value="prix"
+                            form="trajets-search-form"
+                            data-trajets-filter
                             <?= ($filters['sort'] ?? 'date') === 'prix' ? 'checked' : '' ?>
                         >
                         <span>Prix le plus bas</span>
@@ -126,8 +139,10 @@
                     <label class="trajets-filter-radio <?= ($filters['sort'] ?? 'date') === 'date' ? 'is-active' : '' ?>">
                         <input
                             type="radio"
-                            name="sort-desktop"
+                            name="sort"
                             value="date"
+                            form="trajets-search-form"
+                            data-trajets-filter
                             <?= ($filters['sort'] ?? 'date') === 'date' ? 'checked' : '' ?>
                         >
                         <span>Départ le plus proche</span>
@@ -145,10 +160,25 @@
             <?php elseif (empty($trajets)): ?>
                 <div class="trajets-state">
                     Aucun trajet disponible pour cette date.
+
                     <?php if (!empty($nearestDate)): ?>
-                        <br>
-                        Le prochain trajet disponible est le
-                        <strong><?= htmlspecialchars(date('d/m/Y', strtotime($nearestDate))) ?></strong>.
+                        <?php
+                            $nearestQuery = http_build_query([
+                                'depart'    => $filters['depart'] ?? '',
+                                'arrivee'   => $filters['arrivee'] ?? '',
+                                'date'      => $nearestDate,
+                                'eco'       => $filters['eco'] ?? '',
+                                'prix_max'  => $filters['prix_max'] ?? '',
+                                'duree_max' => $filters['duree_max'] ?? '',
+                                'note_min'  => $filters['note_min'] ?? '',
+                                'sort'      => $filters['sort'] ?? 'date',
+                            ]);
+                        ?>
+                        <div class="trajets-state-link">
+                            <a href="/trajets?<?= htmlspecialchars($nearestQuery) ?>">
+                                Voir les trajets du <?= htmlspecialchars(date('d/m/Y', strtotime($nearestDate))) ?>
+                            </a>
+                        </div>
                     <?php endif; ?>
                 </div>
 
@@ -157,9 +187,17 @@
                     <?php foreach ($trajets as $trajet): ?>
                         <?php
                             $departAt = strtotime($trajet['date_heure_depart']);
-                            $arriveeAt = !empty($trajet['date_heure_arrivee']) ? strtotime($trajet['date_heure_arrivee']) : null;
                             $isEco = ($trajet['energie'] ?? '') === 'electrique';
                             $note = number_format((float)($trajet['note_moyenne'] ?? 0), 1, ',', ' ');
+
+                            $dureeMinutes = (int)($trajet['duree_estimee_minutes'] ?? 0);
+                            $hours = floor($dureeMinutes / 60);
+                            $minutes = $dureeMinutes % 60;
+
+                            $arriveeEstimeeAt = null;
+                            if ($departAt && $dureeMinutes > 0) {
+                                $arriveeEstimeeAt = $departAt + ($dureeMinutes * 60);
+                            }
                         ?>
                         <article class="trajet-card">
                             <a class="trajet-card-link" href="/trajets/<?= (int)$trajet['id'] ?>">
@@ -170,20 +208,13 @@
                                             <span class="trajet-city"><?= htmlspecialchars($trajet['lieu_depart']) ?></span>
                                         </div>
 
-                                        <?php if ($arriveeAt): ?>
-                                            <div class="trajet-card-duration">
-                                                <?php
-                                                    $durationMinutes = max(0, (int)(($arriveeAt - $departAt) / 60));
-                                                    $hours = floor($durationMinutes / 60);
-                                                    $minutes = $durationMinutes % 60;
-                                                    echo $hours . 'h' . str_pad((string)$minutes, 2, '0', STR_PAD_LEFT);
-                                                ?>
-                                            </div>
-                                        <?php endif; ?>
+                                        <div class="trajet-card-duration">
+                                            <?= $hours . 'h' . str_pad((string)$minutes, 2, '0', STR_PAD_LEFT) ?>
+                                        </div>
 
                                         <div class="trajet-card-route">
-                                            <?php if ($arriveeAt): ?>
-                                                <span class="trajet-time"><?= date('H:i', $arriveeAt) ?></span>
+                                            <?php if ($arriveeEstimeeAt): ?>
+                                                <span class="trajet-time"><?= date('H:i', $arriveeEstimeeAt) ?></span>
                                             <?php endif; ?>
                                             <span class="trajet-city"><?= htmlspecialchars($trajet['lieu_arrivee']) ?></span>
                                         </div>
@@ -214,6 +245,8 @@
                                             <span><?= date('d/m/Y', $departAt) ?></span>
                                             <span>•</span>
                                             <span><?= (int)$trajet['places_restantes'] ?> place(s)</span>
+                                            <span>•</span>
+                                            <span><?= $isEco ? 'Électrique' : 'Non électrique' ?></span>
                                         </div>
                                     </div>
                                 </div>
@@ -224,9 +257,12 @@
 
                 <?php if (count($trajets) === (int)($limit ?? 6)): ?>
                     <div class="text-center mt-4" id="load-more-wrapper">
-                        <button class="btn btn-success px-4 load-more-btn"
-                                data-offset="<?= count($trajets) ?>"
-                                data-limit="<?= (int)($limit ?? 6) ?>">
+                        <button
+                            type="button"
+                            class="btn btn-success px-4 load-more-btn"
+                            data-offset="<?= count($trajets) ?>"
+                            data-limit="<?= (int)($limit ?? 6) ?>"
+                        >
                             Charger plus de résultats
                         </button>
                     </div>

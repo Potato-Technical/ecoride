@@ -22,6 +22,18 @@ $energieLabel = match (mb_strtolower($energieRaw)) {
     default => $energieRaw !== '' ? $energieRaw : 'Non renseignée',
 };
 
+$dureeMinutes = (int)($trajet['duree_estimee_minutes'] ?? 0);
+$dureeHeures = intdiv($dureeMinutes, 60);
+$dureeResteMinutes = $dureeMinutes % 60;
+
+$arriveeAfficheeTs = null;
+
+if (!empty($trajet['date_heure_arrivee'])) {
+    $arriveeAfficheeTs = strtotime($trajet['date_heure_arrivee']);
+} elseif ($dateDepart && $dureeMinutes > 0) {
+    $arriveeAfficheeTs = $dateDepart + ($dureeMinutes * 60);
+}
+
 /* formatage date en français */
 $dateFormatted = null;
 
@@ -108,22 +120,16 @@ if ($dateDepart) {
                             </div>
 
                             <div class="route-duration">
-                                <?php if (!empty($trajet['date_heure_arrivee']) && $dateDepart): ?>
-                                    <?php
-                                    $arriveeTs = strtotime($trajet['date_heure_arrivee']);
-                                    $minutes = max(0, (int)(($arriveeTs - $dateDepart) / 60));
-                                    $hours = intdiv($minutes, 60);
-                                    $mins = $minutes % 60;
-                                    echo htmlspecialchars(sprintf('%dh%02d', $hours, $mins));
-                                    ?>
+                                <?php if ($dureeMinutes > 0): ?>
+                                    <?= htmlspecialchars(sprintf('%dh%02d', $dureeHeures, $dureeResteMinutes)) ?>
                                 <?php else: ?>
                                     --
                                 <?php endif; ?>
                             </div>
 
                             <div class="route-time route-time-bottom">
-                                <?php if (!empty($trajet['date_heure_arrivee'])): ?>
-                                    <?= htmlspecialchars(date('H:i', strtotime($trajet['date_heure_arrivee']))) ?>
+                                <?php if ($arriveeAfficheeTs): ?>
+                                    <?= htmlspecialchars(date('H:i', $arriveeAfficheeTs)) ?>
                                 <?php else: ?>
                                     --
                                 <?php endif; ?>
@@ -146,8 +152,8 @@ if ($dateDepart) {
 
                             <div class="route-place route-place-bottom">
                                 <div class="route-place-title">
-                                    <?php if (!empty($trajet['date_heure_arrivee'])): ?>
-                                        <?= htmlspecialchars(date('H:i', strtotime($trajet['date_heure_arrivee']))) ?>
+                                    <?php if ($arriveeAfficheeTs): ?>
+                                        <?= htmlspecialchars(date('H:i', $arriveeAfficheeTs)) ?>
                                     <?php else: ?>
                                         --
                                     <?php endif; ?>
@@ -279,8 +285,8 @@ if ($dateDepart) {
 
                             <div class="summary-line">
                                 <span class="summary-time">
-                                    <?php if (!empty($trajet['date_heure_arrivee'])): ?>
-                                        <?= htmlspecialchars(date('H:i', strtotime($trajet['date_heure_arrivee']))) ?>
+                                    <?php if ($arriveeAfficheeTs): ?>
+                                        <?= htmlspecialchars(date('H:i', $arriveeAfficheeTs)) ?>
                                     <?php else: ?>
                                         --
                                     <?php endif; ?>

@@ -22,6 +22,7 @@ class TrajetRepository
                 t.lieu_arrivee,
                 t.date_heure_depart,
                 t.date_heure_arrivee,
+                t.duree_estimee_minutes,
                 t.prix,
                 t.nb_places,
                 t.places_restantes,
@@ -49,6 +50,7 @@ class TrajetRepository
                 t.lieu_arrivee,
                 t.date_heure_depart,
                 t.date_heure_arrivee,
+                t.duree_estimee_minutes,
                 t.prix,
                 t.nb_places,
                 t.places_restantes,
@@ -142,25 +144,26 @@ class TrajetRepository
 
         $stmt = $pdo->prepare(
             'INSERT INTO trajet (
-                lieu_depart, lieu_arrivee, date_heure_depart,
+                lieu_depart, lieu_arrivee, date_heure_depart, duree_estimee_minutes,
                 prix, nb_places, places_restantes, statut,
                 chauffeur_id, vehicule_id
             ) VALUES (
-                :lieu_depart, :lieu_arrivee, :date_heure_depart,
+                :lieu_depart, :lieu_arrivee, :date_heure_depart, :duree_estimee_minutes,
                 :prix, :nb_places, :places_restantes, "planifie",
                 :chauffeur_id, :vehicule_id
             )'
         );
 
         $stmt->execute([
-            'lieu_depart'       => $data['lieu_depart'],
-            'lieu_arrivee'      => $data['lieu_arrivee'],
-            'date_heure_depart' => $data['date_heure_depart'],
-            'prix'              => $data['prix'],
-            'nb_places'         => $data['nb_places'],
-            'places_restantes'  => $data['nb_places'],
-            'chauffeur_id'      => $data['chauffeur_id'],
-            'vehicule_id'       => $data['vehicule_id'],
+            'lieu_depart'             => $data['lieu_depart'],
+            'lieu_arrivee'            => $data['lieu_arrivee'],
+            'date_heure_depart'       => $data['date_heure_depart'],
+            'duree_estimee_minutes'   => $data['duree_estimee_minutes'],
+            'prix'                    => $data['prix'],
+            'nb_places'               => $data['nb_places'],
+            'places_restantes'        => $data['nb_places'],
+            'chauffeur_id'            => $data['chauffeur_id'],
+            'vehicule_id'             => $data['vehicule_id'],
         ]);
 
         return (int)$pdo->lastInsertId();
@@ -189,6 +192,7 @@ class TrajetRepository
                 t.lieu_arrivee,
                 t.date_heure_depart,
                 t.date_heure_arrivee,
+                t.duree_estimee_minutes,
                 t.prix,
                 t.places_restantes,
                 u.pseudo,
@@ -206,14 +210,19 @@ class TrajetRepository
         ";
 
         $params = [
-            'depart' => '%' . $filters['depart'] . '%',
+            'depart'  => '%' . $filters['depart'] . '%',
             'arrivee' => '%' . $filters['arrivee'] . '%',
-            'date' => $filters['date'],
+            'date'    => $filters['date'],
         ];
 
         if (($filters['prix_max'] ?? '') !== '') {
             $sql .= " AND t.prix <= :prix_max";
             $params['prix_max'] = (int) $filters['prix_max'];
+        }
+
+        if (($filters['duree_max'] ?? '') !== '') {
+            $sql .= " AND t.duree_estimee_minutes <= :duree_max";
+            $params['duree_max'] = (int) $filters['duree_max'];
         }
 
         if (!empty($filters['eco'])) {
@@ -227,12 +236,18 @@ class TrajetRepository
                 t.lieu_arrivee,
                 t.date_heure_depart,
                 t.date_heure_arrivee,
+                t.duree_estimee_minutes,
                 t.prix,
                 t.places_restantes,
                 u.pseudo,
                 v.energie
         ";
 
+        if (($filters['note_min'] ?? '') !== '') {
+            $sql .= " HAVING note_moyenne >= :note_min";
+            $params['note_min'] = (float) $filters['note_min'];
+        }
+                
         switch ($filters['sort'] ?? 'date') {
             case 'prix':
                 $sql .= " ORDER BY t.prix ASC, t.date_heure_depart ASC";
@@ -250,8 +265,10 @@ class TrajetRepository
         foreach ($params as $k => $v) {
             $name = ':' . $k;
 
-            if ($k === 'prix_max') {
+            if (in_array($k, ['prix_max', 'duree_max'], true)) {
                 $stmt->bindValue($name, (int) $v, PDO::PARAM_INT);
+            } elseif ($k === 'note_min') {
+                $stmt->bindValue($name, (string) $v, PDO::PARAM_STR);
             } else {
                 $stmt->bindValue($name, (string) $v, PDO::PARAM_STR);
             }
@@ -372,30 +389,75 @@ class TrajetRepository
         return $stmt->rowCount() === 1;
     }
 
-    public function findNearestAvailableDate(string $depart, string $arrivee, string $date): ?string
+    public function findNearestAvailableDate(array $filters): ?string
     {
         $pdo = Database::getInstance();
 
-        $stmt = $pdo->prepare("
+        $sql = "
             SELECT DATE(t.date_heure_depart) AS prochaine_date
             FROM trajet t
+            JOIN vehicule v ON v.id = t.vehicule_id
+            LEFT JOIN avis a ON a.cible_id = t.chauffeur_id
             WHERE t.places_restantes > 0
             AND t.statut = 'planifie'
             AND t.lieu_depart LIKE :depart
             AND t.lieu_arrivee LIKE :arrivee
             AND DATE(t.date_heure_depart) > :date
+        ";
+
+        $params = [
+            'depart'  => '%' . ($filters['depart'] ?? '') . '%',
+            'arrivee' => '%' . ($filters['arrivee'] ?? '') . '%',
+            'date'    => $filters['date'] ?? '',
+        ];
+
+        if (($filters['prix_max'] ?? '') !== '') {
+            $sql .= " AND t.prix <= :prix_max";
+            $params['prix_max'] = (int) $filters['prix_max'];
+        }
+
+        if (($filters['duree_max'] ?? '') !== '') {
+            $sql .= " AND t.duree_estimee_minutes <= :duree_max";
+            $params['duree_max'] = (int) $filters['duree_max'];
+        }
+
+        if (!empty($filters['eco'])) {
+            $sql .= " AND v.energie = 'electrique'";
+        }
+
+        $sql .= "
+            GROUP BY
+                t.id,
+                t.date_heure_depart
+        ";
+
+        if (($filters['note_min'] ?? '') !== '') {
+            $sql .= " HAVING COALESCE(AVG(CASE WHEN a.statut_validation = 'valide' THEN a.note END), 0) >= :note_min";
+            $params['note_min'] = (string) $filters['note_min'];
+        }
+
+        $sql .= "
             ORDER BY t.date_heure_depart ASC
             LIMIT 1
-        ");
+        ";
 
-        $stmt->execute([
-            'depart'  => '%' . $depart . '%',
-            'arrivee' => '%' . $arrivee . '%',
-            'date'    => $date,
-        ]);
+        $stmt = $pdo->prepare($sql);
+
+        foreach ($params as $k => $v) {
+            $name = ':' . $k;
+
+            if (in_array($k, ['prix_max', 'duree_max'], true)) {
+                $stmt->bindValue($name, (int) $v, PDO::PARAM_INT);
+            } else {
+                $stmt->bindValue($name, (string) $v, PDO::PARAM_STR);
+            }
+        }
+
+        $stmt->execute();
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $row['prochaine_date'] ?? null;
     }
+
 }

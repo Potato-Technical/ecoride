@@ -23,12 +23,14 @@ class TrajetController extends Controller
         $repo = new TrajetRepository();
 
         $filters = [
-            'depart'   => trim($_GET['depart'] ?? ''),
-            'arrivee'  => trim($_GET['arrivee'] ?? ''),
-            'date'     => trim($_GET['date'] ?? ''),
-            'prix_max' => trim($_GET['prix_max'] ?? ''),
-            'eco'      => isset($_GET['eco']),
-            'sort'     => $_GET['sort'] ?? 'date',
+            'depart'    => trim($_GET['depart'] ?? ''),
+            'arrivee'   => trim($_GET['arrivee'] ?? ''),
+            'date'      => trim($_GET['date'] ?? ''),
+            'prix_max'  => trim($_GET['prix_max'] ?? ''),
+            'duree_max' => trim($_GET['duree_max'] ?? ''),
+            'note_min'  => trim($_GET['note_min'] ?? ''),
+            'eco'       => isset($_GET['eco']),
+            'sort'      => $_GET['sort'] ?? 'date',
         ];
 
         $limit  = 6;
@@ -44,14 +46,11 @@ class TrajetController extends Controller
         $nearestDate = null;
 
         if ($hasSearch) {
+
             $trajets = $repo->searchWithFiltersPaginated($filters, $limit, $offset);
 
             if (empty($trajets)) {
-                $nearestDate = $repo->findNearestAvailableDate(
-                    $filters['depart'],
-                    $filters['arrivee'],
-                    $filters['date']
-                );
+                $nearestDate = $repo->findNearestAvailableDate($filters);
             }
         }
 
@@ -145,11 +144,12 @@ class TrajetController extends Controller
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-            $lieuDepart  = trim($_POST['lieu_depart'] ?? '');
-            $lieuArrivee = trim($_POST['lieu_arrivee'] ?? '');
-            $dateDepart  = trim($_POST['date_heure_depart'] ?? '');
-            $prix        = (int) ($_POST['prix'] ?? 0);
-            $nbPlaces    = (int) ($_POST['nb_places'] ?? 0);
+            $lieuDepart            = trim($_POST['lieu_depart'] ?? '');
+            $lieuArrivee           = trim($_POST['lieu_arrivee'] ?? '');
+            $dateDepart            = trim($_POST['date_heure_depart'] ?? '');
+            $dureeEstimeeMinutes   = (int) ($_POST['duree_estimee_minutes'] ?? 0);
+            $prix                  = (int) ($_POST['prix'] ?? 0);
+            $nbPlaces              = (int) ($_POST['nb_places'] ?? 0);
 
             // Normalisation minimale de date_heure_depart (datetime-local)
             if ($dateDepart !== '') {
@@ -172,6 +172,7 @@ class TrajetController extends Controller
                 $lieuDepart === '' ||
                 $lieuArrivee === '' ||
                 $dateDepart === '' ||
+                $dureeEstimeeMinutes <= 0 ||
                 $prix <= 0 ||
                 $nbPlaces <= 0
             ) {
@@ -188,13 +189,14 @@ class TrajetController extends Controller
                 $pdo->beginTransaction();
 
                 $trajetId = $repo->create([
-                    'lieu_depart'       => $lieuDepart,
-                    'lieu_arrivee'      => $lieuArrivee,
-                    'date_heure_depart' => $dateDepart,
-                    'prix'              => $prix,
-                    'nb_places'         => $nbPlaces,
-                    'chauffeur_id'      => (int)$_SESSION['user_id'],
-                    'vehicule_id'       => $vehiculeId,
+                    'lieu_depart'             => $lieuDepart,
+                    'lieu_arrivee'            => $lieuArrivee,
+                    'date_heure_depart'       => $dateDepart,
+                    'duree_estimee_minutes'   => $dureeEstimeeMinutes,
+                    'prix'                    => $prix,
+                    'nb_places'               => $nbPlaces,
+                    'chauffeur_id'            => (int)$_SESSION['user_id'],
+                    'vehicule_id'             => $vehiculeId,
                 ]);
 
                 // US9 : commission plateforme (-2) liée au trajet
@@ -394,12 +396,14 @@ class TrajetController extends Controller
         }
 
         $filters = [
-            'depart'   => trim($_POST['depart'] ?? ''),
-            'arrivee'  => trim($_POST['arrivee'] ?? ''),
-            'date'     => trim($_POST['date'] ?? ''),
-            'prix_max' => trim($_POST['prix_max'] ?? ''),
-            'eco'      => !empty($_POST['eco']),
-            'sort'     => $_POST['sort'] ?? 'date',
+            'depart'    => trim($_POST['depart'] ?? ''),
+            'arrivee'   => trim($_POST['arrivee'] ?? ''),
+            'date'      => trim($_POST['date'] ?? ''),
+            'prix_max'  => trim($_POST['prix_max'] ?? ''),
+            'duree_max' => trim($_POST['duree_max'] ?? ''),
+            'note_min'  => trim($_POST['note_min'] ?? ''),
+            'eco'       => !empty($_POST['eco']),
+            'sort'      => $_POST['sort'] ?? 'date',
         ];
 
         $hasSearch = (

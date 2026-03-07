@@ -1,4 +1,4 @@
--- EcoRide - Seed 
+-- EcoRide - Seed
 -- Trajet :
 -- - Paris -> Lyon : trajet futur disponible
 -- - Lyon -> Marseille : trajet terminé, validé OK, avis en attente (Cas US11 validation OK)
@@ -106,7 +106,7 @@ WHERE u.email='chauffeur@ecoride.fr'
 
 -- Cas 1 : trajet futur disponible pour recherche / réservation
 INSERT INTO trajet (
-  lieu_depart, lieu_arrivee, date_heure_depart, date_heure_arrivee,
+  lieu_depart, lieu_arrivee, date_heure_depart, date_heure_arrivee, duree_estimee_minutes,
   prix, nb_places, places_restantes, statut, paid_at,
   chauffeur_id, vehicule_id, created_at
 )
@@ -114,6 +114,7 @@ SELECT
   'Paris','Lyon',
   '2026-03-16 08:00:00',
   NULL,
+  300,
   22.00, 3, 3, 'planifie', NULL,
   u.id, v.id, NOW()
 FROM utilisateur u
@@ -130,7 +131,7 @@ WHERE u.email='chauffeur@ecoride.fr'
 
 -- Cas 2 : trajet terminé validé OK, avis en attente
 INSERT INTO trajet (
-  lieu_depart, lieu_arrivee, date_heure_depart, date_heure_arrivee,
+  lieu_depart, lieu_arrivee, date_heure_depart, date_heure_arrivee, duree_estimee_minutes,
   prix, nb_places, places_restantes, statut, paid_at,
   chauffeur_id, vehicule_id, created_at
 )
@@ -138,6 +139,7 @@ SELECT
   'Lyon','Marseille',
   '2026-03-10 08:00:00',
   '2026-03-10 12:30:00',
+  270,
   25.00, 3, 2, 'termine', NULL,
   u.id, v.id, NOW()
 FROM utilisateur u
@@ -154,7 +156,7 @@ WHERE u.email='chauffeur@ecoride.fr'
 
 -- Cas 3 : trajet terminé signalé KO, incident ouvert
 INSERT INTO trajet (
-  lieu_depart, lieu_arrivee, date_heure_depart, date_heure_arrivee,
+  lieu_depart, lieu_arrivee, date_heure_depart, date_heure_arrivee, duree_estimee_minutes,
   prix, nb_places, places_restantes, statut, paid_at,
   chauffeur_id, vehicule_id, created_at
 )
@@ -162,6 +164,7 @@ SELECT
   'Bordeaux','Toulouse',
   '2026-03-11 09:00:00',
   '2026-03-11 11:30:00',
+  150,
   18.00, 3, 2, 'termine', NULL,
   u.id, v.id, NOW()
 FROM utilisateur u
@@ -178,7 +181,7 @@ WHERE u.email='chauffeur@ecoride.fr'
 
 -- Cas 4 : trajet futur complet pour tests de recherche
 INSERT INTO trajet (
-  lieu_depart, lieu_arrivee, date_heure_depart, date_heure_arrivee,
+  lieu_depart, lieu_arrivee, date_heure_depart, date_heure_arrivee, duree_estimee_minutes,
   prix, nb_places, places_restantes, statut, paid_at,
   chauffeur_id, vehicule_id, created_at
 )
@@ -186,6 +189,7 @@ SELECT
   'Paris','Lille',
   '2026-03-17 09:00:00',
   NULL,
+  180,
   15.00, 2, 0, 'planifie', NULL,
   u.id, v.id, NOW()
 FROM utilisateur u

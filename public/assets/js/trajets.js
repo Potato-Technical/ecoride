@@ -1,18 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
   initLoadMore();
-  initDesktopFiltersSync();
-  initMobileAutoSubmit();
-  initEtatDescriptionSync();
+  initFilterAutoSubmit();
 });
 
 function initLoadMore() {
   const loadBtn = document.querySelector('.load-more-btn');
   const form = document.querySelector('#trajets-search-form');
-  const resultsContainer = document.querySelector('#trajets-results');
   const loadMoreWrapper = document.querySelector('#load-more-wrapper');
   const trajetsList = document.querySelector('.trajets-list');
 
-  if (!loadBtn || !form || !resultsContainer || !loadMoreWrapper || !trajetsList) {
+  if (!loadBtn || !form || !loadMoreWrapper || !trajetsList) {
     return;
   }
 
@@ -69,96 +66,42 @@ function initLoadMore() {
   });
 }
 
-function initDesktopFiltersSync() {
+function initFilterAutoSubmit() {
   const form = document.querySelector('#trajets-search-form');
-  const ecoMobile = form?.querySelector('input[name="eco"]');
-  const sortMobile = form?.querySelector('select[name="sort"]');
+  const filters = document.querySelectorAll('[data-trajets-filter]');
 
-  const ecoDesktop = document.querySelector('#eco-desktop');
-  const sortDesktopRadios = document.querySelectorAll('input[name="sort-desktop"]');
-
-  if (!form || !ecoMobile || !sortMobile) {
+  if (!form || !filters.length) {
     return;
   }
 
-  if (ecoDesktop) {
-    ecoDesktop.addEventListener('change', () => {
-      ecoMobile.checked = ecoDesktop.checked;
-      form.submit();
-    });
-  }
+  filters.forEach((field) => {
+    const eventName = field.type === 'radio' || field.type === 'checkbox' || field.tagName === 'SELECT'
+      ? 'change'
+      : 'change';
 
-  sortDesktopRadios.forEach((radio) => {
-    radio.addEventListener('change', () => {
-      if (!radio.checked) {
-        return;
-      }
-
-      sortMobile.value = radio.value;
-      form.submit();
+    field.addEventListener(eventName, () => {
+      form.requestSubmit();
     });
   });
-}
-
-function initMobileAutoSubmit() {
-  const form = document.querySelector('#trajets-search-form');
-
-  if (!form) {
-    return;
-  }
-
-  const autoSubmitFields = form.querySelectorAll('select[name="sort"], input[name="eco"]');
-
-  autoSubmitFields.forEach((field) => {
-    field.addEventListener('change', () => {
-      form.submit();
-    });
-  });
-}
-
-function initEtatDescriptionSync() {
-  const radios = document.querySelectorAll('input[name="etat"]');
-  const description = document.getElementById('description');
-
-  if (!radios.length || !description) {
-    return;
-  }
-
-  function sync() {
-    const selected = document.querySelector('input[name="etat"]:checked');
-
-    if (!selected) {
-      return;
-    }
-
-    const isKo = selected.value === 'ko';
-    description.required = isKo;
-    description.disabled = !isKo;
-
-    if (!isKo) {
-      description.value = '';
-    }
-  }
-
-  radios.forEach((radio) => {
-    radio.addEventListener('change', sync);
-  });
-
-  sync();
 }
 
 function renderTrajetCard(trajet) {
   const depart = parseSqlDate(trajet.date_heure_depart);
-  const arrivee = trajet.date_heure_arrivee ? parseSqlDate(trajet.date_heure_arrivee) : null;
+
+  const dureeMinutes = parseInt(trajet.duree_estimee_minutes ?? 0, 10);
+  const arrivee = depart && Number.isFinite(dureeMinutes) && dureeMinutes > 0
+    ? new Date(depart.getTime() + dureeMinutes * 60000)
+    : null;
 
   const departTime = depart ? formatTime(depart) : '';
   const departDate = depart ? formatDate(depart) : '';
   const arriveeTime = arrivee ? formatTime(arrivee) : '';
-  const duration = getDuration(depart, arrivee);
+  const duration = formatDuration(dureeMinutes);
+
   const places = parseInt(trajet.places_restantes ?? 0, 10);
   const note = Number(trajet.note_moyenne ?? 0).toFixed(1).replace('.', ',');
   const eco = String(trajet.energie || '') === 'electrique';
-  const prix = Number(trajet.prix).toFixed(2).replace('.', ',');
+  const prix = Number(trajet.prix ?? 0).toFixed(2).replace('.', ',');
   const pseudo = String(trajet.pseudo || '');
   const initial = pseudo ? pseudo.charAt(0).toUpperCase() : '?';
   const arriveeVille = String(trajet.lieu_arrivee || '');
@@ -182,7 +125,7 @@ function renderTrajetCard(trajet) {
             </div>
           </div>
 
-          <div class="trajet-card-price">${prix} €</div>
+          <div class="trajet-card-price">${escapeHtml(prix)} €</div>
         </div>
 
         <div class="trajet-card-separator"></div>
@@ -194,7 +137,7 @@ function renderTrajetCard(trajet) {
             <div class="trajet-driver-line">
               <span class="trajet-driver-name">${escapeHtml(pseudo)}</span>
               ${eco ? '<span class="trajet-eco-badge" title="Voyage écologique">🍃</span>' : ''}
-              <span class="trajet-rating">★ ${note}</span>
+              <span class="trajet-rating">★ ${escapeHtml(note)}</span>
             </div>
 
             <div class="trajet-driver-extra">
@@ -229,16 +172,17 @@ function formatDate(dateObj) {
   return `${dd}/${mo}/${yy}`;
 }
 
-function getDuration(start, end) {
-  if (!start || !end) {
+function formatDuration(minutesTotal) {
+  const minutes = parseInt(minutesTotal ?? 0, 10);
+
+  if (!Number.isFinite(minutes) || minutes <= 0) {
     return '';
   }
 
-  const diff = Math.max(0, Math.floor((end.getTime() - start.getTime()) / 60000));
-  const hours = Math.floor(diff / 60);
-  const minutes = diff % 60;
+  const hours = Math.floor(minutes / 60);
+  const minutesReste = minutes % 60;
 
-  return `${hours}h${String(minutes).padStart(2, '0')}`;
+  return `${hours}h${String(minutesReste).padStart(2, '0')}`;
 }
 
 function escapeHtml(str) {

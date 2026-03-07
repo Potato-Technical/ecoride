@@ -41,6 +41,18 @@
                 </div>
 
                 <div class="mb-3">
+                    <label for="duree_estimee_minutes" class="form-label">
+                        Durée estimée (en minutes)
+                    </label>
+                    <input type="number"
+                           id="duree_estimee_minutes"
+                           name="duree_estimee_minutes"
+                           min="1"
+                           class="form-control"
+                           required>
+                </div>
+
+                <div class="mb-3">
                     <label for="vehicule_id" class="form-label">Véhicule</label>
                     <select id="vehicule_id" name="vehicule_id" class="form-select" required>
                         <option value="">-- Choisir --</option>

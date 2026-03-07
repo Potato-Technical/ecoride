@@ -68,6 +68,7 @@ CREATE TABLE trajet (
     lieu_arrivee VARCHAR(150) NOT NULL,
     date_heure_depart DATETIME NOT NULL,
     date_heure_arrivee DATETIME DEFAULT NULL, -- renseignée à la fin du trajet
+    duree_estimee_minutes INT NOT NULL, -- durée prévisionnelle du trajet en minutes
     prix DECIMAL(10,2) NOT NULL,
     nb_places INT NOT NULL, -- capacité totale du véhicule
     places_restantes INT NOT NULL, -- stocké (init = nb_places) (US6/US10)
@@ -87,7 +88,6 @@ CREATE TABLE trajet (
     FOREIGN KEY (chauffeur_id) REFERENCES utilisateur(id),
     FOREIGN KEY (vehicule_id) REFERENCES vehicule(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 
 -- Table : participation
 -- Rôle : réservation d’un passager sur un trajet (une participation par user+trajet)
