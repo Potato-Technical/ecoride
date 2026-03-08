@@ -9,6 +9,7 @@ use App\Models\ParticipationRepository;
 use App\Models\VehiculeRepository;
 use App\Models\CreditMouvementRepository;
 use App\Models\AvisRepository;
+use App\Models\ActivityLogRepository;
 
 
 class TrajetController extends Controller
@@ -46,11 +47,32 @@ class TrajetController extends Controller
         $nearestDate = null;
 
         if ($hasSearch) {
-
             $trajets = $repo->searchWithFiltersPaginated($filters, $limit, $offset);
 
             if (empty($trajets)) {
                 $nearestDate = $repo->findNearestAvailableDate($filters);
+            }
+
+            try {
+                $logRepo = new ActivityLogRepository();
+                $logRepo->insert([
+                    'type' => 'trip_search',
+                    'user_id' => isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : null,
+                    'meta' => [
+                        'depart' => $filters['depart'],
+                        'arrivee' => $filters['arrivee'],
+                        'date' => $filters['date'],
+                        'prix_max' => $filters['prix_max'],
+                        'duree_max' => $filters['duree_max'],
+                        'note_min' => $filters['note_min'],
+                        'eco' => (bool) $filters['eco'],
+                        'sort' => $filters['sort'],
+                        'results_count' => count($trajets),
+                        'nearest_date' => $nearestDate,
+                    ],
+                ]);
+            } catch (\Throwable $e) {
+                error_log('MONGO trip_search FAIL: ' . $e->getMessage());
             }
         }
 
@@ -61,7 +83,7 @@ class TrajetController extends Controller
             'hasSearch'   => $hasSearch,
             'nearestDate' => $nearestDate,
             'title'       => 'Recherche de covoiturages',
-            'pageCss'     => ['trajets.css'],
+            'pageCss'     => ['trajets-index.css'],
             'scripts'     => ['/assets/js/trajets.js'],
         ]);
     }
@@ -125,7 +147,6 @@ class TrajetController extends Controller
      */
     public function create(): void
     {
-        // Durcissement minimal : refuser toute autre méthode HTTP
         if (!in_array($_SERVER['REQUEST_METHOD'], ['GET', 'POST'], true)) {
             http_response_code(405);
             exit;
@@ -143,24 +164,20 @@ class TrajetController extends Controller
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $lieuDepart          = trim($_POST['lieu_depart'] ?? '');
+            $lieuArrivee         = trim($_POST['lieu_arrivee'] ?? '');
+            $dateDepart          = trim($_POST['date_heure_depart'] ?? '');
+            $dureeEstimeeMinutes = (int) ($_POST['duree_estimee_minutes'] ?? 0);
+            $prix                = (int) ($_POST['prix'] ?? 0);
+            $nbPlaces            = (int) ($_POST['nb_places'] ?? 0);
 
-            $lieuDepart            = trim($_POST['lieu_depart'] ?? '');
-            $lieuArrivee           = trim($_POST['lieu_arrivee'] ?? '');
-            $dateDepart            = trim($_POST['date_heure_depart'] ?? '');
-            $dureeEstimeeMinutes   = (int) ($_POST['duree_estimee_minutes'] ?? 0);
-            $prix                  = (int) ($_POST['prix'] ?? 0);
-            $nbPlaces              = (int) ($_POST['nb_places'] ?? 0);
-
-            // Normalisation minimale de date_heure_depart (datetime-local)
             if ($dateDepart !== '') {
-                // "YYYY-MM-DDTHH:MM" -> "YYYY-MM-DD HH:MM:00"
                 $dateDepart = str_replace('T', ' ', $dateDepart);
                 if (strlen($dateDepart) === 16) {
                     $dateDepart .= ':00';
                 }
             }
 
-            // Lecture + validation du véhicule (ownership)
             $vehiculeId = (int)($_POST['vehicule_id'] ?? 0);
             if ($vehiculeId <= 0 || !$vehRepo->isOwnedByUser($vehiculeId, (int)$_SESSION['user_id'])) {
                 http_response_code(400);
@@ -189,18 +206,16 @@ class TrajetController extends Controller
                 $pdo->beginTransaction();
 
                 $trajetId = $repo->create([
-                    'lieu_depart'             => $lieuDepart,
-                    'lieu_arrivee'            => $lieuArrivee,
-                    'date_heure_depart'       => $dateDepart,
-                    'duree_estimee_minutes'   => $dureeEstimeeMinutes,
-                    'prix'                    => $prix,
-                    'nb_places'               => $nbPlaces,
-                    'chauffeur_id'            => (int)$_SESSION['user_id'],
-                    'vehicule_id'             => $vehiculeId,
+                    'lieu_depart'           => $lieuDepart,
+                    'lieu_arrivee'          => $lieuArrivee,
+                    'date_heure_depart'     => $dateDepart,
+                    'duree_estimee_minutes' => $dureeEstimeeMinutes,
+                    'prix'                  => $prix,
+                    'nb_places'             => $nbPlaces,
+                    'chauffeur_id'          => (int)$_SESSION['user_id'],
+                    'vehicule_id'           => $vehiculeId,
                 ]);
 
-                // US9 : commission plateforme (-2) liée au trajet
-                // Nécessite CreditMouvementRepository::add(..., ?int $trajetId = null)
                 $creditRepo->add(
                     (int)$_SESSION['user_id'],
                     'commission_plateforme',
@@ -211,10 +226,28 @@ class TrajetController extends Controller
 
                 $pdo->commit();
 
+                try {
+                    $logRepo = new ActivityLogRepository();
+                    $logRepo->insert([
+                        'type' => 'trip_created',
+                        'user_id' => (int) $_SESSION['user_id'],
+                        'meta' => [
+                            'trajet_id' => $trajetId,
+                            'depart' => $lieuDepart,
+                            'arrivee' => $lieuArrivee,
+                            'date_heure_depart' => $dateDepart,
+                            'prix' => $prix,
+                            'nb_places' => $nbPlaces,
+                            'vehicule_id' => $vehiculeId,
+                        ],
+                    ]);
+                } catch (\Throwable $e) {
+                    error_log('MONGO trip_created FAIL: ' . $e->getMessage());
+                }
+
                 $this->setFlash('success', 'Trajet créé avec succès');
                 header('Location: /trajets');
                 exit;
-
             } catch (\Throwable $e) {
                 if ($pdo->inTransaction()) {
                     $pdo->rollBack();
@@ -228,6 +261,7 @@ class TrajetController extends Controller
         $this->render('trajets/create', [
             'title' => 'Créer un trajet',
             'vehicules' => $vehicules,
+            'pageCss'     => ['trajets-create.css'],
         ]);
     }
 

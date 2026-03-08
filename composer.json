@@ -8,5 +8,7 @@
             "App\\": "app/"
         }
     },
-    "require": {}
+    "require": {
+        "mongodb/mongodb": "^2.1"
+    }
 }

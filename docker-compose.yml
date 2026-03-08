@@ -1,47 +1,68 @@
 services:
   web:
-    build: .                         # Image PHP/Apache définie dans le Dockerfile
+    build: .                         # Image PHP/Apache construite depuis le Dockerfile
     container_name: ecoride_web
+
     command: >
       bash -lc "composer install --no-interaction --no-dev --prefer-dist
-      && apache2-foreground"         # Installe vendor puis lance Apache
+      && apache2-foreground"        # Installe les dépendances puis démarre Apache
+
     ports:
-      - "8080:80"                    # Port local 8080 → Apache du conteneur
+      - "8080:80"                   # http://localhost:8080 → Apache du conteneur
+
     volumes:
-      - ./:/var/www/html             # Partage du code source avec le conteneur
+      - ./:/var/www/html            # Code source monté dans le conteneur
       - vendor_data:/var/www/html/vendor
-                                     # Volume dédié aux dépendances Composer
+                                    # Dépendances Composer persistées dans un volume
+
     env_file:
-      - .env                         # Variables d’environnement PHP / DB
+      - .env                        # Variables d'environnement (DB, config app)
+
     depends_on:
       db:
-        condition: service_healthy   # Attend que MySQL soit prêt avant Apache
+        condition: service_healthy  # Démarre après que MySQL soit prêt
+      mongo:
+        condition: service_started  # Démarre après lancement de MongoDB
 
   db:
-    image: mysql:8.0                 # Version stable de MySQL
+    image: mysql:8.0                # Image officielle MySQL
     container_name: ecoride_db
+
     command:
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_unicode_ci
-                                     # Force l’encodage UTF-8 complet
+                                    # Encodage UTF-8 complet
+
     environment:
-      MYSQL_DATABASE: ${DB_NAME}     # Nom de la base
-      MYSQL_USER: ${DB_USER}         # Utilisateur MySQL applicatif
-      MYSQL_PASSWORD: ${DB_PASS}     # Mot de passe utilisateur
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}
-                                     # Mot de passe root (Docker uniquement)
+
     ports:
-      - "3307:3306"                  # Port local 3307 → MySQL du conteneur
+      - "3307:3306"                 # localhost:3307 → MySQL du conteneur
+
     volumes:
-      - db_data:/var/lib/mysql       # Stockage persistant des données MySQL
+      - db_data:/var/lib/mysql      # Données MySQL persistées
+
     healthcheck:
       test:
-        ["CMD", "mysqladmin", "ping", "-h", "localhost",
-         "-u", "root", "-p${DB_ROOT_PASS}"]
+        ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASS}"]
       interval: 5s
       timeout: 3s
-      retries: 20                    # MySQL considéré prêt après ping OK
+      retries: 20                   # Service considéré prêt après réponse OK
+
+  mongo:
+    image: mongo:7                  # Image officielle MongoDB
+    container_name: ecoride_mongo
+
+    ports:
+      - "27017:27017"               # localhost:27017 → MongoDB du conteneur
+
+    volumes:
+      - mongo_data:/data/db         # Données MongoDB persistées
 
 volumes:
-  db_data:                           # Volume Docker pour la base de données
-  vendor_data:                       # Volume Docker pour les dépendances Composer
+  db_data:                          # Volume MySQL
+  mongo_data:                       # Volume MongoDB
+  vendor_data:                      # Volume dépendances Composer

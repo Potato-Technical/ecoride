@@ -6,6 +6,7 @@ use App\Core\Controller;
 use App\Models\AdminRepository;
 use App\Models\UserRepository;
 use App\Models\RoleRepository;
+use App\Models\ActivityLogRepository;
 
 class AdminController extends Controller
 {
@@ -15,6 +16,19 @@ class AdminController extends Controller
 
         $totalCommission = $adminRepo->totalCommission();
         $tripStats = $adminRepo->tripsByDay();
+
+        try {
+            $logRepo = new ActivityLogRepository();
+            $logRepo->insert([
+                'type' => 'admin_dashboard_view',
+                'user_id' => isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : null,
+                'meta' => [
+                    'screen' => 'dashboard',
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            error_log('MONGO admin_dashboard_view FAIL: ' . $e->getMessage());
+        }
 
         $this->render('admin/dashboard', [
             'title' => 'Administration',

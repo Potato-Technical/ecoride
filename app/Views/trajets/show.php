@@ -111,8 +111,8 @@ if ($dateDepart) {
     <div class="trip-detail-layout">
         <div class="trip-detail-main">
 
-            <article class="trip-card trip-route-card">
-                <div class="trip-card-body">
+            <article class="ui-card trip-route-card">
+                <div class="ui-card-body">
                     <div class="route-timeline">
                         <div class="route-time-col">
                             <div class="route-time route-time-top">
@@ -165,15 +165,15 @@ if ($dateDepart) {
                 </div>
             </article>
 
-            <article class="trip-card trip-driver-card">
-                <div class="trip-card-body">
+            <article class="ui-card trip-driver-card">
+                <div class="ui-card-body">
                     <div class="driver-top">
                         <div class="driver-identity">
                             <div class="driver-avatar">
                                 <?php if ($avatar): ?>
                                     <img src="<?= htmlspecialchars($avatar) ?>" alt="Photo du conducteur">
                                 <?php else: ?>
-                                    <div class="driver-avatar-placeholder">
+                                    <div class="ui-avatar-placeholder ui-avatar-placeholder--lg">
                                         <?= htmlspecialchars(mb_substr($trajet['pseudo'] ?? 'U', 0, 1)) ?>
                                     </div>
                                 <?php endif; ?>
@@ -224,16 +224,16 @@ if ($dateDepart) {
                 </div>
             </article>
 
-            <article class="trip-card trip-reviews-card">
-                <div class="trip-card-body">
-                    <h2 class="trip-section-title">Commentaires</h2>
+            <article class="ui-card trip-reviews-card">
+                <div class="ui-card-body">
+                    <h2 class="ui-section-title">Commentaires</h2>
 
                     <?php if (empty($avis)): ?>
-                        <p class="trip-empty mb-0">Aucun avis validé pour le moment.</p>
+                        <p class="ui-empty mb-0">Aucun avis validé pour le moment.</p>
                     <?php else: ?>
                         <?php foreach ($avis as $a): ?>
                             <div class="review-item">
-                                <div class="review-avatar">
+                                <div class="ui-avatar-placeholder ui-avatar-placeholder--md review-avatar">
                                     <?= htmlspecialchars(mb_substr($a['auteur_pseudo'] ?? 'U', 0, 1)) ?>
                                 </div>
 
@@ -269,8 +269,8 @@ if ($dateDepart) {
 
         <aside class="trip-detail-side">
             <div class="trip-side-sticky">
-                <article class="trip-card trip-summary-card">
-                    <div class="trip-card-body">
+                <article class="ui-card trip-summary-card">
+                    <div class="ui-card-body">
                         <div class="summary-route">
                             <div class="summary-line">
                                 <span class="summary-time">
@@ -302,7 +302,7 @@ if ($dateDepart) {
                                 <?php if ($avatar): ?>
                                     <img src="<?= htmlspecialchars($avatar) ?>" alt="Photo du conducteur">
                                 <?php else: ?>
-                                    <div class="driver-avatar-placeholder">
+                                    <div class="ui-avatar-placeholder ui-avatar-placeholder--lg">
                                         <?= htmlspecialchars(mb_substr($trajet['pseudo'] ?? 'U', 0, 1)) ?>
                                     </div>
                                 <?php endif; ?>
@@ -332,7 +332,7 @@ if ($dateDepart) {
                         <?php if (empty($_SESSION['user_id'])): ?>
 
                             <a href="/login?redirect=<?= urlencode($_SERVER['REQUEST_URI']) ?>"
-                               class="btn trip-btn-primary w-100">
+                               class="btn-primary-ui w-100">
                                 Se connecter pour réserver
                             </a>
 
@@ -367,7 +367,7 @@ if ($dateDepart) {
                                        value="<?= (int)$trajet['id'] ?>">
 
                                 <button type="submit"
-                                        class="btn trip-btn-primary w-100"
+                                        class="btn-primary-ui w-100"
                                         data-original-text="Réserver">
                                     Demande de réservation
                                 </button>
