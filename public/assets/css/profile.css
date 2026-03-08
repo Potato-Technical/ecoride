@@ -1,0 +1,161 @@
+.profile-page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+/* HEADER */
+
+.profile-hero {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    padding: 1.25rem;
+    border-radius: 16px;
+    background: #fff;
+    border: 1px solid var(--divider);
+    margin-bottom: 1rem;
+}
+
+.profile-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--color-cta);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.profile-title {
+    margin: 0;
+}
+
+.profile-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* CARD */
+
+.profile-card {
+    background: #fff;
+    border: 1px solid var(--divider);
+    border-radius: 16px;
+    padding: 1rem;
+}
+
+.profile-card + .profile-card {
+    margin-top: 1rem;
+}
+
+.profile-card h2 {
+    margin-bottom: 0.75rem;
+}
+
+/* INFO LIST */
+
+.profile-list {
+    display: grid;
+    gap: .6rem;
+}
+
+.profile-item {
+    display: flex;
+    justify-content: space-between;
+    padding: .8rem;
+    background: var(--bg-main);
+    border-radius: 10px;
+}
+
+.profile-item-label {
+    font-size: .85rem;
+    color: var(--text-secondary);
+}
+
+.profile-item-value {
+    font-weight: 600;
+}
+
+/* CREDIT BADGE */
+
+.profile-credit {
+    background: var(--color-primary);
+    padding: .3rem .6rem;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+/* MENU */
+
+.profile-menu {
+    display: grid;
+    gap: .6rem;
+}
+
+.profile-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .9rem;
+    border-radius: 12px;
+    text-decoration: none;
+    background: var(--bg-main);
+    color: var(--text-primary);
+    border: 1px solid var(--divider);
+    transition: background .15s;
+}
+
+.profile-link:hover {
+    background: #f2f2f2;
+}
+
+.profile-link-title {
+    font-weight: 600;
+}
+
+.profile-link-text {
+    font-size: .85rem;
+    color: var(--text-secondary);
+}
+
+.profile-link-arrow {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+}
+
+/* CTA */
+
+.profile-link--primary {
+    background: var(--color-cta);
+    color: #fff;
+    border: none;
+}
+
+.profile-link--primary .profile-link-text {
+    color: rgba(255,255,255,0.8);
+}
+
+.profile-link--primary:hover {
+    background: var(--color-cta-hover);
+}
+
+/* DESKTOP */
+
+@media (min-width: 768px) {
+
+    .profile-page {
+        padding: 2rem;
+    }
+
+    .profile-item {
+        padding: 1rem;
+    }
+
+    .profile-link {
+        padding: 1rem;
+    }
+}

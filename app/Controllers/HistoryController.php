@@ -56,6 +56,7 @@ class HistoryController extends Controller
             'pageCss'           => ['history-index'],
             'mesTrajets'        => $mesTrajets,
             'mesParticipations' => $mesParticipations,
+            'pageCss' => ['history-index.css'],
         ]);
     }
 }

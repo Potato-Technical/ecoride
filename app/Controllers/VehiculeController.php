@@ -28,6 +28,7 @@ class VehiculeController extends Controller
         $this->render('vehicules/index', [
             'vehicules' => $vehicules,
             'title'     => 'Mes véhicules',
+            'pageCss'   => ['vehicules.css'],
         ]);
     }
 
@@ -49,6 +50,7 @@ class VehiculeController extends Controller
 
         $this->render('vehicules/create', [
             'title' => 'Ajouter un véhicule',
+            'pageCss'   => ['vehicules.css'],
         ]);
     }
 
@@ -101,6 +103,7 @@ class VehiculeController extends Controller
             return;
         }
 
+        $preferencesLibres = trim($_POST['preferences_libres'] ?? '');
         $repo = new VehiculeRepository();
         $repo->create([
             'immatriculation'               => $immatriculation,
@@ -110,7 +113,8 @@ class VehiculeController extends Controller
             'couleur'                       => $couleur,
             'energie'                       => $energie,
             'fumeur'                        => $fumeur,
-            'animaux'                      => $animaux,
+            'animaux'                       => $animaux,
+            'preferences_libres'            => $preferencesLibres,
             'utilisateur_id'                => (int)$_SESSION['user_id'],
         ]);
 
@@ -150,6 +154,7 @@ class VehiculeController extends Controller
         $this->render('vehicules/edit', [
             'title'    => 'Modifier un véhicule',
             'vehicule' => $vehicule,
+            'pageCss'   => ['vehicules.css'],
         ]);
     }
 

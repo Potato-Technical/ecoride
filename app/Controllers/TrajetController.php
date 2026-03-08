@@ -376,6 +376,7 @@ class TrajetController extends Controller
         $this->render('trajets/chauffeur', [
             'trajets' => $trajets,
             'title'   => 'Mes trajets (chauffeur)',
+            'pageCss' => ['trajets.css'],
         ]);
     }
         

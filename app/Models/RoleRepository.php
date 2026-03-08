@@ -1,56 +1,94 @@
 <?php
 
-namespace App\Models; // Namespace logique pour les classes d'accès aux données
+namespace App\Models;
 
-use App\Core\Database; // Accès à la connexion PDO centralisée
-use PDO;               // Constantes PDO (FETCH_ASSOC)
+use App\Core\Database;
+use PDO;
 
 class RoleRepository
 {
-    /**
-     * Récupère un rôle à partir de son libellé
-     * Retourne un tableau associatif ou null si absent
-     */
     public function findByLibelle(string $libelle): ?array
     {
-        // Récupération de la connexion PDO unique
         $pdo = Database::getInstance();
 
-        // Préparation de la requête SQL
-        $stmt = $pdo->prepare(
-            'SELECT * FROM role WHERE libelle = :libelle'
-        );
+        $stmt = $pdo->prepare('SELECT * FROM role WHERE libelle = :libelle');
+        $stmt->execute(['libelle' => $libelle]);
 
-        // Exécution avec paramètre sécurisé
-        $stmt->execute([
-            'libelle' => $libelle
-        ]);
-
-        // Récupération du résultat sous forme de tableau associatif
         $role = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // Retourne null si aucun rôle trouvé
         return $role ?: null;
     }
-    
-    /**
-     * Récupère un rôle à partir de son identifiant
-     * Retourne un tableau associatif ou null si absent
-     */
+
     public function findById(int $id): ?array
     {
         $pdo = Database::getInstance();
 
-        $stmt = $pdo->prepare(
-            'SELECT * FROM role WHERE id = :id'
-        );
-
-        $stmt->execute([
-            'id' => $id
-        ]);
+        $stmt = $pdo->prepare('SELECT * FROM role WHERE id = :id');
+        $stmt->execute(['id' => $id]);
 
         $role = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $role ?: null;
+    }
+
+    public function getUserRoles(int $userId): array
+    {
+        $pdo = Database::getInstance();
+
+        $stmt = $pdo->prepare("
+            SELECT r.*
+            FROM role r
+            INNER JOIN utilisateur_role ur ON ur.role_id = r.id
+            WHERE ur.utilisateur_id = :user_id
+            ORDER BY r.libelle ASC
+        ");
+
+        $stmt->execute([
+            'user_id' => $userId
+        ]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    public function userHasRole(int $userId, string $libelle): bool
+    {
+        $pdo = Database::getInstance();
+
+        $stmt = $pdo->prepare("
+            SELECT 1
+            FROM utilisateur u
+            INNER JOIN role r ON r.id = u.role_id
+            WHERE u.id = :user_id
+            AND r.libelle = :libelle
+            LIMIT 1
+        ");
+
+        $stmt->execute([
+            'user_id' => $userId,
+            'libelle' => $libelle,
+        ]);
+
+        return (bool) $stmt->fetchColumn();
+    }
+
+    public function assignRoleToUser(int $userId, int $roleId): bool
+    {
+        $pdo = Database::getInstance();
+
+        $stmt = $pdo->prepare("
+            INSERT INTO utilisateur_role (utilisateur_id, role_id)
+            SELECT :user_id, :role_id
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM utilisateur_role
+                WHERE utilisateur_id = :user_id
+                  AND role_id = :role_id
+            )
+        ");
+
+        return $stmt->execute([
+            'user_id' => $userId,
+            'role_id' => $roleId
+        ]);
     }
 }

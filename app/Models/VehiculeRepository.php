@@ -61,6 +61,7 @@ class VehiculeRepository
                 energie,
                 fumeur,
                 animaux,
+                preferences_libres,
                 utilisateur_id
             ) VALUES (
                 :immatriculation,
@@ -71,9 +72,14 @@ class VehiculeRepository
                 :energie,
                 :fumeur,
                 :animaux,
+                :preferences_libres,
                 :utilisateur_id
             )
         ");
+
+        $prefs = ($data['preferences_libres'] ?? '') !== ''
+            ? $data['preferences_libres']
+            : null;
 
         $stmt->execute([
             'immatriculation'               => $data['immatriculation'],
@@ -83,7 +89,8 @@ class VehiculeRepository
             'couleur'                       => $data['couleur'],
             'energie'                       => $data['energie'],
             'fumeur'                        => (int)$data['fumeur'],
-            'animaux'                      => (int)$data['animaux'],
+            'animaux'                       => (int)$data['animaux'],
+            'preferences_libres'            => $prefs,
             'utilisateur_id'                => (int)$data['utilisateur_id'],
         ]);
     }
@@ -106,8 +113,12 @@ class VehiculeRepository
                 immatriculation,
                 marque,
                 modele,
+                couleur,
                 energie,
-                date_premiere_immatriculation
+                date_premiere_immatriculation,
+                fumeur,
+                animaux,
+                preferences_libres
             FROM vehicule
             WHERE utilisateur_id = :uid
             ORDER BY id ASC
