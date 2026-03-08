@@ -109,4 +109,32 @@ class UserRepository
 
         return (int) $pdo->lastInsertId();
     }
+
+    public function findAllForAdmin(): array
+    {
+        $pdo = Database::getInstance();
+
+        $stmt = $pdo->query("
+            SELECT u.id, u.pseudo, u.email, u.est_suspendu, r.libelle AS role
+            FROM utilisateur u
+            JOIN role r ON r.id = u.role_id
+            WHERE r.libelle IN ('utilisateur','employe')
+            ORDER BY u.id ASC
+        ");
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    public function suspend(int $id): bool
+    {
+        $pdo = Database::getInstance();
+
+        $stmt = $pdo->prepare("
+            UPDATE utilisateur
+            SET est_suspendu = 1
+            WHERE id = :id
+        ");
+
+        return $stmt->execute(['id' => $id]);
+    }
 }

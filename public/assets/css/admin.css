@@ -1,0 +1,86 @@
+.admin-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.admin-header {
+  margin-bottom: 1.5rem;
+}
+
+.admin-eyebrow {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: .05em;
+  color: var(--color-focus);
+  margin-bottom: .25rem;
+}
+
+.admin-title {
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+.admin-subtitle {
+  color: var(--text-secondary);
+  font-size: .95rem;
+}
+
+.admin-card {
+  background: white;
+  border: 1px solid var(--divider);
+  border-radius: 14px;
+  padding: 1.25rem;
+}
+
+.admin-kpi {
+  text-align: center;
+}
+
+.admin-kpi-label {
+  font-size: .85rem;
+  color: var(--text-secondary);
+}
+
+.admin-kpi-value {
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.admin-badge {
+  padding: .35rem .6rem;
+  border-radius: 999px;
+  font-size: .75rem;
+  font-weight: 600;
+}
+
+.admin-badge-role {
+  background: rgba(90,116,128,.15);
+  color: var(--info);
+}
+
+.admin-badge-active {
+  background: rgba(76,175,80,.15);
+  color: var(--success);
+}
+
+.admin-badge-suspended {
+  background: rgba(198,72,72,.15);
+  color: var(--error);
+}
+
+.admin-table th {
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--text-secondary);
+}
+
+.admin-table td {
+  vertical-align: middle;
+}
+
+.admin-empty {
+  color: var(--text-secondary);
+  font-size: .9rem;
+}

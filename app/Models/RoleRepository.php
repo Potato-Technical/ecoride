@@ -31,25 +31,6 @@ class RoleRepository
         return $role ?: null;
     }
 
-    public function getUserRoles(int $userId): array
-    {
-        $pdo = Database::getInstance();
-
-        $stmt = $pdo->prepare("
-            SELECT r.*
-            FROM role r
-            INNER JOIN utilisateur_role ur ON ur.role_id = r.id
-            WHERE ur.utilisateur_id = :user_id
-            ORDER BY r.libelle ASC
-        ");
-
-        $stmt->execute([
-            'user_id' => $userId
-        ]);
-
-        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
-    }
-
     public function userHasRole(int $userId, string $libelle): bool
     {
         $pdo = Database::getInstance();
@@ -76,19 +57,14 @@ class RoleRepository
         $pdo = Database::getInstance();
 
         $stmt = $pdo->prepare("
-            INSERT INTO utilisateur_role (utilisateur_id, role_id)
-            SELECT :user_id, :role_id
-            WHERE NOT EXISTS (
-                SELECT 1
-                FROM utilisateur_role
-                WHERE utilisateur_id = :user_id
-                  AND role_id = :role_id
-            )
+            UPDATE utilisateur
+            SET role_id = :role_id
+            WHERE id = :user_id
         ");
 
         return $stmt->execute([
             'user_id' => $userId,
-            'role_id' => $roleId
+            'role_id' => $roleId,
         ]);
     }
 }
