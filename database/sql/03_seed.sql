@@ -27,7 +27,7 @@ WHERE NOT EXISTS (SELECT 1 FROM role WHERE libelle = 'administrateur');
 
 INSERT INTO utilisateur (pseudo, email, mot_de_passe_hash, photo, est_suspendu, role_id, created_at)
 SELECT 'admin','admin@ecoride.fr',
-  '$2y$10$gBOjTMa40zl82O.VVye1y.tWx1xJZusE7vUmmtgB/hN5p1npA7W7K',
+  '$2y$10$1xJ3VGePOX5oldb/nrZYpOoH/XBxR3ZoxEyU5S/S6TYPuL7tJudGG',
   NULL,0,r.id,NOW()
 FROM role r
 WHERE r.libelle='administrateur'
@@ -35,7 +35,7 @@ WHERE r.libelle='administrateur'
 
 INSERT INTO utilisateur (pseudo, email, mot_de_passe_hash, photo, est_suspendu, role_id, created_at)
 SELECT 'employe','employe@ecoride.fr',
-  '$2y$10$FMXHLyLOWx9J9b7wTWuPUOplV7LZWodHNdGeV9svPYOaooZSHOeQy',
+  '$2y$10$HqZbPKZfF7/aUjVLStx/hues/Ag2tjIVa43mf5qDXeNBtVEmjYKs6',
   NULL,0,r.id,NOW()
 FROM role r
 WHERE r.libelle='employe'
@@ -43,7 +43,7 @@ WHERE r.libelle='employe'
 
 INSERT INTO utilisateur (pseudo, email, mot_de_passe_hash, photo, est_suspendu, role_id, created_at)
 SELECT 'chauffeur','chauffeur@ecoride.fr',
-  '$2y$10$snTA1hsyAbcbCtEIAgP5LeFIP9nLTfIF4Dlj7vdpXFWmVJ8b3dz0u',
+  '$2y$10$xyflwdCCVtqVVn8IRXIP3ugZV0K1N.quS0l8Zh6tTEJE8I26/.Jjy',
   NULL,0,r.id,NOW()
 FROM role r
 WHERE r.libelle='utilisateur'
@@ -51,7 +51,7 @@ WHERE r.libelle='utilisateur'
 
 INSERT INTO utilisateur (pseudo, email, mot_de_passe_hash, photo, est_suspendu, role_id, created_at)
 SELECT 'passager','passager@ecoride.fr',
-  '$2y$10$CR2nmsjgvzPxvGM.1OcZluEIMu/FsTz6WGTGhYaQi5Jdv9XGRcUaG',
+  '$2y$10$da/qVxaTa.bMGtfG4IjinOJ/29OXXJnTSm8xPrpdKg1PKSHPYUnpS',
   NULL,0,r.id,NOW()
 FROM role r
 WHERE r.libelle='utilisateur'
