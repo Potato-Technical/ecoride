@@ -10,139 +10,238 @@
 
 ###
 
-EcoRide est une application web de covoiturage. Elle permet la consultation et la réservation de trajets, ainsi que la gestion des participations utilisateurs, avec une logique métier sécurisée et transactionnelle.
-Le projet s’appuie sur une architecture MVC en PHP et un environnement Dockerisé pour assurer la cohérence du développement.
+EcoRide est une application web de covoiturage développée en **PHP avec
+une architecture MVC**.\
+Elle permet la publication de trajets, la réservation de places et la
+gestion complète du cycle de vie d'un covoiturage.
 
-## Fonctionnalités principales
+Le projet démontre :
 
-- Authentification utilisateur
-- Consultation des trajets disponibles
-- Réservation d’un trajet
-- Annulation / réactivation de réservation
-- Gestion automatique des places disponibles
-- Espace « Mes réservations »
+-   architecture MVC en PHP
+-   logique métier transactionnelle
+-   système de crédits (ledger)
+-   sécurité web (CSRF, validation serveur)
+-   environnement Docker reproductible
+-   journalisation NoSQL
 
-## Stack technique
+------------------------------------------------------------------------
 
-**Back-end**
+# Fonctionnalités
 
-* **PHP 8**
-* **Architecture MVC personnalisée**
-* **PDO** (requêtes préparées, transactions SQL)
-* **Apache**
-* **Composer** (autoload PSR-4)
+## Utilisateur
 
-**Base de données**
+-   inscription / connexion
+-   recherche de trajets
+-   réservation d'une place
+-   historique des trajets
+-   validation d'un trajet terminé
+-   dépôt d'avis
 
-* **MySQL 8**
-* Schéma SQL versionné
-* Données de test via scripts de seed
+## Chauffeur
 
-**Front-end**
+-   création de trajets
+-   gestion des véhicules
+-   gestion des passagers
 
-* **HTML / CSS**
-* **Bootstrap 5**
-* **JavaScript vanilla** (aucune dépendance externe)
+## Employé
 
-**Environnement**
+-   modération des avis
+-   traitement des incidents
+-   gestion des signalements
 
-* **Docker**
-* **Docker Compose**
-* Scripts utilitaires (reset DB, seed, sanity check)
+## Administrateur
 
-**Gestion de versions**
+-   tableau de bord
+-   statistiques plateforme
+-   gestion des comptes
+-   création d'employés
 
-* **Git**
-* **GitHub**
-* Branches de fonctionnalités
+------------------------------------------------------------------------
 
-## Architecture du projet
+# Stack technique
 
-```bash
+## Back-end
+
+-   PHP 8
+-   Architecture MVC personnalisée
+-   Composer (autoload PSR-4)
+-   PDO
+-   Apache
+-   Transactions SQL
+
+## Base de données relationnelle
+
+MySQL 8
+
+Tables principales :
+
+-   utilisateur
+-   trajet
+-   participation
+-   avis
+-   incident
+-   vehicule
+-   credit_mouvement
+
+Le solde utilisateur n'est pas stocké.\
+Il est calculé dynamiquement via :
+
+SUM(credit_mouvement.montant)
+
+Ce modèle correspond à un **ledger financier** permettant la traçabilité
+complète des mouvements de crédits.
+
+## Base NoSQL
+
+MongoDB
+
+Utilisée pour la journalisation d'activité :
+
+-   recherches de trajets
+-   accès au dashboard admin
+-   création de trajets
+
+Collection principale :
+
+activity_logs
+
+## Front-end
+
+-   HTML
+-   CSS
+-   Bootstrap 5
+-   JavaScript vanilla
+
+## Environnement
+
+-   Docker
+-   Docker Compose
+-   scripts utilitaires :
+    -   reset DB
+    -   seed DB
+    -   sanity check
+    -   smoke test
+
+------------------------------------------------------------------------
+
+# Architecture du projet
+
+``` bash
 .
-├── app/                # Cœur de l’application (MVC)
+├── app/
 │   ├── Controllers/
 │   ├── Models/
-│   ├── Views/
-│   └── Core/
-├── public/             # Point d’entrée (index.php)
-├── routes/             # Définition des routes
-├── config/             # Configuration (DB)
-├── database/           # Schéma + seeds SQL
-├── scripts/            # Scripts utilitaires (DB, sanity check)
-├── docker-compose.yml  # Environnement Docker (dev)
+│   ├── Core/
+│   ├── Helpers/
+│   ├── Services/
+│   └── Views/
+│
+├── public/
+│   ├── index.php
+│   └── assets/
+│
+├── routes/
+│
+├── config/
+│
+├── database/
+│   └── sql/
+│       ├── 01_schema.sql
+│       └── 03_seed.sql
+│
+├── scripts/
+│   ├── db_full_reset.sh
+│   ├── sanity_check.php
+│   └── smoke.sh
+│
+├── docker-compose.yml
 ├── Dockerfile
 └── README.md
-
 ```
-- MVC strict
-- Accès base via PDO
-- Logique métier centralisée dans les repositories
-- Transactions SQL pour les opérations critiques
-- Routing centralisé via fichier routes
 
-## Installation (Docker)
-L’environnement Docker est destiné au développement et à la démonstration du projet.
+Principes :
 
-**Prérequis**
+-   MVC strict
+-   accès base via PDO
+-   logique métier centralisée dans les repositories
+-   transactions SQL pour les opérations critiques
+-   routing centralisé
 
-* Docker
+------------------------------------------------------------------------
 
-* Docker Compose
+# Installation (Docker)
 
-**Étapes**
+## Prérequis
 
-```bash
+-   Docker
+-   Docker Compose
+
+## Étapes
+
+``` bash
 git clone https://github.com/Potato-Technical/ecoride.git
 cd ecoride
 
 cp .env.example .env
-# Modifier DB_PASS et DB_ROOT_PASS si besoin
 
 make up
 make db-full
 make check
-
 ```
+
 Application accessible sur :
 
 http://localhost:8080
 
-## Base de données
+------------------------------------------------------------------------
 
-* MySQL 8
+# Tests automatisés
 
-* Initialisation via make db-full (schema + seed)
+Commande :
 
-* Connexion configurée dans config/database.php
+``` bash
+bash scripts/smoke.sh
+```
 
-## Comptes de test
+Ce script vérifie :
 
-Les comptes suivants sont disponibles après initialisation de la base :
+-   reset complet de la base
+-   routes HTTP essentielles
+-   authentification
+-   sécurité CSRF
+-   accès admin
+-   cohérence SQL
+-   journalisation Mongo
 
-| Rôle          | Email                | Mot de passe |
-|---------------|----------------------|--------------|
-| Administrateur| admin@ecoride.fr     | Admin123!    |
-| Utilisateur   | user@ecoride.fr      | User123!     |
+Résultat attendu :
 
-## Parcours utilisateur type
+PASS \> 0\
+FAIL = 0
 
-- Connexion
-- Consultation des trajets
-- Réservation -> confirmation
-- Visualisation dans « Mes réservations »
-- Annulation / réactivation possible
+------------------------------------------------------------------------
 
-## Sécurité & fiabilité
+# Comptes de test
 
-- Vérification des accès (authentification requise)
-- Protection CSRF sur toutes les actions POST sensibles
-- Requêtes SQL préparées (PDO)
-- Transactions SQL atomiques
-- Protection contre les doubles réservations
-- États métier normalisés (planifie, confirme, annule)
-- Séparation stricte contrôleur / logique métier
-- Gestion des erreurs HTTP (400 / 403 / 404 / 500)
+  Rôle             Email                  Mot de passe
+  ---------------- ---------------------- --------------
+  Administrateur   admin@ecoride.fr       Admin123!
+  Employé          employe@ecoride.fr     Admin123!
+  Chauffeur        chauffeur@ecoride.fr   Admin123!
+  Passager         passager@ecoride.fr    Admin123!
 
-## Auteur
+------------------------------------------------------------------------
+
+# Sécurité
+
+-   protection CSRF
+-   requêtes SQL préparées
+-   transactions SQL atomiques
+-   contrôle d'accès par rôle
+-   protection contre les doubles réservations
+-   validation serveur
+
+------------------------------------------------------------------------
+
+# Auteur
+
 [Potato-Technical](https://github.com/Potato-Technical)
