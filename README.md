@@ -222,12 +222,12 @@ FAIL = 0
 
 # Comptes de test
 
-  Rôle             Email                  Mot de passe
-  ---------------- ---------------------- --------------
-  Administrateur   admin@ecoride.fr       Admin123!
-  Employé          employe@ecoride.fr     Admin123!
-  Chauffeur        chauffeur@ecoride.fr   Admin123!
-  Passager         passager@ecoride.fr    Admin123!
+| Rôle           | Email                                      | Mot de passe  |
+|----------------|--------------------------------------------|---------------|
+| Admin          | [admin@ecoride.fr](mailto:admin@ecoride.fr)       | Admin123!     |
+| Employé        | [employe@ecoride.fr](mailto:employe@ecoride.fr)   | Employe123!   |
+| Chauffeur      | [chauffeur@ecoride.fr](mailto:chauffeur@ecoride.fr) | Chauffeur123! |
+| Passager       | [passager@ecoride.fr](mailto:passager@ecoride.fr) | Passager123!  |
 
 ------------------------------------------------------------------------
 
