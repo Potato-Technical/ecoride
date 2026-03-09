@@ -139,9 +139,21 @@ class AdminController extends Controller
         }
 
         $repo = new UserRepository();
-        $repo->suspend($id);
+        $user = $repo->findById($id);
 
-        $this->setFlash('success', 'Compte suspendu');
+        if (!$user) {
+            $this->error(404);
+        }
+
+        $isSuspended = (int) ($user['est_suspendu'] ?? 0) === 1;
+        $newStatus = $isSuspended ? 0 : 1;
+
+        $repo->updateSuspendStatus($id, $newStatus);
+
+        $this->setFlash(
+            'success',
+            $newStatus === 1 ? 'Compte suspendu' : 'Compte réactivé'
+        );
 
         header('Location: /admin/users');
         exit;

@@ -84,3 +84,47 @@
   color: var(--text-secondary);
   font-size: .9rem;
 }
+
+.btn-danger-ui {
+  border: 1px solid #e06b6b;
+  background: #fff5f5;
+  color: #c94343;
+  padding: 6px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.btn-danger-ui:hover {
+  background: #fde3e3;
+}
+
+.btn-success-ui {
+  border: 1px solid #6aa27f;
+  background: #eef8f1;
+  color: #2f6f4f;
+  padding: 6px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.btn-success-ui:hover {
+  background: #e2f3e8;
+}
+
+.admin-badge-active {
+  background: #e9f6ec;
+  color: #2f7a4f;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.admin-badge-suspended {
+  background: #fdeaea;
+  color: #c94343;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}

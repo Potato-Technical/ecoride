@@ -125,16 +125,54 @@ class UserRepository
         return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
-    public function suspend(int $id): bool
+    public function updateSuspendStatus(int $id, int $status): bool
     {
         $pdo = Database::getInstance();
 
         $stmt = $pdo->prepare("
             UPDATE utilisateur
-            SET est_suspendu = 1
+            SET est_suspendu = :status,
+                updated_at = NOW()
             WHERE id = :id
         ");
 
-        return $stmt->execute(['id' => $id]);
+        return $stmt->execute([
+            'id' => $id,
+            'status' => $status
+        ]);
+    }
+
+    public function suspendUser(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            exit;
+        }
+
+        $id = (int) ($_POST['user_id'] ?? 0);
+
+        if ($id <= 0) {
+            $this->error(400);
+        }
+
+        $repo = new UserRepository();
+        $user = $repo->findById($id);
+
+        if (!$user) {
+            $this->error(404);
+        }
+
+        $isSuspended = (int) ($user['est_suspendu'] ?? 0) === 1;
+        $newStatus = $isSuspended ? 0 : 1;
+
+        $repo->updateSuspendStatus($id, $newStatus);
+
+        $this->setFlash(
+            'success',
+            $newStatus === 1 ? 'Compte suspendu' : 'Compte réactivé'
+        );
+
+        header('Location: /admin/users');
+        exit;
     }
 }

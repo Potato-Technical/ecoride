@@ -1,0 +1,133 @@
+.driver-trips-title {
+  margin: 0 0 .35rem;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.driver-trips-intro {
+  margin-bottom: 1.25rem;
+  color: var(--text-secondary);
+}
+
+.driver-trips-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.driver-trips-add-btn {
+  background: var(--color-cta);
+  color: #fff;
+  border-radius: 12px;
+  padding: .6rem 1rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.driver-trips-add-btn:hover {
+  background: #2f5f45;
+  color: #fff;
+}
+
+.driver-trips-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.driver-trip-row {
+  background: #fff;
+  border: 1px solid var(--divider);
+  border-radius: 16px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: .8rem;
+}
+
+.driver-trip-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.driver-trip-route {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.driver-trip-meta {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  color: var(--text-secondary);
+  font-size: .95rem;
+}
+
+.driver-trip-actions {
+  display: flex;
+  gap: .6rem;
+  flex-wrap: wrap;
+}
+
+.driver-trip-btn {
+  border-radius: 10px;
+  padding: .45rem .8rem;
+  font-weight: 600;
+  border: 1px solid var(--divider);
+  background: #fff;
+}
+
+.driver-trip-btn--secondary {
+  background: #fff;
+}
+
+.driver-trip-btn--success {
+  background: #2f5f45;
+  color: #fff;
+  border: none;
+}
+
+.driver-trip-btn--danger {
+  background: #d9534f;
+  color: #fff;
+  border: none;
+}
+
+.driver-trip-btn--warning {
+  background: #f0ad4e;
+  border: none;
+}
+
+.driver-trip-badge {
+  font-size: .8rem;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: .2rem .6rem;
+  background: #eef1f2;
+}
+
+.driver-trip-badge--planned {
+  background: #e8f3ea;
+  color: #2f5f45;
+}
+
+.driver-trip-badge--started {
+  background: #fff2d6;
+}
+
+.driver-trip-badge--done {
+  background: #e5f4e8;
+}
+
+.driver-trip-badge--cancelled {
+  background: #fdeaea;
+}
+
+.driver-trips-empty {
+  background: #fff;
+  border: 1px solid var(--divider);
+  border-radius: 16px;
+  padding: 1.2rem;
+}

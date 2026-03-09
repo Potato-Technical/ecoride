@@ -62,15 +62,16 @@
                                         <?php endif; ?>
                                     </td>
                                     <td class="text-end">
-                                        <?php if (empty($u['est_suspendu'])): ?>
-                                            <form method="POST" action="/admin/users/suspend" class="d-inline-flex">
-                                                <?= csrf_field() ?>
-                                                <input type="hidden" name="user_id" value="<?= (int) $u['id'] ?>">
+                                        <form method="POST" action="/admin/users/suspend" class="d-inline-flex">
+                                            <?= csrf_field() ?>
+                                            <input type="hidden" name="user_id" value="<?= (int) $u['id'] ?>">
+
+                                            <?php if (!empty($u['est_suspendu'])): ?>
+                                                <button type="submit" class="btn-success-ui">Réactiver</button>
+                                            <?php else: ?>
                                                 <button type="submit" class="btn-danger-ui">Suspendre</button>
-                                            </form>
-                                        <?php else: ?>
-                                            <span class="admin-empty">Aucune action</span>
-                                        <?php endif; ?>
+                                            <?php endif; ?>
+                                        </form>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -106,15 +107,16 @@
                             </div>
 
                             <div>
-                                <?php if (empty($u['est_suspendu'])): ?>
-                                    <form method="POST" action="/admin/users/suspend">
-                                        <?= csrf_field() ?>
-                                        <input type="hidden" name="user_id" value="<?= (int) $u['id'] ?>">
-                                        <button type="submit" class="btn-danger-ui">Suspendre</button>
-                                    </form>
-                                <?php else: ?>
-                                    <span class="admin-empty">Compte déjà suspendu</span>
-                                <?php endif; ?>
+                                <form method="POST" action="/admin/users/suspend">
+                                    <?= csrf_field() ?>
+                                    <input type="hidden" name="user_id" value="<?= (int) $u['id'] ?>">
+
+                                    <?php if (!empty($u['est_suspendu'])): ?>
+                                        <button type="submit" class="btn-success-ui w-100">Réactiver</button>
+                                    <?php else: ?>
+                                        <button type="submit" class="btn-danger-ui w-100">Suspendre</button>
+                                    <?php endif; ?>
+                                </form>
                             </div>
                         </article>
                     <?php endforeach; ?>

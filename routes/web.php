@@ -28,15 +28,15 @@ return [
     // HISTORIQUE
     ['GET',  '/historique',              ['HistoryController', 'index'], [AuthMiddleware::class]],
 
-    // TRAJETS
-    ['GET',  '/trajets',                 ['TrajetController', 'index']],
-    ['GET',  '/trajets/{id:\d+}',        ['TrajetController', 'show']],
-    ['GET',  '/trajet',                  ['TrajetController', 'show']], // legacy ?id=
-
     // Chauffeur / création
     ['GET',  '/trajets/chauffeur',       ['TrajetController', 'myTrips'], [AuthMiddleware::class]],
     ['GET',  '/trajets/create',          ['TrajetController', 'create'], [AuthMiddleware::class]],
     ['POST', '/trajets/create',          ['TrajetController', 'create'], [CsrfMiddleware::class, AuthMiddleware::class, NotSuspendedMiddleware::class]],
+
+    // TRAJETS
+    ['GET',  '/trajets',                 ['TrajetController', 'index']],
+    ['GET',  '/trajets/{id:\d+}',        ['TrajetController', 'show']],
+    ['GET',  '/trajet',                  ['TrajetController', 'show']], // legacy ?id=
 
     // Démarrer / terminer / annuler un trajet
     ['POST', '/trajets/{id:\d+}/demarrer', ['TrajetController', 'start'],  [CsrfMiddleware::class, AuthMiddleware::class, NotSuspendedMiddleware::class]],
