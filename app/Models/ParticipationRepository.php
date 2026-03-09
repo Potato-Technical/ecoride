@@ -9,20 +9,12 @@ use PDOException;
 class ParticipationRepository
 {
     /**
-     * Crée une participation confirmée pour un utilisateur sur un trajet donné.
+     * Crée une participation confirmée pour un utilisateur.
+     * Enregistre aussi le débit de crédits lié à la réservation.
      *
-     * Rôle métier :
-     * - Insère une nouvelle participation à l’état "confirme"
-     * - Enregistre le montant de crédits utilisés
-     *
-     * Sécurité / cohérence :
-     * - Cette méthode n’effectue aucune vérification métier
-     * - Les contrôles (places, ownership, doublons) doivent être faits
-     *   impérativement côté contrôleur avant l’appel
-     *
-     * @param int $userId  Identifiant de l’utilisateur
-     * @param int $trajetId Identifiant du trajet
-     * @param int $prix    Nombre de crédits utilisés
+     * @param int $userId   ID de l'utilisateur
+     * @param int $trajetId ID du trajet
+     * @param int $prix     Crédits utilisés
      */
     public function create(int $userId, int $trajetId, int $prix): void
     {

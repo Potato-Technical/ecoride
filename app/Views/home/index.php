@@ -31,22 +31,12 @@
                         value="<?= htmlspecialchars($_GET['arrivee'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                 </div>
 
-                <div class="col-6 col-md">
+                <div class="col-12 col-md">
                     <input
                         type="date"
                         class="form-control"
                         name="date"
                         value="<?= htmlspecialchars($_GET['date'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
-                </div>
-
-                <div class="col-6 col-md">
-                    <input
-                        type="number"
-                        class="form-control"
-                        name="passagers"
-                        placeholder="Passagers"
-                        min="1"
-                        value="<?= htmlspecialchars($_GET['passagers'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                 </div>
 
                 <div class="col-12 col-md-auto">
